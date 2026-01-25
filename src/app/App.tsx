@@ -18,7 +18,7 @@ import { TracksPage } from './pages/TracksPage';
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
 import { LoginPage } from './pages/LoginPage';
-import { SignupPage } from './pages/SignUpPage';
+import { SignupPage } from './pages/SignupPage';
 
 export type Page = 'home' | 'careers' | 'mentors' | 'tracks' | 'about' | 'contact' | 'login' | 'signup';
 
