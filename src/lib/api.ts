@@ -245,7 +245,7 @@ export const getMentors = async (): Promise<Mentor[]> => {
         }
 
         if (!data || data.length === 0) {
-            console.log("No mentors found in Supabase, using fallback.");
+            // Fallback if no mentors found
             return FALLBACK_MENTORS;
         }
 
@@ -294,7 +294,7 @@ export const getTracks = async (): Promise<Track[]> => {
         }
 
         if (!data || data.length === 0) {
-            console.log("No tracks found in Supabase, using fallback.");
+            // Fallback if no tracks found
             return FALLBACK_TRACKS;
         }
 

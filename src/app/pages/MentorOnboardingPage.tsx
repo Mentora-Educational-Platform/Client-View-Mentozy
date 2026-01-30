@@ -43,7 +43,7 @@ export function MentorOnboardingPage() {
 
             // Handle "User already registered" by trying to sign in
             if (authError && authError.message.includes("already registered")) {
-                console.log("User exists, attempting sign in...");
+                // User exists, attempting sign in
                 const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
                     email: formData.email,
                     password: formData.password

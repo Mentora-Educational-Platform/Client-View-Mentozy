@@ -95,7 +95,7 @@ export function StudentOnboardingPage() {
 
             // Handle "User already registered" by checking error message
             if (error && error.message.includes("already registered")) {
-                console.log("User exists, attempting sign in...");
+                // User exists, attempting sign in
                 const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
                     email: formData.email,
                     password: formData.password
