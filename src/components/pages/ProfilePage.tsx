@@ -138,7 +138,7 @@ export function ProfilePage() {
         'future_goals', 'learning_goals', 'learning_style'
     ];
     const completedFields = fieldsToTrack.filter(f => !!formData[f as keyof typeof formData]);
-    const completionPercentage = Math.round((completedFields.length / fieldsToTrack.length) * 100);
+    const completionPercentage = fieldsToTrack.length > 0 ? Math.round((completedFields.length / fieldsToTrack.length) * 100) : 0;
 
     if (loading) {
         return (
@@ -182,7 +182,7 @@ export function ProfilePage() {
                             <input
                                 type="text"
                                 name="full_name"
-                                value={formData.full_name}
+                                value={formData.full_name || ''}
                                 onChange={handleChange}
                                 placeholder="Your Full Name"
                                 className="text-4xl font-black text-gray-900 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-100 rounded-xl w-full"
