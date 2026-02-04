@@ -1,4 +1,4 @@
-import { Search, Filter, Star, Linkedin, Loader2, Calendar, Globe, MapPin, User, Building2, ExternalLink, ShieldCheck, Sparkles } from 'lucide-react';
+import { Search, Filter, Star, Linkedin, Loader2, Calendar, Globe, MapPin, User, Building2, ExternalLink, ShieldCheck } from 'lucide-react';
 import { useEffect, useState, useMemo } from 'react';
 import { getMentors, Mentor, createBooking } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
@@ -75,10 +75,7 @@ export function MentorsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="max-w-4xl mx-auto text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-full border border-amber-100 text-amber-700 text-xs font-black uppercase tracking-widest mb-6">
-            <Sparkles className="w-3 h-3" />
-            <span>Premium Expert Network</span>
-          </div>
+
           <h1 className="text-5xl md:text-7xl font-black text-gray-900 mb-8 tracking-tighter leading-tight">
             Discovery <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-600 via-orange-500 to-amber-700">Top-Tier</span> Mentors
           </h1>

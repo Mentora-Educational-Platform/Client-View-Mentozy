@@ -1,7 +1,7 @@
 import {
   Target, Heart, Users, Rocket, ShieldCheck, Cpu, Globe,
   Award, Zap, BookOpen, Briefcase, MessageSquare,
-  CheckCircle2, Sparkles, TrendingUp, Layers
+  CheckCircle2, TrendingUp, Layers
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -39,14 +39,7 @@ export function AboutPage() {
           transition={{ duration: 0.8 }}
           className="max-w-4xl mx-auto text-center mb-24"
         >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-100 text-amber-600 font-medium text-sm mb-6"
-          >
-            <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500" />
-            <span>The Future of Human-Led Learning</span>
-          </motion.div>
+
           <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-8 tracking-tight">
             Mentozy: Learning and <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-500">Mentorship</span>
           </h1>

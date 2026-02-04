@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
+import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function CTASection() {
@@ -15,7 +15,7 @@ export function CTASection() {
 
           <div className="relative z-10 max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-amber-200 text-amber-600 text-xs font-bold uppercase tracking-wider mb-8 shadow-sm">
-              <Sparkles className="w-3 h-3 fill-current" /> Start your journey
+              Start your journey
             </div>
 
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight leading-tight">

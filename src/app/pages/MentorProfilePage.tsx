@@ -4,7 +4,7 @@ import { getUserProfile, updateUserProfile, Profile } from '../../lib/api';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import {
     Loader2, User, Save, Building, DollarSign,
-    Briefcase, Sparkles, MapPin
+    Briefcase, MapPin
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getSupabase } from '../../lib/supabase';
@@ -192,7 +192,6 @@ export function MentorProfilePage() {
                         <div className="md:col-span-2 space-y-8">
                             <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm">
                                 <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                                    <Sparkles className="w-5 h-5 text-amber-500 fill-amber-500" />
                                     About & Expertise
                                 </h3>
 

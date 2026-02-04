@@ -1,4 +1,4 @@
-import { Briefcase, Database, Code2, CreditCard, Sparkles, Building2, MapPin } from 'lucide-react';
+import { Briefcase, Database, Code2, CreditCard, Building2, MapPin } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
 export function Opportunities() {
@@ -100,7 +100,7 @@ export function Opportunities() {
                       <span className="text-sm text-gray-600 font-medium">{job.company}</span>
                       {job.featured && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wide border border-amber-200">
-                          <Sparkles className="w-3 h-3" /> Priority
+                          Priority
                         </span>
                       )}
                     </div>

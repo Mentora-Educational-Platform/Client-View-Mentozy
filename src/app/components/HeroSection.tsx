@@ -1,4 +1,4 @@
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function HeroSection() {
@@ -11,7 +11,7 @@ export function HeroSection() {
           <div className="space-y-10 relative z-10">
             <div className="space-y-6">
               <p className="inline-flex items-center gap-2 text-sm font-semibold text-amber-700 bg-amber-100 px-4 py-1.5 rounded-full w-fit">
-                <Sparkles className="w-4 h-4" />
+
                 Learn • Connect • Grow
               </p>
 
@@ -84,13 +84,7 @@ export function HeroSection() {
               <p className="text-3xl font-bold">1,599</p>
             </div>
 
-            {/* Playful Sparkle */}
-            <div className="absolute -top-4 left-20 animate-bounce duration-[3000ms]">
-              <Sparkles
-                className="w-10 h-10 text-amber-400"
-                fill="currentColor"
-              />
-            </div>
+
 
             {/* Soft Ambient Blobs */}
             <div className="absolute -z-10 top-24 left-10 w-40 h-40 bg-amber-200 rounded-full blur-3xl opacity-40" />

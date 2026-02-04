@@ -5,7 +5,7 @@ import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import {
     Loader2, User, Save, Camera, Mail,
     MapPin, GraduationCap, Award, Clock,
-    Sparkles, Target,
+    Target,
     CheckCircle2, AlertCircle, X, Plus,
     Layout, Zap
 } from 'lucide-react';
@@ -240,7 +240,6 @@ export function ProfilePage() {
                         {/* 2. About Me Section (Human) */}
                         <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm">
                             <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-                                <Sparkles className="w-6 h-6 text-amber-500" />
                                 About Me
                             </h2>
                             <div className="space-y-8">
@@ -432,9 +431,7 @@ export function ProfilePage() {
                                 Recent Badges
                             </h3>
                             <div className="flex gap-4">
-                                <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 border border-amber-100 shadow-sm hover:scale-110 transition-transform">
-                                    <Sparkles className="w-6 h-6" />
-                                </div>
+
                                 <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-500 border border-indigo-100 shadow-sm hover:scale-110 transition-transform">
                                     <Target className="w-6 h-6" />
                                 </div>

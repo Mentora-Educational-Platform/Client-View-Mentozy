@@ -1,4 +1,4 @@
-import { Video, Radio, Users, FileText, ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Video, Radio, Users, FileText, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export function MentorshipFormats() {
   const formats = [
@@ -57,8 +57,8 @@ export function MentorshipFormats() {
             <div
               key={index}
               className={`group relative flex flex-col h-full p-6 rounded-2xl border transition-all duration-300
-                ${format.popular 
-                  ? 'bg-white border-amber-200 shadow-xl shadow-amber-100/50 scale-[1.02] z-10' 
+                ${format.popular
+                  ? 'bg-white border-amber-200 shadow-xl shadow-amber-100/50 scale-[1.02] z-10'
                   : 'bg-white border-gray-100 hover:border-amber-200 hover:shadow-lg hover:-translate-y-1'
                 }
               `}
@@ -66,7 +66,6 @@ export function MentorshipFormats() {
               {format.popular && (
                 <div className="absolute -top-3 inset-x-0 flex justify-center">
                   <span className="bg-amber-500 text-white text-[10px] font-bold uppercase tracking-widest py-1 px-3 rounded-full shadow-sm flex items-center gap-1.5">
-                    <Sparkles className="w-3 h-3 fill-current" />
                     Most Popular
                   </span>
                 </div>
@@ -81,7 +80,7 @@ export function MentorshipFormats() {
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {format.title}
               </h3>
-              
+
               <p className="text-sm text-gray-500 mb-6 leading-relaxed">
                 {format.description}
               </p>
@@ -97,9 +96,9 @@ export function MentorshipFormats() {
                 </div>
 
                 <div className={`pt-4 border-t ${format.popular ? 'border-amber-100' : 'border-gray-50'} flex items-center justify-between`}>
-                   <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">
-                     Best for {format.bestFor}
-                   </span>
+                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">
+                    Best for {format.bestFor}
+                  </span>
                 </div>
               </div>
             </div>
