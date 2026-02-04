@@ -3,28 +3,22 @@ import { User, Linkedin, Twitter } from 'lucide-react';
 export function TeamSection() {
   const team = [
     {
-      name: 'Aditi Verma',
+      name: 'Harshita Bhaskaruni',
       role: 'Founder & CEO',
-      bio: 'Ex-Google PM with a passion for ed-tech and democratization of learning.',
+      bio: 'Insights, leading, management/ Full stack developer',
       color: 'bg-amber-100 text-amber-600',
     },
     {
-      name: 'David Chen',
-      role: 'Head of Mentorship',
-      bio: 'Scaling engineering teams for 10+ years. Passionate about career growth.',
+      name: 'Kishlaya Mishra',
+      role: 'Co-founder',
+      bio: 'Team management, expertise in following trends/ Full stack developer',
       color: 'bg-blue-100 text-blue-600',
     },
     {
-      name: 'Sarah Jones',
-      role: 'Curriculum Director',
-      bio: 'Award-winning educator designing pathways that actually get you hired.',
+      name: 'Abhinash Karan',
+      role: 'Tech Lead',
+      bio: 'Tech work, development and building/ Full stack developer',
       color: 'bg-purple-100 text-purple-600',
-    },
-    {
-      name: 'Rahul Gupta',
-      role: 'Lead Tech Advisor',
-      bio: 'Senior Architect at Amazon. Guiding the technical roadmap for learners.',
-      color: 'bg-emerald-100 text-emerald-600',
     }
   ];
 
@@ -45,9 +39,9 @@ export function TeamSection() {
         </div>
 
         {/* Team Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {team.map((member, index) => (
-            <div 
+            <div
               key={index}
               className="group bg-white rounded-2xl p-6 border border-gray-100 hover:border-amber-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center flex flex-col h-full"
             >
@@ -69,12 +63,12 @@ export function TeamSection() {
 
               {/* Socials */}
               <div className="flex justify-center gap-4 pt-6 border-t border-gray-50 opacity-60 group-hover:opacity-100 transition-opacity mt-auto">
-                 <a href="#" className="hover:text-amber-600 hover:scale-110 transition-all text-gray-400">
-                    <Linkedin className="w-5 h-5" />
-                 </a>
-                 <a href="#" className="hover:text-amber-600 hover:scale-110 transition-all text-gray-400">
-                    <Twitter className="w-5 h-5" />
-                 </a>
+                <a href="#" className="hover:text-amber-600 hover:scale-110 transition-all text-gray-400">
+                  <Linkedin className="w-5 h-5" />
+                </a>
+                <a href="#" className="hover:text-amber-600 hover:scale-110 transition-all text-gray-400">
+                  <Twitter className="w-5 h-5" />
+                </a>
               </div>
             </div>
           ))}

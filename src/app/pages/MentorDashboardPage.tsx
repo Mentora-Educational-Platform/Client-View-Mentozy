@@ -5,14 +5,14 @@ import { useAuth } from '../../context/AuthContext';
 import { getUserProfile, getMentorBookings, updateBookingStatus, Profile, Booking } from '../../lib/api';
 import { getSupabase } from '../../lib/supabase';
 import {
-    Loader2, Calendar, Clock, User, LogOut, CheckCircle2,
-    DollarSign, ChevronRight, AlertCircle, XCircle
+    Loader2, Calendar, Clock, User, CheckCircle2,
+    DollarSign, ChevronRight, AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 
 export function MentorDashboardPage() {
-    const { user, signOut } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     // State
@@ -20,7 +20,6 @@ export function MentorDashboardPage() {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [mentorDetails, setMentorDetails] = useState<any>(null); // { hourly_rate, company }
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'overview' | 'requests' | 'schedule'>('overview');
     const [processingId, setProcessingId] = useState<string | null>(null);
 
     // Derived State
@@ -116,34 +115,47 @@ export function MentorDashboardPage() {
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
                     <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                        <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg group-hover:scale-110 transition-transform">
                             <DollarSign className="w-5 h-5" />
                         </div>
                         <span className="text-sm font-medium text-gray-500">Earnings</span>
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">${estimatedEarnings}</p>
+                    <p className="text-3xl font-black text-gray-900">${estimatedEarnings}</p>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
                     <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg group-hover:scale-110 transition-transform">
                             <Calendar className="w-5 h-5" />
                         </div>
                         <span className="text-sm font-medium text-gray-500">Upcoming</span>
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">{confirmedBookings.length}</p>
+                    <p className="text-3xl font-black text-gray-900">{confirmedBookings.length}</p>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
                     <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
+                        <div className="p-2 bg-amber-50 text-amber-600 rounded-lg group-hover:scale-110 transition-transform">
                             <AlertCircle className="w-5 h-5" />
                         </div>
                         <span className="text-sm font-medium text-gray-500">Pending</span>
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">{pendingBookings.length}</p>
+                    <p className="text-3xl font-black text-gray-900">{pendingBookings.length}</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-violet-600 to-indigo-700 p-5 rounded-2xl border border-violet-500/20 shadow-lg shadow-violet-500/20 relative overflow-hidden group text-white">
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                                <CheckCircle2 className="w-5 h-5 text-white" />
+                            </div>
+                            <span className="text-sm font-medium text-violet-100">Completed</span>
+                        </div>
+                        <p className="text-3xl font-black">{completedBookings.length}</p>
+                    </div>
+                    <div className="absolute -bottom-4 -right-4 w-20 h-20 bg-white/10 rounded-full blur-xl group-hover:scale-110 transition-transform"></div>
                 </div>
 
                 <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">

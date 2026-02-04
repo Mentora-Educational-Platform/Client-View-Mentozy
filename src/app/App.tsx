@@ -49,6 +49,12 @@ const PageLoader = () => (
 const MemoizedHeader = memo(Header);
 const MemoizedFooter = memo(Footer);
 
+// Mentor Pages
+const MentorAnalyticsPage = lazy(() => import('./pages/MentorAnalyticsPage').then(module => ({ default: module.MentorAnalyticsPage })));
+const MentorAchievementsPage = lazy(() => import('./pages/MentorAchievementsPage').then(module => ({ default: module.MentorAchievementsPage })));
+const MentorProfilePage = lazy(() => import('./pages/MentorProfilePage').then(module => ({ default: module.MentorProfilePage })));
+const MentorCalendarPage = lazy(() => import('./pages/MentorCalendarPage').then(module => ({ default: module.MentorCalendarPage })));
+
 // Layout Component
 const Layout = () => {
   return (
@@ -166,6 +172,27 @@ function App() {
             <ProfilePage />
           </Suspense>
         } />
+        {/* Mentor Routes */}
+        <Route path="/mentor-profile" element={
+          <Suspense fallback={<PageLoader />}>
+            <MentorProfilePage />
+          </Suspense>
+        } />
+        <Route path="/mentor-analytics" element={
+          <Suspense fallback={<PageLoader />}>
+            <MentorAnalyticsPage />
+          </Suspense>
+        } />
+        <Route path="/mentor-achievements" element={
+          <Suspense fallback={<PageLoader />}>
+            <MentorAchievementsPage />
+          </Suspense>
+        } />
+        <Route path="/mentor-calendar" element={
+          <Suspense fallback={<PageLoader />}>
+            <MentorCalendarPage />
+          </Suspense>
+        } />
         <Route path="/courses" element={
           <Suspense fallback={<PageLoader />}>
             <CoursesPage />
@@ -177,6 +204,11 @@ function App() {
           </Suspense>
         } />
         <Route path="/messages" element={
+          <Suspense fallback={<PageLoader />}>
+            <MessagesPage />
+          </Suspense>
+        } />
+        <Route path="/mentor-messages" element={
           <Suspense fallback={<PageLoader />}>
             <MessagesPage />
           </Suspense>

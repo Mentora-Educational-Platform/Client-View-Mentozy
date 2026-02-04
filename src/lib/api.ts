@@ -83,6 +83,16 @@ export interface Profile {
     interests?: string[];
     phone?: string;
     streak?: number;
+    // New fields for Student Profile Overhaul
+    about_me?: string;
+    curiosities?: string;
+    learning_now?: string;
+    future_goals?: string;
+    learning_goals?: string;
+    learning_style?: string;
+    availability?: string;
+    location?: string;
+    age?: string;
 }
 
 export interface Enrollment {

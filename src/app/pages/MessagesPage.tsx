@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
-    Search, Send, Paperclip, MoreVertical,
-    Hash, AtSign, Smile, Phone, Video,
-    Info, User, Users, GraduationCap,
+    Search, Send, Paperclip,
+    AtSign, Smile, Phone, Video,
+    Info, Users, GraduationCap,
     Circle
 } from 'lucide-react';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
@@ -31,13 +32,27 @@ export function MessagesPage() {
     const [messageInput, setMessageInput] = useState('');
     const scrollRef = useRef<HTMLDivElement>(null);
 
-    const contacts: Contact[] = [
+    const location = useLocation();
+    const isMentorView = location.pathname.includes('mentor');
+
+    // Student Contacts (Teachers & Friends)
+    const studentContacts: Contact[] = [
         { id: 'c1', name: 'Dr. Aris Thorne', type: 'teacher', status: 'online', role: 'AI Mentor', lastMessage: 'Great work on the GANs project!' },
         { id: 'c2', name: 'Sarah Chen', type: 'friend', status: 'online', lastMessage: 'Coming for the study session?' },
         { id: 'c3', name: 'Prof. Marcus Vane', type: 'teacher', status: 'offline', role: 'Computer Science Head', lastMessage: 'The report is due tomorrow.' },
         { id: 'c4', name: 'Alex Rivera', type: 'friend', status: 'away', lastMessage: 'Did you see the new module?' },
         { id: 'c5', name: 'Department Announcements', type: 'teacher', status: 'online', role: 'System', lastMessage: 'New workshop scheduled for Friday.' }
     ];
+
+    // Mentor Contacts (Students)
+    const mentorContacts: Contact[] = [
+        { id: 's1', name: 'Alex Chen', type: 'friend', status: 'online', role: 'Student', lastMessage: 'I have a question about the assignment.' },
+        { id: 's2', name: 'Jordan Lee', type: 'friend', status: 'offline', role: 'Student', lastMessage: 'Thanks for the session!' },
+        { id: 's3', name: 'Sarah Miller', type: 'friend', status: 'online', role: 'Student', lastMessage: 'Can we reschedule?' },
+        { id: 's4', name: 'Mike Ross', type: 'friend', status: 'away', role: 'Student', lastMessage: 'Review submitted.' }
+    ];
+
+    const contacts = isMentorView ? mentorContacts : studentContacts;
 
     const [conversations, setConversations] = useState<Record<string, Message[]>>({
         'c1': [
@@ -185,8 +200,8 @@ export function MessagesPage() {
                             <div key={message.id} className={`flex ${message.senderId === 'me' ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`max-w-[70%] ${message.senderId === 'me' ? 'order-2' : ''}`}>
                                     <div className={`p-4 rounded-[1.5rem] text-sm ${message.senderId === 'me'
-                                            ? 'bg-gray-900 text-white rounded-tr-none'
-                                            : 'bg-gray-50 text-gray-800 rounded-tl-none border border-gray-100/50'
+                                        ? 'bg-gray-900 text-white rounded-tr-none'
+                                        : 'bg-gray-50 text-gray-800 rounded-tl-none border border-gray-100/50'
                                         }`}>
                                         {message.text}
                                     </div>

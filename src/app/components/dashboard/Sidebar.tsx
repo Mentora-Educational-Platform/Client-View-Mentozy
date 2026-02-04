@@ -27,12 +27,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
     const mentorItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/mentor-dashboard' },
-        { icon: Calendar, label: 'Schedule', path: '/mentor-schedule' }, // Placeholder
-        { icon: MessageSquare, label: 'Messages', path: '/messages' },
-        { icon: User, label: 'Profile', path: '/profile' },
+        { icon: Calendar, label: 'Calendar', path: '/mentor-calendar' },
+        { icon: MessageSquare, label: 'Messages', path: '/mentor-messages' },
+        { icon: PieChart, label: 'Analytics', path: '/mentor-analytics' },
+        { icon: Award, label: 'Achievements', path: '/mentor-achievements' },
+        { icon: User, label: 'Profile', path: '/mentor-profile' },
     ];
 
-    const navItems = role === 'mentor' || role === 'organization' ? mentorItems : studentItems;
+    const isMentorPath = location.pathname.startsWith('/mentor');
+    const isMentor = role === 'mentor' || role === 'organization' || isMentorPath;
+
+    const navItems = isMentor ? mentorItems : studentItems;
 
     return (
         <>

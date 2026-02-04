@@ -39,8 +39,10 @@ export function LoginPage() {
             if (data.user) {
                 // Check User Role
                 const profile = await getUserProfile(data.user.id);
+                console.log("LOGIN DEBUG: User Profile Loaded:", profile);
+                console.log("LOGIN DEBUG: User Role:", profile?.role);
 
-                if (profile?.role === 'mentor') {
+                if (profile?.role === 'mentor' || profile?.role === 'teacher') {
                     navigate('/mentor-dashboard');
                     toast.success("Welcome back, Mentor!");
                 } else {
