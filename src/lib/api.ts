@@ -93,6 +93,7 @@ export interface Profile {
     availability?: string;
     location?: string;
     age?: string;
+    dob?: string;
 }
 
 export interface Enrollment {
