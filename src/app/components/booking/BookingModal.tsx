@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Calendar } from '../../../components/ui/calendar';
-import { X, Clock, Loader2, CheckCircle2, Zap } from 'lucide-react';
+import { X, Clock, Loader2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface BookingModalProps {
@@ -10,7 +9,7 @@ interface BookingModalProps {
     mentorName: string;
     mentorImage?: string; // Optional URL or class
     userPlan?: 'Free' | 'Premium' | 'Ultra' | 'Unlimited';
-    onConfirm: (date: Date, timeSlot: string) => Promise<boolean>;
+    onConfirm: (date: Date, timeSlot: string, duration?: string, note?: string) => Promise<boolean>;
 }
 
 const TIME_SLOTS = [
@@ -19,11 +18,13 @@ const TIME_SLOTS = [
     "04:00 PM", "05:00 PM"
 ];
 
-export function BookingModal({ isOpen, onClose, mentorName, userPlan = 'Free', onConfirm }: BookingModalProps) {
+export function BookingModal({ isOpen, onClose, mentorName, onConfirm }: BookingModalProps) {
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
+    const [duration, setDuration] = useState<string>("60 min");
+    const [note, setNote] = useState<string>("");
     const [loading, setLoading] = useState(false);
-    const [step, setStep] = useState<'date' | 'time'>('date');
+    const [step, setStep] = useState<'date' | 'time' | 'details'>('date');
 
     if (!isOpen) return null;
 
@@ -44,10 +45,16 @@ export function BookingModal({ isOpen, onClose, mentorName, userPlan = 'Free', o
 
         bookingDate.setHours(hours, minutes, 0, 0);
 
-        const success = await onConfirm(bookingDate, selectedTime);
+        // Pass duration and note to the parent handler
+        const success = await onConfirm(bookingDate, selectedTime, duration, note);
         setLoading(false);
         if (success) {
             onClose();
+            // Reset state
+            setStep('date');
+            setSelectedTime(null);
+            setNote("");
+            setDate(new Date());
         }
     };
 
@@ -76,8 +83,9 @@ export function BookingModal({ isOpen, onClose, mentorName, userPlan = 'Free', o
 
                     {/* Steps Indicator */}
                     <div className="flex gap-2 mt-6">
-                        <div className={`h-1 flex-1 rounded-full transition-colors ${step === 'date' ? 'bg-amber-500' : 'bg-amber-500'}`}></div>
-                        <div className={`h-1 flex-1 rounded-full transition-colors ${step === 'time' ? 'bg-amber-500' : 'bg-gray-700'}`}></div>
+                        <div className={`h-1 flex-1 rounded-full transition-colors ${step === 'date' || step === 'time' || step === 'details' ? 'bg-amber-500' : 'bg-gray-700'}`}></div>
+                        <div className={`h-1 flex-1 rounded-full transition-colors ${step === 'time' || step === 'details' ? 'bg-amber-500' : 'bg-gray-700'}`}></div>
+                        <div className={`h-1 flex-1 rounded-full transition-colors ${step === 'details' ? 'bg-amber-500' : 'bg-gray-700'}`}></div>
                     </div>
                 </div>
 
@@ -107,7 +115,7 @@ export function BookingModal({ isOpen, onClose, mentorName, userPlan = 'Free', o
                                 Continue
                             </button>
                         </div>
-                    ) : (
+                    ) : step === 'time' ? (
                         <div className="space-y-6">
                             <div className="flex items-center gap-4 p-4 bg-amber-50 rounded-xl border border-amber-100">
                                 <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 font-bold">
@@ -143,27 +151,62 @@ export function BookingModal({ isOpen, onClose, mentorName, userPlan = 'Free', o
                             </div>
 
                             <button
+                                onClick={() => setStep('details')}
+                                disabled={!selectedTime}
+                                className="w-full py-3 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            >
+                                Continue to Details
+                            </button>
+                        </div>
+                    ) : (
+                        /* Step: Details (Duration + Note) */
+                        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                <div>
+                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Time Slot</p>
+                                    <p className="font-bold text-gray-900">{selectedTime} on {date?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                                </div>
+                                <button onClick={() => setStep('time')} className="ml-auto text-xs font-bold text-gray-400 hover:text-gray-600 underline">Change</button>
+                            </div>
+
+                            {/* Duration Selection */}
+                            <div>
+                                <h3 className="font-bold text-gray-900 mb-2">Duration</h3>
+                                <div className="flex gap-3">
+                                    {["30 min", "60 min", "90 min"].map(d => (
+                                        <button
+                                            key={d}
+                                            onClick={() => setDuration(d)}
+                                            className={`flex-1 py-2 rounded-xl text-sm font-bold border transition-all ${duration === d
+                                                ? 'bg-amber-100 text-amber-800 border-amber-200'
+                                                : 'bg-white text-gray-500 border-gray-200 hover:border-amber-200'
+                                                }`}
+                                        >
+                                            {d}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Personal Note */}
+                            <div>
+                                <h3 className="font-bold text-gray-900 mb-2">Personal Note</h3>
+                                <textarea
+                                    value={note}
+                                    onChange={(e) => setNote(e.target.value)}
+                                    placeholder="Anything specific you want to discuss?"
+                                    className="w-full h-24 p-4 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-indigo-100 focus:outline-none resize-none"
+                                />
+                            </div>
+
+                            <button
                                 onClick={handleConfirm}
-                                disabled={!selectedTime || loading}
+                                disabled={loading}
                                 className="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 disabled:opacity-70 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                             >
                                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
                                 Confirm Booking
                             </button>
-
-                            {/* Plan Info Details */}
-                            <div className="text-center">
-                                {userPlan === 'Free' ? (
-                                    <p className="text-xs text-gray-500">
-                                        Paying per session? <Link to="/plans" className="text-indigo-600 font-bold hover:underline">Get a plan</Link> to save.
-                                    </p>
-                                ) : (
-                                    <p className="text-xs text-indigo-600 font-medium">
-                                        <Zap className="w-3 h-3 inline-block mr-1" />
-                                        This session will use your <strong>{userPlan}</strong> live minutes.
-                                    </p>
-                                )}
-                            </div>
                         </div>
                     )}
                 </div>

@@ -544,7 +544,7 @@ export const getStudentBookings = async (userId: string): Promise<Booking[]> => 
     }
 };
 
-export const createBooking = async (userId: string, mentorId: number, scheduledAt: string): Promise<boolean> => {
+export const createBooking = async (userId: string, mentorId: number, scheduledAt: string, duration?: string, note?: string): Promise<boolean> => {
     try {
         const supabase = getSupabase();
         if (!supabase) return false;
@@ -554,6 +554,11 @@ export const createBooking = async (userId: string, mentorId: number, scheduledA
             p_mentor_id: mentorId,
             p_start_time: scheduledAt
         });
+
+        // SIMULATION: Log the extra details since the RPC might not support them yet
+        if (duration || note) {
+            console.log(`[Mock] Booking Details - Duration: ${duration}, Note: ${note}`);
+        }
 
         if (error) {
             console.error("RPC Error creating booking:", error);
@@ -630,4 +635,45 @@ export const updateBookingStatus = async (bookingId: string, status: 'confirmed'
         console.error("Error in updateBookingStatus:", e);
         return false;
     }
+};
+
+export interface TimeSlot {
+    id: string;
+    startTime: string; // ISO string
+    endTime: string;   // ISO string
+    available: boolean;
+}
+
+export const getMentorAvailability = async (mentorId: number, date: Date): Promise<TimeSlot[]> => {
+    // In a real app, this would query the DB for the mentor's schedule and existing bookings
+    // For now, we mock it to return standard business hours with random availability
+
+    const slots: TimeSlot[] = [];
+    const startHour = 9; // 9 AM
+    const endHour = 17;  // 5 PM
+
+    // Generate slots for the given date
+    const baseDate = new Date(date);
+    baseDate.setHours(0, 0, 0, 0);
+
+    for (let hour = startHour; hour < endHour; hour++) {
+        const slotStart = new Date(baseDate);
+        slotStart.setHours(hour);
+
+        const slotEnd = new Date(baseDate);
+        slotEnd.setHours(hour + 1);
+
+        // Mock randomization: 70% chance of being available
+        // But ensure at least some slots are available
+        const isAvailable = Math.random() > 0.3;
+
+        slots.push({
+            id: `${mentorId}-${slotStart.toISOString()}`,
+            startTime: slotStart.toISOString(),
+            endTime: slotEnd.toISOString(),
+            available: isAvailable
+        });
+    }
+
+    return slots;
 };

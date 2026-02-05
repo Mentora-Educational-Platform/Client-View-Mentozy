@@ -7,7 +7,7 @@ const FeaturesSection = lazy(() => import('../components/FeaturesSection').then(
 const HowItWorks = lazy(() => import('../components/HowItWorks').then(module => ({ default: module.HowItWorks })));
 const MentorshipFormats = lazy(() => import('../components/MentorshipFormats').then(module => ({ default: module.MentorshipFormats })));
 const LearningTracks = lazy(() => import('../components/LearningTracks').then(module => ({ default: module.LearningTracks })));
-const TeamSection = lazy(() => import('../components/TeamSection').then(module => ({ default: module.TeamSection })));
+
 const CTASection = lazy(() => import('../components/CTASection').then(module => ({ default: module.CTASection })));
 const Opportunities = lazy(() => import('../components/Opportunities').then(module => ({ default: module.Opportunities })));
 const TechnologySection = lazy(() => import('../components/TechnologySection').then(module => ({ default: module.TechnologySection })));
@@ -29,7 +29,7 @@ export function HomePage() {
             <div id="opportunities">
                 <Opportunities />
             </div>
-            <TeamSection />
+
             <div id="pricing"><CTASection /></div>
         </>
     );
