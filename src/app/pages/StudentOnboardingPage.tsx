@@ -93,17 +93,10 @@ export function StudentOnboardingPage() {
                 // Remove options to prevent trigger errors
             });
 
-            // Handle "User already registered" by checking error message
-            if (error && error.message.includes("already registered")) {
-                // User exists, attempting sign in
-                const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                    email: formData.email,
-                    password: formData.password
-                });
 
-                if (signInError) throw new Error("Account exists but password was incorrect.");
-                data = signInData; // Use the sign-in data
-                error = null; // Clear error
+            // Handle "User already registered" explicitly
+            if (error && (error.message.includes("already registered") || error.status === 400 || error.code === 'user_already_exists')) {
+                throw new Error("This email is already registered. Please login instead.");
             }
 
             if (error) throw error;
