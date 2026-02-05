@@ -86,13 +86,19 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
             ([theme, prefix]) => `
 ${prefix} [data-chart=${id}] {
 ${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
-  })
-  .join("\n")}
+                .map(([key, itemConfig]) => {
+                  const color =
+                    itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+                    itemConfig.color;
+
+                  // Simple sanitization: allow only safe characters for CSS color values
+                  // This allows hex, rgb, rgba, hsl, hsla, var and valid color names
+                  // It blocks characters like '{', '}', ';', which could break out of the style block
+                  const isSafeColor = color && /^[a-zA-Z0-9#,\. \(\)\-\\%]+$/.test(color);
+
+                  return isSafeColor ? `  --color-${key}: ${color};` : null;
+                })
+                .join("\n")}
 }
 `,
           )
@@ -316,8 +322,8 @@ function getPayloadConfigFromPayload(
 
   const payloadPayload =
     "payload" in payload &&
-    typeof payload.payload === "object" &&
-    payload.payload !== null
+      typeof payload.payload === "object" &&
+      payload.payload !== null
       ? payload.payload
       : undefined;
 
