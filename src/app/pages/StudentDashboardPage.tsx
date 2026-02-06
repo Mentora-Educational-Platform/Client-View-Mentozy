@@ -197,41 +197,7 @@ export function StudentDashboardPage() {
                             )}
                         </div>
 
-<<<<<<< HEAD
                         {/* Recommended For You Section - REMOVED (Mock Data) */}
-=======
-                        {/* Recommended For You Section */}
-                        <div className="mt-12">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-xl font-bold text-gray-900">Recommended for you</h2>
-                                <Link to="/tracks" className="text-amber-600 font-bold text-sm hover:underline flex items-center gap-1">
-                                    View Library <ChevronRight className="w-4 h-4" />
-                                </Link>
-                            </div>
-
-                            <div className="grid md:grid-cols-2 gap-5">
-                                <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl p-8 relative overflow-hidden group shadow-lg">
-                                    <div className="relative z-10">
-                                        <div className="px-3 py-1 bg-white/20 rounded-full text-[10px] font-bold text-white uppercase tracking-widest border border-white/20 inline-block mb-4">Popular</div>
-                                        <h3 className="text-2xl font-bold text-white mb-2">Mastering AI & Data Science</h3>
-                                        <p className="text-indigo-100 text-sm mb-6 max-w-[200px]">Unlock the power of intelligence with our most taken track.</p>
-                                        <Link to="/tracks" className="inline-flex items-center justify-center px-6 py-2.5 bg-white text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-50 transition-colors">Explorer Now</Link>
-                                    </div>
-                                    <Cpu className="absolute -bottom-6 -right-6 w-32 h-32 text-white/10 group-hover:scale-110 transition-transform duration-500" />
-                                </div>
-
-                                <div className="bg-gradient-to-br from-rose-500 to-orange-600 rounded-3xl p-8 relative overflow-hidden group shadow-lg">
-                                    <div className="relative z-10">
-                                        <div className="px-3 py-1 bg-white/20 rounded-full text-[10px] font-bold text-white uppercase tracking-widest border border-white/20 inline-block mb-4">Trending</div>
-                                        <h3 className="text-2xl font-bold text-white mb-2">UX & Branding Mastery</h3>
-                                        <p className="text-rose-100 text-sm mb-6 max-w-[200px]">Learn to design products that customers actually love.</p>
-                                        <button className="inline-flex items-center justify-center px-6 py-2.5 bg-white text-rose-600 rounded-xl font-bold text-sm hover:bg-rose-50 transition-colors">Explorer Now</button>
-                                    </div>
-                                    <Heart className="absolute -bottom-6 -right-6 w-32 h-32 text-white/10 group-hover:scale-110 transition-transform duration-500" />
-                                </div>
-                            </div>
-                        </div>
->>>>>>> b3000648d637cdca39b9e5ba8346806841f0b286
                     </div>
                 </div>
 
