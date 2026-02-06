@@ -5,17 +5,9 @@ import {
     User, StickyNote
 } from 'lucide-react';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
-import { getStudentBookings } from '../../lib/api';
+import { getStudentBookings, Booking } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
-
-interface Event {
-    id: string;
-    title: string;
-    time: string;
-    type: 'session' | 'workshop' | 'deadline';
-    mentor?: string;
-    description?: string;
-}
+import { StudentBookingDetailsModal } from '../components/booking/StudentBookingDetailsModal';
 
 interface Reminder {
     id: string;
@@ -35,25 +27,18 @@ export function CalendarPage() {
     ]);
     const [newReminder, setNewReminder] = useState('');
 
-    // Real Events State
-    const [events, setEvents] = useState<Event[]>([]);
+    // Real Bookings State
+    const [bookings, setBookings] = useState<Booking[]>([]);
+
+    // Modal State
+    const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+    const [detailsModalOpen, setDetailsModalOpen] = useState(false);
 
     useEffect(() => {
         async function loadBookings() {
             if (!user) return;
-            const bookings = await getStudentBookings(user.id);
-
-            const mappedEvents: Event[] = bookings.map(b => ({
-                id: b.id,
-                title: `Session: ${b.mentors?.name || 'Mentor'}`,
-                time: new Date(b.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                type: 'session',
-                mentor: b.mentors?.name,
-                description: b.status === 'confirmed' ? 'Confirmed Session' : 'Pending Approval'
-            }));
-
-            // If no events, show empty state or keep empty
-            setEvents(mappedEvents);
+            const data = await getStudentBookings(user.id);
+            setBookings(data);
         }
         loadBookings();
     }, [user]);
@@ -98,6 +83,14 @@ export function CalendarPage() {
         setPopoverPosition(null);
         setIsPopoverInputMode(false);
         setPopoverInputText('');
+    };
+
+    const handleBookingClick = (bookingId: string) => {
+        const booking = bookings.find(b => b.id === bookingId);
+        if (booking) {
+            setSelectedBooking(booking);
+            setDetailsModalOpen(true);
+        }
     };
 
     return (
@@ -174,8 +167,12 @@ export function CalendarPage() {
                                 const day = i + 1;
                                 const isToday = new Date().getDate() === day && new Date().getMonth() === month && new Date().getFullYear() === year;
                                 const isSelected = selectedDay === day;
-                                // Simple logic to show dot if any event matches this day (optional, tricky with timezones, skipping for simplicity)
-                                const hasEvent = false;
+
+                                // Check if any booking falls on this day
+                                const hasEvent = bookings.some(b => {
+                                    const d = new Date(b.scheduled_at);
+                                    return d.getDate() === day && d.getMonth() === month && d.getFullYear() === year;
+                                });
 
                                 return (
                                     <div
@@ -198,27 +195,28 @@ export function CalendarPage() {
 
                     {/* Upcoming Items List */}
                     <div className="space-y-6">
-                        <h2 className="text-xl font-bold text-gray-900">Today's Schedule</h2>
+                        <h2 className="text-xl font-bold text-gray-900">Your Schedule</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {events.length > 0 ? events.map((event: Event) => (
-                                <div key={event.id} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+                            {bookings.length > 0 ? bookings.map((booking) => (
+                                <div
+                                    key={booking.id}
+                                    onClick={() => handleBookingClick(booking.id)}
+                                    className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group cursor-pointer"
+                                >
                                     <div className="flex items-start justify-between mb-4">
-                                        <div className={`p-3 rounded-2xl ${event.type === 'session' ? 'bg-indigo-50 text-indigo-600' :
-                                            event.type === 'workshop' ? 'bg-emerald-50 text-emerald-600' :
-                                                'bg-rose-50 text-rose-600'
-                                            }`}>
+                                        <div className={`p-3 rounded-2xl ${booking.status === 'confirmed' ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-600'}`}>
                                             <Clock className="w-5 h-5" />
                                         </div>
                                         <button className="p-1 text-gray-400 hover:text-gray-900"><MoreVertical className="w-4 h-4" /></button>
                                     </div>
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">{event.time}</span>
-                                    <h3 className="text-lg font-bold text-gray-900 mb-2">{event.title}</h3>
-                                    {event.mentor && (
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                                            <User className="w-3.5 h-3.5 text-amber-500" />
-                                            {event.mentor}
-                                        </div>
-                                    )}
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">
+                                        {new Date(booking.scheduled_at).toLocaleDateString()} • {new Date(booking.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                    <h3 className="text-lg font-bold text-gray-900 mb-2">Session with {booking.mentors?.name || 'Mentor'}</h3>
+                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                        <User className="w-3.5 h-3.5 text-amber-500" />
+                                        {booking.mentors?.role || 'Mentor'}
+                                    </div>
                                 </div>
                             )) : (
                                 <div className="col-span-2 text-center py-10 text-gray-400 text-sm">
@@ -293,6 +291,12 @@ export function CalendarPage() {
                 </div>
 
             </div>
+
+            <StudentBookingDetailsModal
+                isOpen={detailsModalOpen}
+                onClose={() => setDetailsModalOpen(false)}
+                booking={selectedBooking}
+            />
         </DashboardLayout >
     );
 }

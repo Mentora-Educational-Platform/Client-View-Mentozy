@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { getUserProfile, getMentorBookings, updateBookingStatus, Profile, Booking } from '../../lib/api';
+import { getUserProfile, getMentorBookings, updateBookingStatus, acceptBooking, Profile, Booking } from '../../lib/api';
 import { getSupabase } from '../../lib/supabase';
 import {
     Loader2, Calendar, Clock, User, CheckCircle2,
@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
+import { AcceptSessionModal } from '../components/booking/AcceptSessionModal';
 
 export function MentorDashboardPage() {
     const { user } = useAuth();
@@ -21,6 +22,10 @@ export function MentorDashboardPage() {
     const [mentorDetails, setMentorDetails] = useState<any>(null); // { hourly_rate, company }
     const [loading, setLoading] = useState(true);
     const [processingId, setProcessingId] = useState<string | null>(null);
+
+    // Modal State
+    const [acceptModalOpen, setAcceptModalOpen] = useState(false);
+    const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
     // Derived State
     const pendingBookings = bookings.filter(b => b.status === 'pending');
@@ -87,6 +92,28 @@ export function MentorDashboardPage() {
             toast.error("Action failed. Please try again.");
         } finally {
             setProcessingId(null);
+        }
+    };
+
+    const handleAcceptClick = (booking: Booking) => {
+        setSelectedBooking(booking);
+        setAcceptModalOpen(true);
+    };
+
+    const handleConfirmAccept = async (meetingLink: string, note: string, paymentLink: string) => {
+        if (!selectedBooking) return false;
+
+        const success = await acceptBooking(selectedBooking.id, meetingLink, note, paymentLink);
+
+        if (success) {
+            toast.success("Session Accepted Successfully");
+            // Optimistic Update
+            setBookings(prev => prev.map(b => b.id === selectedBooking.id ? { ...b, status: 'confirmed' } : b));
+            setSelectedBooking(null);
+            return true;
+        } else {
+            toast.error("Failed to accept session");
+            return false;
         }
     };
 
@@ -221,7 +248,7 @@ export function MentorDashboardPage() {
                                                 Decline
                                             </button>
                                             <button
-                                                onClick={() => handleBookingAction(booking.id, 'confirmed')}
+                                                onClick={() => handleAcceptClick(booking)}
                                                 disabled={processingId === booking.id}
                                                 className="flex-1 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                                             >
@@ -292,7 +319,16 @@ export function MentorDashboardPage() {
                 </div>
 
             </div>
-        </DashboardLayout>
+
+
+            {/* Accept Session Modal */}
+            <AcceptSessionModal
+                isOpen={acceptModalOpen}
+                onClose={() => setAcceptModalOpen(false)}
+                studentName={selectedBooking?.profiles?.full_name || 'Student'}
+                onConfirm={handleConfirmAccept}
+            />
+        </DashboardLayout >
     );
 }
 

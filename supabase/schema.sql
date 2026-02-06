@@ -191,6 +191,9 @@ create table public.bookings (
   availability_id uuid unique references mentor_availability(id),
   status text check (status in ('pending','confirmed','cancelled','completed')) default 'pending',
   meeting_link text,
+  mentor_note text,
+  payment_proof_url text, -- Deprecated
+  payment_link text,
   created_at timestamptz default now()
 );
 
