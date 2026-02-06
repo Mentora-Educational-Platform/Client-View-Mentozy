@@ -1,98 +1,117 @@
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
-import { Award, Star, ThumbsUp, Medal, Crown, Quote } from 'lucide-react';
+import { Award, Star, ThumbsUp, Medal, Quote, Lock, MessageSquare } from 'lucide-react';
 
 export function MentorAchievementsPage() {
-
-    const achievements = [
-        { id: 1, title: 'Top Rated', description: 'Maintained a 5.0 rating for 3 months', icon: Star, color: 'text-amber-500', bg: 'bg-amber-50', border: 'border-amber-100' },
-        { id: 2, title: 'Super Mentor', description: 'Completed 100+ sessions', icon: Crown, color: 'text-indigo-500', bg: 'bg-indigo-50', border: 'border-indigo-100' },
-        { id: 3, title: 'Fast Responder', description: 'Replies within 1 hour usually', icon: Zap, color: 'text-blue-500', bg: 'bg-blue-50', border: 'border-blue-100' },
-    ];
-
-    const reviews = [
-        { id: 1, student: "Alex Chen", role: "Computer Science Student", text: "Dr. Thorne explains complex topics with such clarity. The session on Neural Networks was a game changer for my project!", rating: 5, date: "2 days ago" },
-        { id: 2, student: "Sarah Miller", role: "Data Science Major", text: "Incredibly patient and knowledgeable. Highly recommended!", rating: 5, date: "1 week ago" },
-        { id: 3, student: "Jordan Lee", role: "AI Enthusiast", text: "Great insights into the industry. Helped me prepare for my interview perfectly.", rating: 5, date: "2 weeks ago" }
-    ];
-
-    function Zap({ className }: { className?: string }) { return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg> }
-
     return (
         <DashboardLayout>
-            <div className="max-w-6xl mx-auto space-y-10 pb-20">
+            <div className="max-w-6xl mx-auto space-y-12 pb-20">
                 {/* Header */}
-                <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-gray-900 to-indigo-900 p-10 text-white shadow-2xl">
+                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-r from-gray-900 via-indigo-950 to-indigo-900 p-12 text-white shadow-2xl">
                     <div className="relative z-10">
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
-                                <Award className="w-8 h-8 text-amber-400" />
+                        <div className="flex items-center gap-5 mb-6">
+                            <div className="p-4 bg-white/10 backdrop-blur-xl rounded-[1.5rem] border border-white/20 shadow-inner">
+                                <Award className="w-10 h-10 text-amber-400" />
                             </div>
-                            <h1 className="text-4xl font-black">Achievements & Reviews</h1>
+                            <div>
+                                <h1 className="text-4xl font-black tracking-tight">Achievements & Reviews</h1>
+                                <div className="h-1 w-20 bg-amber-400 rounded-full mt-2"></div>
+                            </div>
                         </div>
-                        <p className="text-gray-300 text-lg max-w-2xl">Your impact visualized. See what badges you've earned and what students are saying about you.</p>
+                        <p className="text-indigo-100 text-lg max-w-2xl font-medium leading-relaxed">
+                            Your journey as a mentor is just beginning. Track your milestones, earn prestigious badges, and read heartfelt feedback from your students here.
+                        </p>
                     </div>
                     {/* Background decoration */}
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl -mr-20 -mt-20"></div>
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl -ml-10 -mb-10"></div>
+                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[100px] -mr-32 -mt-32"></div>
+                    <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-500/5 rounded-full blur-[80px] -ml-20 -mb-20"></div>
                 </div>
 
-                {/* Badges Grid */}
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                        <Medal className="w-6 h-6 text-indigo-600" />
-                        Your Badges
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {achievements.map(badge => (
-                            <div key={badge.id} className={`p-6 rounded-[2rem] border ${badge.border} ${badge.bg} flex flex-col items-center text-center hover:scale-105 transition-transform duration-300 shadow-sm hover:shadow-md cursor-default`}>
-                                <div className={`w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-sm mb-4 ${badge.color}`}>
-                                    <badge.icon className="w-8 h-8" />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                    {/* Badges Column */}
+                    <div className="lg:col-span-1 space-y-8">
+                        <div>
+                            <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
+                                <Medal className="w-6 h-6 text-indigo-600" />
+                                Your Badges
+                            </h2>
+                            <div className="bg-white p-10 rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center group transition-all hover:border-indigo-100">
+                                <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-8 relative">
+                                    <div className="absolute inset-0 bg-gray-200 rounded-full animate-pulse opacity-50"></div>
+                                    <Lock className="w-10 h-10 text-gray-300 relative z-10" />
                                 </div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-1">{badge.title}</h3>
-                                <p className="text-sm font-medium text-gray-500">{badge.description}</p>
+                                <h3 className="text-xl font-bold text-gray-900 mb-3">No Badges Yet</h3>
+                                <p className="text-gray-500 text-sm leading-relaxed max-w-[200px] mb-8">
+                                    Start hosting sessions to unlock your first professional achievement!
+                                </p>
+                                <div className="px-5 py-2.5 bg-indigo-50 text-indigo-600 text-xs font-black uppercase tracking-widest rounded-xl border border-indigo-100">
+                                    Coming Soon
+                                </div>
                             </div>
-                        ))}
+                        </div>
+
+                        {/* Stats Summary (Zero State) */}
+                        <div className="bg-gradient-to-br from-indigo-50 to-white p-8 rounded-[2.5rem] border border-indigo-100/50">
+                            <h4 className="text-xs font-black uppercase tracking-widest text-indigo-400 mb-6">Quick Overview</h4>
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-bold text-gray-500">Total Rating</span>
+                                    <span className="text-lg font-black text-gray-300">--</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-bold text-gray-500">Sessions</span>
+                                    <span className="text-lg font-black text-gray-300">0</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-bold text-gray-500">Response Rate</span>
+                                    <span className="text-lg font-black text-gray-300">New</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                {/* Reviews Section */}
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                        <ThumbsUp className="w-6 h-6 text-emerald-600" />
-                        Student Reviews
-                    </h2>
-                    <div className="grid grid-cols-1 gap-6">
-                        {reviews.map(review => (
-                            <div key={review.id} className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-md transition-all">
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center font-bold text-gray-500 text-lg">
-                                        {review.student.charAt(0)}
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <div>
-                                                <h4 className="font-bold text-gray-900 text-lg">{review.student}</h4>
-                                                <p className="text-xs font-bold text-indigo-500 uppercase tracking-wider">{review.role}</p>
-                                            </div>
-                                            <div className="flex items-center gap-1 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
-                                                <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                                                <span className="font-bold text-amber-700">{review.rating}.0</span>
-                                            </div>
-                                        </div>
-                                        <div className="relative bg-gray-50 p-6 rounded-2xl rounded-tl-none mt-2">
-                                            <Quote className="absolute top-4 left-4 w-6 h-6 text-gray-200" />
-                                            <p className="text-gray-700 italic relative z-10 pl-6">"{review.text}"</p>
-                                        </div>
-                                        <div className="mt-3 text-right text-xs font-bold text-gray-400">
-                                            {review.date}
-                                        </div>
-                                    </div>
-                                </div>
+                    {/* Reviews Column */}
+                    <div className="lg:col-span-2 space-y-8">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+                                <ThumbsUp className="w-6 h-6 text-emerald-600" />
+                                Recent Reviews
+                            </h2>
+                            <span className="px-4 py-1.5 bg-gray-100 text-gray-500 text-xs font-bold rounded-full">
+                                0 Reviews
+                            </span>
+                        </div>
+
+                        <div className="bg-white rounded-[3rem] border border-gray-100 shadow-sm p-16 flex flex-col items-center justify-center text-center border-dashed min-h-[450px]">
+                            <div className="w-24 h-24 bg-emerald-50 rounded-[2rem] flex items-center justify-center mb-8 rotate-3 transition-transform hover:rotate-0">
+                                <MessageSquare className="w-10 h-10 text-emerald-600" />
                             </div>
-                        ))}
+                            <h3 className="text-2xl font-black text-gray-900 mb-4">Awaiting Your First Feedback</h3>
+                            <p className="text-gray-500 text-lg max-w-md leading-relaxed">
+                                Reviews from students will appear here once you've completed your first mentorship sessions.
+                            </p>
+                            <div className="mt-10 flex items-center gap-2 text-amber-500 font-bold bg-amber-50 px-6 py-3 rounded-2xl border border-amber-100">
+                                <Star className="w-5 h-5 fill-amber-500" />
+                                <span className="text-sm uppercase tracking-wider">Top rated status pending</span>
+                            </div>
+                        </div>
+
+                        {/* Review Tip */}
+                        <div className="flex items-start gap-4 p-6 bg-blue-50/50 rounded-2xl border border-blue-100">
+                            <div className="p-2 bg-white rounded-lg text-blue-600 shadow-sm">
+                                <Quote className="w-4 h-4" />
+                            </div>
+                            <div>
+                                <h5 className="text-sm font-bold text-blue-900">Pro Tip</h5>
+                                <p className="text-sm text-blue-700 mt-1">
+                                    High-quality feedback helps other students find you faster! Encourage your students to leave a review after your sessions.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </DashboardLayout>
     );
 }
+
+export default MentorAchievementsPage;
