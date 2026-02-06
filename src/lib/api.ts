@@ -112,8 +112,6 @@ export interface Booking {
     status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
     scheduled_at: string;
     meeting_link?: string;
-    mentor_notes?: string;
-    payment_scanner_url?: string;
     mentors?: Mentor; // Joined data (Student View)
     profiles?: Profile; // Joined data (Mentor View: Student info)
 }
@@ -537,8 +535,6 @@ export const getStudentBookings = async (userId: string): Promise<Booking[]> => 
                 status: b.status,
                 scheduled_at: b.mentor_availability?.start_time || new Date().toISOString(),
                 meeting_link: b.meeting_link,
-                mentor_notes: b.mentor_notes,
-                payment_scanner_url: b.payment_scanner_url,
                 mentors: mappedMentor
             } as Booking;
         });
@@ -612,8 +608,6 @@ export const getMentorBookings = async (userId: string): Promise<Booking[]> => {
             status: b.status,
             scheduled_at: b.mentor_availability?.start_time || new Date().toISOString(),
             meeting_link: b.meeting_link,
-            mentor_notes: b.mentor_notes,
-            payment_scanner_url: b.payment_scanner_url,
             profiles: b.profiles
         })) as Booking[];
     } catch (e) {
@@ -640,77 +634,6 @@ export const updateBookingStatus = async (bookingId: string, status: 'confirmed'
     } catch (e) {
         console.error("Error in updateBookingStatus:", e);
         return false;
-    }
-};
-
-export const updateBookingWithDetails = async (
-    bookingId: string,
-    details: {
-        meeting_link: string;
-        mentor_notes: string;
-        payment_scanner_url: string;
-    }
-): Promise<boolean> => {
-    try {
-        const supabase = getSupabase();
-        if (!supabase) return false;
-
-        const { error } = await supabase
-            .from('bookings')
-            .update({
-                status: 'confirmed',
-                ...details
-            })
-            .eq('id', bookingId);
-
-        if (error) {
-            console.error("Error updating booking with details:", error);
-            return false;
-        }
-        return true;
-    } catch (e) {
-        console.error("Error in updateBookingWithDetails:", e);
-        return false;
-    }
-};
-
-export const uploadPaymentScanner = async (file: File, bookingId: string): Promise<{ url: string | null; error: string | null }> => {
-    try {
-        const supabase = getSupabase();
-        if (!supabase) return { url: null, error: "Supabase client not initialized" };
-
-        console.log("Supabase URL used:", (supabase as any).supabaseUrl);
-        // Debug: List all buckets
-        const { data: buckets, error: listError } = await supabase.storage.listBuckets();
-        console.log("Available buckets:", buckets?.map(b => b.name));
-        if (listError) console.error("Error listing buckets:", listError);
-
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${bookingId}-${Math.random()}.${fileExt}`;
-        const filePath = `${fileName}`;
-
-        const { error: uploadError, data: uploadData } = await supabase.storage
-            .from('payment-scanners')
-            .upload(filePath, file, {
-                cacheControl: '3600',
-                upsert: false
-            });
-
-        if (uploadError) {
-            console.error("Supabase Storage Error Details:", JSON.stringify(uploadError, null, 2));
-            return { url: null, error: uploadError.message };
-        }
-
-        console.log("Upload successful:", uploadData);
-
-        const { data } = supabase.storage
-            .from('payment-scanners')
-            .getPublicUrl(filePath);
-
-        return { url: data.publicUrl, error: null };
-    } catch (e: any) {
-        console.error("Error in uploadPaymentScanner:", e);
-        return { url: null, error: e.message || "Unknown error occurred" };
     }
 };
 

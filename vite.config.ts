@@ -10,6 +10,25 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'lucide-react',
+      'motion',
+      'clsx',
+      'tailwind-merge',
+      'sonner',
+      '@supabase/supabase-js',
+      'date-fns'
+    ]
+  },
+  server: {
+    warmup: {
+      clientFiles: ['./src/app/App.tsx']
+    }
+  },
   resolve: {
     alias: {
       // Alias @ to the src directory

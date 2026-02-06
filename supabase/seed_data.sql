@@ -1,44 +1,63 @@
--- PROFESSIONAL SEED DATA FOR MENTOZY
--- Run this in your Supabase SQL Editor to populate the database with expert profiles and institutions.
+-- CLEANUP
+TRUNCATE TABLE public.mentor_reviews CASCADE;
+TRUNCATE TABLE public.payments CASCADE;
+TRUNCATE TABLE public.bookings CASCADE;
+TRUNCATE TABLE public.mentor_availability CASCADE;
+TRUNCATE TABLE public.mentor_expertise CASCADE;
+TRUNCATE TABLE public.mentors CASCADE;
+TRUNCATE TABLE public.enrollments CASCADE;
+TRUNCATE TABLE public.module_lessons CASCADE;
+TRUNCATE TABLE public.track_modules CASCADE;
+TRUNCATE TABLE public.tracks CASCADE;
+TRUNCATE TABLE public.profiles CASCADE;
 
--- 1. CLEANUP (Optional - Uncomment to clear existing test data)
--- DELETE FROM public.mentor_expertise;
--- DELETE FROM public.mentors;
--- DELETE FROM public.profiles WHERE role = 'mentor';
+-- PROFILES (Mentors)
+INSERT INTO public.profiles (id, full_name, avatar_url, role, bio) VALUES
+('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Dr. Aris Thorne', 'bg-indigo-600/10 text-indigo-600', 'mentor', 'Specializing in the intersection of cognitive science and machine learning. 15+ years of experience.'),
+('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Elena Rodriguez', 'bg-rose-500/10 text-rose-600', 'mentor', 'Passionate about creating inclusive digital experiences. I help designers master design systems.'),
+('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'Marcus Holloway', 'bg-slate-800/10 text-slate-800', 'mentor', 'Helping startups and enterprises secure their infrastructure. Certified ethical hacker.'),
+('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'Sienna Kim', 'bg-emerald-500/10 text-emerald-600', 'mentor', 'Expert at scaling user bases through data-driven marketing strategies.'),
+('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'Rohal Sharma', 'bg-amber-500/10 text-amber-600', 'mentor', 'Dedicated instructor with a passion for teaching modern web technologies.'),
+('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16', 'TechNova Academy', 'bg-blue-600/10 text-blue-600', 'mentor', 'Provider of high-impact technical training programs.');
 
--- Note: Inserting into public.profiles for existing auth users is a bit tricky.
--- For this seed, we assume you might want to manually update your existing test profiles 
--- or we can provide a list of mentors that would need corresponding auth users.
+-- MENTORS (Details)
+INSERT INTO public.mentors (id, user_id, bio, company, years_experience, hourly_rate, rating, total_reviews) VALUES
+(101, 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Head of AI Research', 'DeepMind', 15, 75, 5.0, 342),
+(102, 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Senior UX Architect', 'Adobe', 9, 65, 4.5, 215),
+(103, 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'Security Consultant', 'CrowdStrike', 12, 55, 4.3, 128),
+(104, 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'Marketing Director', 'Spotify', 10, 45, 4.1, 560),
+(105, 'e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'Senior Instructor', 'TechNexus', 7, 35, 4.5, 142),
+(106, 'f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16', 'Educational Partner', 'Global Ed', 5, 25, 4.3, 1200);
 
--- Since I cannot create Auth users directly via SQL (they belong to auth schema),
--- the best approach is to provide a "Clean & Beautify" logic in the code 
--- OR a script that you can run in your terminal if you have the service role key.
+-- MENTOR EXPERTISE
+INSERT INTO public.mentor_expertise (mentor_id, skill) VALUES
+(101, 'Neural Networks'), (101, 'Ethics in AI'),
+(102, 'Design Systems'), (102, 'User Psychology'),
+(103, 'Cybersecurity'), (103, 'Cloud Security'),
+(104, 'Growth Hacking'), (104, 'Brand Strategy'),
+(105, 'Full Stack Web'), (105, 'React'),
+(106, 'Bootcamps'), (106, 'Certifications');
 
--- However, I can provide a SQL script to UPDATE your current test entries 
--- to have professional names if you provide their IDs, 
--- or I can just focus on making the FALLBACK data so good that it covers the gaps.
+-- TRACKS
+INSERT INTO public.tracks (id, title, level, description, duration_weeks, image_url) VALUES
+(1, 'Full Stack Web Development', 'Beginner to Advanced', 'Master the MERN stack (MongoDB, Express, React, Node.js) and build production-ready applications.', 24, NULL),
+(2, 'Data Structures & Algorithms', 'Intermediate', 'Crack coding interviews at top tech companies. Focus on problem-solving patterns and optimization.', 12, NULL),
+(3, 'Product Management', 'Beginner', 'Learn how to build products users love. From user research to roadmap planning and launch.', 16, NULL);
 
--- LET'S DO THIS: I will provide a SEED script for TRACKS (which are public) 
--- and instructions on how to add a professional mentor via the UI.
-
--- Seeding Professional Mentors (Requires existing profiles)
--- This is an example of how to manually fix a 'wdasdwasd' profile
--- UPDATE public.profiles SET full_name = 'Rohal Sharma' WHERE id = 'YOUR_USER_ID';
--- UPDATE public.mentors SET bio = 'Senior Instructor at Mentozy', company = 'Mentozy' WHERE user_id = 'YOUR_USER_ID';
-
--- Seeding Tracks (Professional Look)
-INSERT INTO public.tracks (title, level, description, duration_weeks, image_url) VALUES
-('Full Stack Web Mastery', 'Beginner to Pro', 'Master the modern web stack from React to Node.js and SQL.', 24, 'https://images.unsplash.com/photo-1498050108023-c5249f4df085'),
-('Advanced Data Science', 'Intermediate', 'Deep dive into machine learning, neural networks, and big data analytics.', 16, 'https://images.unsplash.com/photo-1551288049-bbbda536ad80');
-
--- Seeding Modules for Track 1
+-- TRACK MODULES
 INSERT INTO public.track_modules (track_id, title, module_order) VALUES
-(1, 'Foundations of HTML, CSS & JS', 1),
-(1, 'React Framework & State Management', 2),
-(1, 'Backend with Node.js & Express', 3),
-(1, 'Database Design with PostgreSQL', 4);
-
--- Instructions: 
--- To clean up your "wdasdwasd" data, you can run:
--- DELETE FROM public.profiles WHERE full_name LIKE '%dasd%';
--- This will safely remove the test profiles you created.
+(1, 'HTML/CSS & JavaScript', 1),
+(1, 'React & State Management', 2),
+(1, 'Node.js & APIs', 3),
+(1, 'Database Design', 4),
+(1, 'Deployment & DevOps', 5),
+(2, 'Arrays & Strings', 1),
+(2, 'Trees & Graphs', 2),
+(2, 'Dynamic Programming', 3),
+(2, 'System Design Basics', 4),
+(2, 'Mock Interviews', 5),
+(3, 'Market Research', 1),
+(3, 'User Personas', 2),
+(3, 'Wireframing', 3),
+(3, 'Agile Methodologies', 4),
+(3, 'Go-to-Market Strategy', 5);

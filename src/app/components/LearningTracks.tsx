@@ -1,4 +1,5 @@
 import { Code2, Target, ArrowRight, Trophy, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function LearningTracks() {
   const roadmapSteps = [
@@ -35,7 +36,7 @@ export function LearningTracks() {
   return (
     <section className="py-24 bg-white">
       <div className="container mx-auto px-6">
-        
+
         {/* Header */}
         <div className="mb-20 text-center max-w-2xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-100 text-amber-700 text-xs font-bold uppercase tracking-wider mb-4">
@@ -74,7 +75,7 @@ export function LearningTracks() {
                   {track.tag}
                 </span>
               </div>
-              
+
               <h3 className="text-2xl font-bold text-gray-900 mb-3">{track.title}</h3>
               <p className="text-gray-600 mb-8 leading-relaxed">
                 {track.desc}
@@ -88,10 +89,10 @@ export function LearningTracks() {
                     </li>
                   ))}
                 </ul>
-                
-                <button className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-200 font-semibold text-gray-700 hover:border-amber-600 hover:text-amber-600 hover:bg-white transition-all">
+
+                <Link to="/tracks" className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-200 font-semibold text-gray-700 hover:border-amber-600 hover:text-amber-600 hover:bg-white transition-all">
                   Explore Track <ArrowRight className="w-4 h-4" />
-                </button>
+                </Link>
               </div>
             </div>
           ))}

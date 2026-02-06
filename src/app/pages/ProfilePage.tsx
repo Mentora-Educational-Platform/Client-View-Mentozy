@@ -151,34 +151,41 @@ export function ProfilePage() {
                                     </div>
                                 )}
                             </div>
-                            <button className="absolute bottom-2 right-2 p-3 bg-indigo-600 text-white rounded-2xl shadow-xl hover:bg-indigo-700 transition-all hover:scale-110">
+                            <button onClick={() => toast.info("Profile photo upload coming soon!")} className="absolute bottom-2 right-2 p-3 bg-indigo-600 text-white rounded-2xl shadow-xl hover:bg-indigo-700 transition-all hover:scale-110">
                                 <Camera className="w-5 h-5" />
                             </button>
                         </div>
 
                         {/* Name & Basic Info */}
                         <div className="flex-1 text-center lg:text-left space-y-4">
-                            <input
-                                type="text"
-                                name="full_name"
-                                value={formData.full_name}
-                                onChange={handleChange}
-                                placeholder="Your Full Name"
-                                className="text-4xl font-black text-gray-900 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-100 rounded-xl w-full"
-                            />
+                            <div className="relative group/name inline-block w-full">
+                                <label className="text-[10px] uppercase font-black tracking-widest text-gray-400 mb-1 lg:hidden block">Full Name</label>
+                                <input
+                                    type="text"
+                                    name="full_name"
+                                    value={formData.full_name}
+                                    onChange={handleChange}
+                                    placeholder="Your Full Name"
+                                    className="text-4xl font-black text-gray-900 bg-transparent border-b-2 border-transparent hover:border-gray-200 focus:border-indigo-500 focus:ring-0 rounded-none w-full transition-all placeholder:text-gray-300"
+                                />
+                                <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover/name:opacity-100 transition-opacity pointer-events-none">
+                                    <span className="text-xs text-gray-400 font-medium">Click to edit</span>
+                                </div>
+                            </div>
+
                             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-gray-500 font-bold text-sm">
-                                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl group/field">
+                                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl group/field hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100 cursor-text" onClick={() => document.getElementsByName('grade')[0]?.focus()}>
                                     <GraduationCap className="w-4 h-4 text-indigo-500" />
                                     <input
                                         type="text"
                                         name="grade"
                                         value={formData.grade}
                                         onChange={handleChange}
-                                        placeholder="Grade/Level"
-                                        className="bg-transparent border-none outline-none focus:ring-0 w-24 font-bold"
+                                        placeholder="Grade"
+                                        className="bg-transparent border-none outline-none focus:ring-0 w-24 font-bold text-gray-700 placeholder:text-gray-400"
                                     />
                                 </div>
-                                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl">
+                                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl group/field hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100 cursor-text" onClick={() => document.getElementsByName('age')[0]?.focus()}>
                                     <Clock className="w-4 h-4 text-rose-500" />
                                     <input
                                         type="number"
@@ -186,10 +193,10 @@ export function ProfilePage() {
                                         value={formData.age}
                                         onChange={handleChange}
                                         placeholder="Age"
-                                        className="bg-transparent border-none outline-none focus:ring-0 w-12 font-bold"
+                                        className="bg-transparent border-none outline-none focus:ring-0 w-12 font-bold text-gray-700 placeholder:text-gray-400"
                                     />
                                 </div>
-                                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl">
+                                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl group/field hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100 cursor-text" onClick={() => document.getElementsByName('location')[0]?.focus()}>
                                     <MapPin className="w-4 h-4 text-amber-500" />
                                     <input
                                         type="text"
@@ -197,10 +204,10 @@ export function ProfilePage() {
                                         value={formData.location}
                                         onChange={handleChange}
                                         placeholder="Location"
-                                        className="bg-transparent border-none outline-none focus:ring-0 w-24 font-bold"
+                                        className="bg-transparent border-none outline-none focus:ring-0 w-32 font-bold text-gray-700 placeholder:text-gray-400"
                                     />
                                 </div>
-                                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl">
+                                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl opacity-70 cursor-not-allowed">
                                     <Mail className="w-4 h-4 text-indigo-400" />
                                     {user?.email}
                                 </div>
@@ -439,7 +446,7 @@ export function ProfilePage() {
                                     <Zap className="w-6 h-6" />
                                 </div>
                             </div>
-                            <button className="w-full mt-8 py-3 bg-gray-50 text-[10px] font-black uppercase tracking-widest text-gray-500 rounded-xl hover:bg-gray-100 transition-all">
+                            <button onClick={() => toast.info("Portfolio feature coming soon!")} className="w-full mt-8 py-3 bg-gray-50 text-[10px] font-black uppercase tracking-widest text-gray-500 rounded-xl hover:bg-gray-100 transition-all">
                                 View Portfolio
                             </button>
                         </div>
@@ -454,7 +461,7 @@ export function ProfilePage() {
                                 {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
                                 Save Everything
                             </button>
-                            <button className="w-full py-4 bg-white border border-gray-100 text-gray-400 font-bold rounded-[2rem] hover:text-rose-500 hover:bg-rose-50 hover:border-rose-100 transition-all flex items-center justify-center gap-3">
+                            <button onClick={() => { window.location.reload(); toast.info("Changes discarded"); }} className="w-full py-4 bg-white border border-gray-100 text-gray-400 font-bold rounded-[2rem] hover:text-rose-500 hover:bg-rose-50 hover:border-rose-100 transition-all flex items-center justify-center gap-3">
                                 <X className="w-5 h-5" />
                                 Cancel Changes
                             </button>

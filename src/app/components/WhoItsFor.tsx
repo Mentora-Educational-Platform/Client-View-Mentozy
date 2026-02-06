@@ -1,4 +1,5 @@
 import { GraduationCap, Briefcase, Code, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function WhoItsFor() {
   const audiences = [
@@ -71,10 +72,10 @@ export function WhoItsFor() {
                 </ul>
 
                 {/* Card Action */}
-                <div className="flex items-center text-amber-600 font-medium text-sm group-hover:gap-2 transition-all cursor-pointer">
+                <Link to="/mentors" className="flex items-center text-amber-600 font-medium text-sm group-hover:gap-2 transition-all cursor-pointer">
                   <span>Find mentors</span>
                   <ArrowRight className="w-4 h-4 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" />
-                </div>
+                </Link>
               </div>
             </div>
           ))}

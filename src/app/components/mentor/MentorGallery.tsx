@@ -91,7 +91,10 @@ export function MentorGallery() {
                         className="w-full pl-14 pr-6 py-5 bg-white/50 border-none rounded-[2rem] focus:ring-2 focus:ring-amber-200 outline-none text-gray-800 placeholder:text-gray-400 font-bold transition-all"
                     />
                 </div>
-                <button className="flex items-center justify-center gap-3 px-10 py-5 bg-gray-900 text-white rounded-[2rem] font-black hover:bg-amber-600 hover:scale-[1.02] transition-all shadow-lg active:scale-95 group">
+                <button
+                    onClick={() => toast.info("Deep filtering features coming in the next update!")}
+                    className="flex items-center justify-center gap-3 px-10 py-5 bg-gray-900 text-white rounded-[2rem] font-black hover:bg-amber-600 hover:scale-[1.02] transition-all shadow-lg active:scale-95 group"
+                >
                     <Filter className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
                     <span>Deep Filters</span>
                 </button>
@@ -195,7 +198,10 @@ export function MentorGallery() {
                                             <span className="relative z-10">Instant Booking</span>
                                             <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-orange-500 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500" />
                                         </button>
-                                        <button className="p-5 bg-white border border-gray-100 rounded-[2rem] text-gray-400 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-100 transition-all shadow-sm">
+                                        <button
+                                            onClick={() => toast.info("Mentor's LinkedIn profile is private.")}
+                                            className="p-5 bg-white border border-gray-100 rounded-[2rem] text-gray-400 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-100 transition-all shadow-sm"
+                                        >
                                             <Linkedin className="w-5 h-5 fill-current" />
                                         </button>
                                     </div>

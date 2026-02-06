@@ -105,7 +105,7 @@ export function TracksPage() {
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <button className="text-gray-500 font-medium hover:text-gray-900 transition-colors">
+                    <button onClick={() => toast.info("Detailed course view coming soon!")} className="text-gray-500 font-medium hover:text-gray-900 transition-colors">
                       View Details
                     </button>
 

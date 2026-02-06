@@ -9,7 +9,6 @@ import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { Enrollment, Profile, Booking, getStudentEnrollments, getUserProfile, getStudentBookings } from '../../lib/api';
 import { Link, useNavigate } from 'react-router-dom';
 import { Calendar } from '../../components/ui/calendar';
-import { SessionDetailsModal } from '../components/dashboard/SessionDetailsModal';
 
 export function StudentDashboardPage() {
     const { user } = useAuth();
@@ -18,9 +17,6 @@ export function StudentDashboardPage() {
     const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
-
-    const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
     useEffect(() => {
         const loadDashboardData = async () => {
@@ -264,27 +260,15 @@ export function StudentDashboardPage() {
                         <div className="space-y-3 w-full mt-6">
                             {featureBookings.length > 0 ? (
                                 featureBookings.slice(0, 3).map(booking => (
-                                    <button
-                                        key={booking.id}
-                                        onClick={() => {
-                                            setSelectedBooking(booking);
-                                            setIsDetailsModalOpen(true);
-                                        }}
-                                        className="w-full text-left p-3 hover:bg-gray-50 rounded-xl transition-colors flex items-start gap-3 group"
-                                    >
-                                        <div className="w-1 h-10 bg-indigo-500 rounded-full group-hover:scale-y-110 transition-transform"></div>
-                                        <div className="flex-1">
-                                            <div className="flex items-center justify-between">
-                                                <h4 className="font-bold text-gray-900 text-xs">{booking.mentors?.name || 'Mentor Session'}</h4>
-                                                {booking.status === 'confirmed' && (
-                                                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Confirmed</span>
-                                                )}
-                                            </div>
+                                    <div key={booking.id} className="p-3 bg-indigo-50 rounded-xl flex items-start gap-3">
+                                        <div className="w-1 h-10 bg-indigo-500 rounded-full"></div>
+                                        <div>
+                                            <h4 className="font-bold text-gray-900 text-xs">{booking.mentors?.name || 'Mentor Session'}</h4>
                                             <p className="text-[10px] text-gray-500 mt-0.5">
                                                 {new Date(booking.scheduled_at).toLocaleDateString()} at {new Date(booking.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </p>
                                         </div>
-                                    </button>
+                                    </div>
                                 ))
                             ) : (
                                 <div className="text-center py-4 text-gray-400 text-xs">
@@ -331,14 +315,6 @@ export function StudentDashboardPage() {
 
                 </div>
             </div>
-
-            {selectedBooking && (
-                <SessionDetailsModal
-                    isOpen={isDetailsModalOpen}
-                    onClose={() => setIsDetailsModalOpen(false)}
-                    booking={selectedBooking}
-                />
-            )}
         </DashboardLayout >
     );
 }

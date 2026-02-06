@@ -3,6 +3,7 @@ import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { useAuth } from '../../context/AuthContext';
 import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, parseISO } from 'date-fns';
+import { toast } from 'sonner';
 import { getMentorBookings, Booking } from '../../lib/api';
 
 export function MentorCalendarPage() {
@@ -120,7 +121,7 @@ export function MentorCalendarPage() {
                                 {selectedDateBookings.length} sessions scheduled
                             </p>
                         </div>
-                        <button className="p-3 bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:scale-105 transition-all">
+                        <button onClick={() => toast.info("Add event dialog coming soon")} className="p-3 bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:scale-105 transition-all">
                             <Plus className="w-5 h-5" />
                         </button>
                     </div>
@@ -150,10 +151,10 @@ export function MentorCalendarPage() {
                                     <p className="text-xs text-gray-500 font-medium mb-3">Topic discussion & Mentoring</p>
 
                                     <div className="flex gap-2">
-                                        <button className="flex-1 py-1.5 bg-white text-gray-700 text-xs font-bold rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                                        <button onClick={() => toast.info("Rescheduling feature coming soon")} className="flex-1 py-1.5 bg-white text-gray-700 text-xs font-bold rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
                                             Reschedule
                                         </button>
-                                        <button className="py-1.5 px-3 bg-white text-rose-500 rounded-lg border border-gray-200 hover:bg-rose-50 hover:border-rose-100 transition-colors">
+                                        <button onClick={() => toast.info("Cancellation feature coming soon")} className="py-1.5 px-3 bg-white text-rose-500 rounded-lg border border-gray-200 hover:bg-rose-50 hover:border-rose-100 transition-colors">
                                             <X className="w-3 h-3" />
                                         </button>
                                     </div>

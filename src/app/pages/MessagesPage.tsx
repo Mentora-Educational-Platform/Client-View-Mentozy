@@ -6,6 +6,7 @@ import {
     Info, Users, GraduationCap,
     Circle
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 
 interface Message {
@@ -188,9 +189,9 @@ export function MessagesPage() {
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
-                            <button className="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-gray-50 rounded-xl transition-all"><Phone className="w-5 h-5" /></button>
-                            <button className="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-gray-50 rounded-xl transition-all"><Video className="w-5 h-5" /></button>
-                            <button className="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-gray-50 rounded-xl transition-all"><Info className="w-5 h-5" /></button>
+                            <button onClick={() => toast.success("Starting audio call...")} className="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-gray-50 rounded-xl transition-all"><Phone className="w-5 h-5" /></button>
+                            <button onClick={() => toast.success("Starting video call...")} className="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-gray-50 rounded-xl transition-all"><Video className="w-5 h-5" /></button>
+                            <button onClick={() => toast.info("Contact info")} className="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-gray-50 rounded-xl transition-all"><Info className="w-5 h-5" /></button>
                         </div>
                     </div>
 
@@ -216,7 +217,7 @@ export function MessagesPage() {
                     {/* Chat Input */}
                     <div className="p-8 pt-0">
                         <div className="bg-gray-50 rounded-[2rem] p-3 flex items-center gap-2 border border-gray-100 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/10 focus-within:bg-white transition-all">
-                            <button className="p-2 text-gray-400 hover:text-indigo-600 transition-colors"><Paperclip className="w-5 h-5" /></button>
+                            <button onClick={() => toast.info("Attachments coming soon")} className="p-2 text-gray-400 hover:text-indigo-600 transition-colors"><Paperclip className="w-5 h-5" /></button>
                             <input
                                 type="text"
                                 value={messageInput}
@@ -226,8 +227,8 @@ export function MessagesPage() {
                                 className="flex-1 bg-transparent border-none focus:outline-none text-sm px-2 font-medium"
                             />
                             <div className="flex items-center gap-1 pr-1">
-                                <button className="p-2 text-gray-400 hover:text-indigo-600 transition-colors"><Smile className="w-5 h-5" /></button>
-                                <button className="p-2 text-gray-400 hover:text-indigo-600 transition-colors"><AtSign className="w-5 h-5" /></button>
+                                <button onClick={() => toast.info("Emoji picker coming soon")} className="p-2 text-gray-400 hover:text-indigo-600 transition-colors"><Smile className="w-5 h-5" /></button>
+                                <button onClick={() => toast.info("Mentions coming soon")} className="p-2 text-gray-400 hover:text-indigo-600 transition-colors"><AtSign className="w-5 h-5" /></button>
                                 <button
                                     onClick={handleSendMessage}
                                     className="ml-1 p-2.5 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all"

@@ -1,0 +1,22 @@
+src/app/components/MentorshipFormats.tsx(1,41): error TS6133: 'ArrowRight' is declared but its value is never read.
+src/app/components/WhatWeDoDifferently.tsx(1,20): error TS6133: 'Minus' is declared but its value is never read.
+src/app/pages/AboutPage.tsx(9,9): error TS6133: 'containerVariants' is declared but its value is never read.
+src/app/pages/AboutPage.tsx(20,9): error TS6133: 'itemVariants' is declared but its value is never read.
+src/app/pages/AboutPage.tsx(151,39): error TS2353: Object literal may only specify known properties, and 'delay' does not exist in type 'ViewportOptions'.
+src/app/pages/AboutPage.tsx(293,39): error TS2353: Object literal may only specify known properties, and 'delay' does not exist in type 'ViewportOptions'.
+src/app/pages/CareerPage.tsx(1,10): error TS6133: 'MapPin' is declared but its value is never read.
+src/app/pages/CareerPage.tsx(1,18): error TS6133: 'Clock' is declared but its value is never read.
+src/app/pages/CareerPage.tsx(1,25): error TS6133: 'ArrowRight' is declared but its value is never read.
+src/app/pages/CareerPage.tsx(1,37): error TS6133: 'Briefcase' is declared but its value is never read.
+src/app/pages/CareerPage.tsx(1,48): error TS6133: 'Search' is declared but its value is never read.
+src/app/pages/CareerPage.tsx(1,56): error TS6133: 'Filter' is declared but its value is never read.
+src/app/pages/CoursesPage.tsx(3,23): error TS6133: 'Filter' is declared but its value is never read.
+src/app/pages/CoursesPage.tsx(4,5): error TS6133: 'ChevronRight' is declared but its value is never read.
+src/app/pages/CoursesPage.tsx(4,31): error TS6133: 'MoreVertical' is declared but its value is never read.
+src/app/pages/CoursesPage.tsx(4,45): error TS6133: 'Loader2' is declared but its value is never read.
+src/app/pages/MentorAnalyticsPage.tsx(1,1): error TS6192: All imports in import declaration are unused.
+src/app/pages/PlansPage.tsx(1,20): error TS6133: 'Zap' is declared but its value is never read.
+src/components/ui/calendar.tsx(57,28): error TS6133: 'props' is declared but its value is never read.
+src/components/ui/calendar.tsx(58,29): error TS6133: 'props' is declared but its value is never read.
+src/main.tsx(2,28): error TS7016: Could not find a declaration file for module 'react-dom/client'. 'C:/Users/New/Mentozy Building/Client-View-Mentozy/node_modules/react-dom/client.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/react-dom` if it exists or add a new declaration (.d.ts) file containing `declare module 'react-dom/client';`
