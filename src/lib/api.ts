@@ -708,5 +708,68 @@ export const getMentorAvailability = async (mentorId: number, date: Date): Promi
         });
     }
 
+    // ... previous code
     return slots;
+};
+
+export interface Contact {
+    id: string;
+    name: string;
+    role: string; // 'student' | 'mentor'
+    avatar?: string;
+    lastMessage?: string;
+    status: 'online' | 'offline';
+}
+
+export const getContacts = async (userId: string, role: 'student' | 'mentor'): Promise<Contact[]> => {
+    try {
+        const supabase = getSupabase();
+        if (!supabase) return [];
+
+        // If I am a student, the user wants me to see OTHER STUDENTS ("logged in students"), not Mentors.
+        if (role === 'student') {
+            // Fetch other students
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('id, full_name, avatar_url')
+                .eq('role', 'student')
+                .neq('id', userId); // Exclude myself
+
+            if (error) {
+                console.error("Error fetching peer students:", error);
+                return [];
+            }
+
+            return data.map((profile: any) => ({
+                id: profile.id,
+                name: profile.full_name || 'Student',
+                role: 'student',
+                avatar: profile.avatar_url,
+                status: Math.random() > 0.4 ? 'online' : 'offline', // Simulation
+                lastMessage: 'Hey, are you studying?'
+            }));
+        }
+        // If I am a mentor, I want to see Students who booked me
+        else {
+            const bookings = await getMentorBookings(userId);
+            // Deduplicate students
+            const uniqueStudents = new Map<string, Contact>();
+            bookings.forEach(b => {
+                if (b.profiles && !uniqueStudents.has(b.profiles.id)) {
+                    uniqueStudents.set(b.profiles.id, {
+                        id: b.profiles.id,
+                        name: b.profiles.full_name,
+                        role: 'student',
+                        avatar: b.profiles.avatar_url,
+                        status: Math.random() > 0.5 ? 'online' : 'offline', // Simulation as requested
+                        lastMessage: b.mentor_note || 'New booking request'
+                    });
+                }
+            });
+            return Array.from(uniqueStudents.values());
+        }
+    } catch (e) {
+        console.error("Error fetching contacts:", e);
+        return [];
+    }
 };
