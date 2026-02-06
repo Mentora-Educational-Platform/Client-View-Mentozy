@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
+import { FcGoogle } from 'react-icons/fc';
 import { Link, useNavigate } from 'react-router-dom';
 import { getUserProfile } from '../../lib/api';
 import { getSupabase } from '../../lib/supabase';
@@ -199,6 +200,36 @@ export function LoginPage() {
                             </button>
                         </div>
                     </form>
+
+                    <div className="mt-6">
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-gray-200" />
+                            </div>
+                            <div className="relative flex justify-center text-sm">
+                                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                            </div>
+                        </div>
+
+                        <div className="mt-6">
+                            <button
+                                onClick={async () => {
+                                    const supabase = getSupabase();
+                                    if (!supabase) return;
+                                    await supabase.auth.signInWithOAuth({
+                                        provider: 'google',
+                                        options: {
+                                            redirectTo: `${window.location.origin}/student-dashboard`,
+                                        },
+                                    });
+                                }}
+                                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all hover:shadow-md"
+                            >
+                                <FcGoogle className="w-5 h-5" />
+                                <span>Sign in with Google</span>
+                            </button>
+                        </div>
+                    </div>
 
                     <div className="mt-8 text-center">
                         <p className="text-sm text-gray-500">
