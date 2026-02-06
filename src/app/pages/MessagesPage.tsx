@@ -18,57 +18,42 @@ interface Message {
     isAdmin?: boolean;
 }
 
-interface Contact {
-    id: string;
-    name: string;
-    type: 'teacher' | 'friend';
-    status: 'online' | 'offline' | 'away';
-    avatar?: string;
-    role?: string;
-    lastMessage?: string;
-}
+import { Contact, getContacts } from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
+
+// ... (interfaces)
 
 export function MessagesPage() {
-    const [activeContactId, setActiveContactId] = useState('c1');
+    const { user } = useAuth();
+    const [activeContactId, setActiveContactId] = useState('');
     const [messageInput, setMessageInput] = useState('');
+    const [contacts, setContacts] = useState<Contact[]>([]);
+    const [loading, setLoading] = useState(true);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     const location = useLocation();
     const isMentorView = location.pathname.includes('mentor');
 
-    // Student Contacts (Teachers & Friends)
-    const studentContacts: Contact[] = [
-        { id: 'c1', name: 'Dr. Aris Thorne', type: 'teacher', status: 'online', role: 'AI Mentor', lastMessage: 'Great work on the GANs project!' },
-        { id: 'c2', name: 'Sarah Chen', type: 'friend', status: 'online', lastMessage: 'Coming for the study session?' },
-        { id: 'c3', name: 'Prof. Marcus Vane', type: 'teacher', status: 'offline', role: 'Computer Science Head', lastMessage: 'The report is due tomorrow.' },
-        { id: 'c4', name: 'Alex Rivera', type: 'friend', status: 'away', lastMessage: 'Did you see the new module?' },
-        { id: 'c5', name: 'Department Announcements', type: 'teacher', status: 'online', role: 'System', lastMessage: 'New workshop scheduled for Friday.' }
-    ];
+    useEffect(() => {
+        async function loadContacts() {
+            if (!user) return;
+            setLoading(true);
+            // If viewing as mentor, load students. If viewing as student, load mentors.
+            const role = isMentorView ? 'mentor' : 'student';
+            const data = await getContacts(user.id, role);
+            setContacts(data);
 
-    // Mentor Contacts (Students)
-    const mentorContacts: Contact[] = [
-        { id: 's1', name: 'Alex Chen', type: 'friend', status: 'online', role: 'Student', lastMessage: 'I have a question about the assignment.' },
-        { id: 's2', name: 'Jordan Lee', type: 'friend', status: 'offline', role: 'Student', lastMessage: 'Thanks for the session!' },
-        { id: 's3', name: 'Sarah Miller', type: 'friend', status: 'online', role: 'Student', lastMessage: 'Can we reschedule?' },
-        { id: 's4', name: 'Mike Ross', type: 'friend', status: 'away', role: 'Student', lastMessage: 'Review submitted.' }
-    ];
-
-    const contacts = isMentorView ? mentorContacts : studentContacts;
+            // Auto-select first contact
+            if (data.length > 0 && !activeContactId) {
+                setActiveContactId(data[0].id);
+            }
+            setLoading(false);
+        }
+        loadContacts();
+    }, [user, isMentorView]);
 
     const [conversations, setConversations] = useState<Record<string, Message[]>>({
-        'c1': [
-            { id: 'm1', senderId: 'c1', senderName: 'Dr. Aris Thorne', text: 'Hello! I reviewed your implementation of the attention mechanism.', timestamp: '10:30 AM' },
-            { id: 'm2', senderId: 'me', senderName: 'Me', text: 'Thanks, Doctor! I was a bit unsure about the scaling factor.', timestamp: '10:32 AM' },
-            { id: 'm3', senderId: 'c1', senderName: 'Dr. Aris Thorne', text: 'It looks correct. Great work on the GANs project!', timestamp: '10:35 AM' }
-        ],
-        'c2': [
-            { id: 'm4', senderId: 'c2', senderName: 'Sarah Chen', text: 'Hey, are you coming for the study session later?', timestamp: '09:15 AM' },
-            { id: 'm5', senderId: 'me', senderName: 'Me', text: 'Yeah, definitely. Library at 5?', timestamp: '09:20 AM' },
-            { id: 'm6', senderId: 'c2', senderName: 'Sarah Chen', text: 'Perfect, see you there!', timestamp: '09:21 AM' }
-        ],
-        'c3': [{ id: 'm7', senderId: 'c3', senderName: 'Prof. Marcus Vane', text: 'The report is due tomorrow. Please ensure all citations are included.', timestamp: 'Yesterday' }],
-        'c4': [{ id: 'm8', senderId: 'c4', senderName: 'Alex Rivera', text: 'Did you see the new module on Quantum Computing? It looks intense!', timestamp: 'Monday' }],
-        'c5': [{ id: 'm9', senderId: 'c5', senderName: 'Department Announcements', text: 'New workshop scheduled for Friday: "The Future of AI Ethics".', timestamp: '11:00 AM', isAdmin: true }]
+        // Placeholder for now - in real app would fetch per contact
     });
 
     useEffect(() => {
@@ -120,55 +105,45 @@ export function MessagesPage() {
                     </div>
 
                     <div className="flex-1 overflow-y-auto px-3 space-y-1">
-                        <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">Teachers</div>
-                        {contacts.filter(c => c.type === 'teacher').map(contact => (
-                            <button
-                                key={contact.id}
-                                onClick={() => setActiveContactId(contact.id)}
-                                className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all group ${activeContactId === contact.id ? 'bg-white shadow-sm ring-1 ring-gray-100' : 'hover:bg-white/50'
-                                    }`}
-                            >
-                                <div className="relative">
-                                    <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-                                        <GraduationCap className="w-5 h-5 text-indigo-600" />
-                                    </div>
-                                    <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${contact.status === 'online' ? 'bg-emerald-500' : contact.status === 'away' ? 'bg-amber-500' : 'bg-gray-300'
-                                        }`}></div>
-                                </div>
-                                <div className="flex-1 text-left min-w-0">
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-bold text-sm text-gray-900 truncate">{contact.name}</span>
-                                        <span className="text-[10px] text-gray-400">2h</span>
-                                    </div>
-                                    <p className="text-[11px] text-gray-500 truncate">{contact.lastMessage}</p>
-                                </div>
-                            </button>
-                        ))}
+                        <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                            {isMentorView ? 'Students' : 'Mentors'}
+                        </div>
 
-                        <div className="px-3 py-2 mt-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Friends</div>
-                        {contacts.filter(c => c.type === 'friend').map(contact => (
-                            <button
-                                key={contact.id}
-                                onClick={() => setActiveContactId(contact.id)}
-                                className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all group ${activeContactId === contact.id ? 'bg-white shadow-sm ring-1 ring-gray-100' : 'hover:bg-white/50'
-                                    }`}
-                            >
-                                <div className="relative">
-                                    <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600 font-bold text-sm">
-                                        {contact.name.charAt(0)}
+                        {loading ? (
+                            <div className="p-4 text-center text-gray-400 text-xs">Loading contacts...</div>
+                        ) : contacts.length > 0 ? (
+                            contacts.map(contact => (
+                                <button
+                                    key={contact.id}
+                                    onClick={() => setActiveContactId(contact.id)}
+                                    className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all group ${activeContactId === contact.id ? 'bg-white shadow-sm ring-1 ring-gray-100' : 'hover:bg-white/50'
+                                        }`}
+                                >
+                                    <div className="relative">
+                                        {contact.avatar ? (
+                                            <img src={contact.avatar} alt={contact.name} className="w-10 h-10 rounded-xl object-cover" />
+                                        ) : (
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${isMentorView ? 'bg-amber-100 text-amber-600' : 'bg-indigo-100 text-indigo-600'}`}>
+                                                {contact.name.charAt(0)}
+                                            </div>
+                                        )}
+                                        <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${contact.status === 'online' ? 'bg-emerald-500' : 'bg-gray-300'}`}></div>
                                     </div>
-                                    <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${contact.status === 'online' ? 'bg-emerald-500' : contact.status === 'away' ? 'bg-amber-500' : 'bg-gray-300'
-                                        }`}></div>
-                                </div>
-                                <div className="flex-1 text-left min-w-0">
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-bold text-sm text-gray-900 truncate">{contact.name}</span>
-                                        <span className="text-[10px] text-gray-400">5m</span>
+                                    <div className="flex-1 text-left min-w-0">
+                                        <div className="flex items-center justify-between">
+                                            <span className="font-bold text-sm text-gray-900 truncate">{contact.name}</span>
+                                            {/* <span className="text-[10px] text-gray-400">Now</span> */}
+                                        </div>
+                                        <p className="text-[11px] text-gray-500 truncate">{contact.lastMessage}</p>
                                     </div>
-                                    <p className="text-[11px] text-gray-500 truncate">{contact.lastMessage}</p>
-                                </div>
-                            </button>
-                        ))}
+                                </button>
+                            ))
+                        ) : (
+                            <div className="p-8 text-center text-gray-400 text-xs">
+                                No contacts found.<br />
+                                {isMentorView ? "Accept bookings to see students." : "Book a mentor to start chatting."}
+                            </div>
+                        )}
                     </div>
                 </div>
 
