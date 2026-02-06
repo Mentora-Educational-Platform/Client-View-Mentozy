@@ -38,6 +38,7 @@ const CalendarPage = lazy(() => import('./pages/CalendarPage').then(module => ({
 const MessagesPage = lazy(() => import('./pages/MessagesPage').then(module => ({ default: module.MessagesPage })));
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
 const CertificationsPage = lazy(() => import('./pages/CertificationsPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage').then(module => ({ default: module.SettingsPage })));
 
 export type Page = 'home' | 'careers' | 'mentors' | 'tracks' | 'about' | 'contact' | 'login' | 'signup' | 'student-auth' | 'student-onboarding' | 'student-dashboard';
 
@@ -137,6 +138,11 @@ function App() {
             <StudentDashboardPage />
           </Suspense>
         } />
+        <Route path="/settings" element={
+          <Suspense fallback={<PageLoader />}>
+            <SettingsPage />
+          </Suspense>
+        } />
         {/* Missing Mentor Routes Added Back */}
         <Route path="/mentor-auth" element={
           <Suspense fallback={<PageLoader />}>
@@ -146,6 +152,11 @@ function App() {
         <Route path="/mentor-dashboard" element={
           <Suspense fallback={<PageLoader />}>
             <MentorDashboardPage />
+          </Suspense>
+        } />
+        <Route path="/mentor-settings" element={
+          <Suspense fallback={<PageLoader />}>
+            <SettingsPage />
           </Suspense>
         } />
 

@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, BookOpen, Calendar, MessageSquare, PieChart, Award, LogOut, X, User, Users, PlusCircle } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Calendar, MessageSquare, PieChart, Award, LogOut, X, User, Users, PlusCircle, Settings } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { getUserProfile } from '../../../lib/api';
 
@@ -37,6 +37,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         { icon: PieChart, label: 'Analytics', path: '/analytics' },
         { icon: Award, label: 'Certifications', path: '/certifications' },
         { icon: User, label: 'Profile', path: '/profile' },
+        { icon: Settings, label: 'Settings', path: '/settings' },
     ];
 
     const mentorItems = [
@@ -47,6 +48,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         { icon: PieChart, label: 'Analytics', path: '/mentor-analytics' },
         { icon: Award, label: 'Achievements', path: '/mentor-achievements' },
         { icon: User, label: 'Profile', path: '/mentor-profile' },
+        { icon: Settings, label: 'Settings', path: '/mentor-settings' },
     ];
 
     const isMentorPath = location.pathname.startsWith('/mentor-');
