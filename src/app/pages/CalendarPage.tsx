@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Clock, Bell, Plus,
     MoreVertical, ChevronLeft, ChevronRight,
     User, StickyNote
 } from 'lucide-react';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
+import { getStudentBookings } from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
 
 interface Event {
     id: string;
@@ -22,41 +24,39 @@ interface Reminder {
 }
 
 export function CalendarPage() {
+    const { user } = useAuth();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDay, setSelectedDay] = useState<number | null>(null);
     const [popoverPosition, setPopoverPosition] = useState<{ x: number, y: number } | null>(null);
     const [isPopoverInputMode, setIsPopoverInputMode] = useState(false);
     const [popoverInputText, setPopoverInputText] = useState('');
     const [reminders, setReminders] = useState<Reminder[]>([
-        { id: '1', text: 'Prepare questions for Dr. Aris Thorne session', completed: false },
-        { id: '2', text: 'Review Module 3: Neural Networks', completed: true },
-        { id: '3', text: 'Submit project draft by Friday', completed: false }
+        { id: '1', text: 'Prepare questions for session', completed: false },
     ]);
     const [newReminder, setNewReminder] = useState('');
 
-    const demoEvents: Event[] = [
-        {
-            id: 'e1',
-            title: 'AI Mentorship Session',
-            time: '14:00 - 15:00',
-            type: 'session',
-            mentor: 'Dr. Aris Thorne',
-            description: 'Advanced discussion on Transformer architectures.'
-        },
-        {
-            id: 'e2',
-            title: 'Full Stack Workshop',
-            time: '17:30 - 19:00',
-            type: 'workshop',
-            description: 'Hands-on practice with React Server Components.'
-        },
-        {
-            id: 'e3',
-            title: 'UX Design Deadline',
-            time: '23:59',
-            type: 'deadline'
+    // Real Events State
+    const [events, setEvents] = useState<Event[]>([]);
+
+    useEffect(() => {
+        async function loadBookings() {
+            if (!user) return;
+            const bookings = await getStudentBookings(user.id);
+
+            const mappedEvents: Event[] = bookings.map(b => ({
+                id: b.id,
+                title: `Session: ${b.mentors?.name || 'Mentor'}`,
+                time: new Date(b.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                type: 'session',
+                mentor: b.mentors?.name,
+                description: b.status === 'confirmed' ? 'Confirmed Session' : 'Pending Approval'
+            }));
+
+            // If no events, show empty state or keep empty
+            setEvents(mappedEvents);
         }
-    ];
+        loadBookings();
+    }, [user]);
 
     const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
     const firstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
@@ -136,7 +136,7 @@ export function CalendarPage() {
                                 />
                                 <button
                                     onClick={addReminderAtSelected}
-                                    className="w-full bg-amber-600 hover:bg-amber-500 py-2 rounded-xl text-xs font-bold transition-all"
+                                    className="w-full bg-amber-600 hover:bg-amber-50 py-2 rounded-xl text-xs font-bold transition-all"
                                 >
                                     Save Reminder
                                 </button>
@@ -174,15 +174,16 @@ export function CalendarPage() {
                                 const day = i + 1;
                                 const isToday = new Date().getDate() === day && new Date().getMonth() === month && new Date().getFullYear() === year;
                                 const isSelected = selectedDay === day;
-                                const hasEvent = day === 15 || day === 22; // Hardcoded demo markings
+                                // Simple logic to show dot if any event matches this day (optional, tricky with timezones, skipping for simplicity)
+                                const hasEvent = false;
 
                                 return (
                                     <div
                                         key={day}
                                         onClick={(e) => handleDateClick(day, e)}
                                         className={`aspect-square relative rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-amber-50 group border ${isToday ? 'bg-amber-600 border-amber-600 text-white shadow-lg shadow-amber-200' :
-                                                isSelected ? 'bg-amber-50 border-amber-200 text-amber-900 shadow-inner' :
-                                                    'border-transparent text-gray-700'
+                                            isSelected ? 'bg-amber-50 border-amber-200 text-amber-900 shadow-inner' :
+                                                'border-transparent text-gray-700'
                                             }`}
                                     >
                                         <span className="text-sm font-bold">{day}</span>
@@ -199,12 +200,12 @@ export function CalendarPage() {
                     <div className="space-y-6">
                         <h2 className="text-xl font-bold text-gray-900">Today's Schedule</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {demoEvents.map((event: Event) => (
+                            {events.length > 0 ? events.map((event: Event) => (
                                 <div key={event.id} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
                                     <div className="flex items-start justify-between mb-4">
                                         <div className={`p-3 rounded-2xl ${event.type === 'session' ? 'bg-indigo-50 text-indigo-600' :
-                                                event.type === 'workshop' ? 'bg-emerald-50 text-emerald-600' :
-                                                    'bg-rose-50 text-rose-600'
+                                            event.type === 'workshop' ? 'bg-emerald-50 text-emerald-600' :
+                                                'bg-rose-50 text-rose-600'
                                             }`}>
                                             <Clock className="w-5 h-5" />
                                         </div>
@@ -219,7 +220,11 @@ export function CalendarPage() {
                                         </div>
                                     )}
                                 </div>
-                            ))}
+                            )) : (
+                                <div className="col-span-2 text-center py-10 text-gray-400 text-sm">
+                                    No scheduled sessions.
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -234,7 +239,6 @@ export function CalendarPage() {
                             <textarea
                                 className="w-full bg-white/10 border border-white/20 rounded-2xl p-4 text-sm text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all resize-none h-32"
                                 placeholder="Jot down your thoughts..."
-                                defaultValue="Need to research on GANs for the final project. Connect with Aris on Friday."
                             ></textarea>
                             <p className="mt-4 text-[10px] uppercase font-bold text-white/60 tracking-widest">Auto-saved to your personal space</p>
                         </div>
@@ -256,6 +260,7 @@ export function CalendarPage() {
                                     onClick={() => toggleReminder(reminder.id)}
                                     className="flex items-center gap-3 group cursor-pointer"
                                 >
+
                                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${reminder.completed ? 'bg-emerald-500 border-emerald-500' : 'border-gray-200 group-hover:border-amber-400'
                                         }`}>
                                         {reminder.completed && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
@@ -288,6 +293,6 @@ export function CalendarPage() {
                 </div>
 
             </div>
-        </DashboardLayout>
+        </DashboardLayout >
     );
 }
