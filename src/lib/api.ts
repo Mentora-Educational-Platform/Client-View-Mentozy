@@ -666,6 +666,43 @@ export const sendMessage = async (senderId: string, receiverId: string, content:
     }
 };
 
+export const getMentorByUserId = async (userId: string): Promise<any | null> => {
+    try {
+        const supabase = getSupabase();
+        if (!supabase) return null;
+
+        const { data, error } = await supabase
+            .from('mentors')
+            .select('*')
+            .eq('user_id', userId)
+            .single();
+
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        console.error("Error fetching mentor details:", e);
+        return null;
+    }
+};
+
+export const updateMentorProfile = async (userId: string, updates: any): Promise<boolean> => {
+    try {
+        const supabase = getSupabase();
+        if (!supabase) return false;
+
+        const { error } = await supabase
+            .from('mentors')
+            .update(updates)
+            .eq('user_id', userId);
+
+        if (error) throw error;
+        return true;
+    } catch (e) {
+        console.error("Error updating mentor profile:", e);
+        return false;
+    }
+};
+
 export const markMessageAsRead = async (messageId: string): Promise<boolean> => {
     try {
         const supabase = getSupabase();

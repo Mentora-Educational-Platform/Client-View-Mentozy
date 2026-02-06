@@ -5,23 +5,40 @@ import {
     MessageCircle, LogOut, Trash2,
     ChevronRight, Shield, FileText,
     HelpCircle, ExternalLink, Globe,
-    Bell, Lock, User
+    Bell, Lock, User, Briefcase, DollarSign
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { useAuth } from '../../context/AuthContext';
 import { getSupabase } from '../../lib/supabase';
+import { getMentorByUserId, updateMentorStatus } from '../../lib/api';
 
 export function SettingsPage() {
     const { user, signOut } = useAuth();
     const location = useLocation();
     const isMentorView = location.pathname.includes('mentor');
 
+    // Mentor Specific State
+    const [mentorData, setMentorData] = useState<any>(null);
+    const [mentorLoading, setMentorLoading] = useState(isMentorView);
+
     // Theme State
     const [isDarkMode, setIsDarkMode] = useState(() => {
         const saved = localStorage.getItem('theme');
         return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
     });
+
+    // Load Mentor Data if applicable
+    useEffect(() => {
+        const loadMentorData = async () => {
+            if (isMentorView && user?.id) {
+                const data = await getMentorByUserId(user.id);
+                setMentorData(data);
+                setMentorLoading(false);
+            }
+        };
+        loadMentorData();
+    }, [isMentorView, user]);
 
     // Toggle Theme
     useEffect(() => {
@@ -39,14 +56,32 @@ export function SettingsPage() {
         const supabase = getSupabase();
         if (!supabase) return;
 
+        // Dynamic redirect based on view
+        const nextParam = isMentorView ? '/mentor-settings' : '/settings';
         const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-            redirectTo: `${window.location.origin}/auth/callback?next=/settings`,
+            redirectTo: `${window.location.origin}/auth/callback?next=${nextParam}`,
         });
 
         if (error) {
             toast.error(error.message);
         } else {
             toast.success("Password reset email sent!");
+        }
+    };
+
+    const handleToggleAvailability = async () => {
+        if (!user?.id || !mentorData) return;
+        const newStatus = mentorData.status === 'unavailable' ? 'active' : 'unavailable';
+
+        // Optimistic Update
+        setMentorData({ ...mentorData, status: newStatus });
+
+        const success = await updateMentorStatus(user.id, newStatus);
+        if (success) {
+            toast.success(`Availability updated: You are now ${newStatus === 'active' ? 'Online' : 'Offline'}`);
+        } else {
+            toast.error("Failed to update availability");
+            setMentorData({ ...mentorData }); // Revert
         }
     };
 
@@ -68,30 +103,46 @@ export function SettingsPage() {
         </div>
     );
 
-    const SettingItem = ({ label, description, action, toggle, icon: ItemIcon }: { label: string, description?: string, action?: () => void, toggle?: boolean, icon?: any }) => (
-        <div className="flex items-center justify-between group">
+    const SettingItem = ({
+        label,
+        description,
+        action,
+        toggle,
+        isToggled,
+        onToggle,
+        icon: ItemIcon
+    }: {
+        label: string,
+        description?: string,
+        action?: () => void,
+        toggle?: boolean,
+        isToggled?: boolean,
+        onToggle?: () => void,
+        icon?: any
+    }) => (
+        <div className="flex items-center justify-between group text-left">
             <div className="flex gap-4">
                 {ItemIcon && (
                     <div className="mt-1 p-2 bg-gray-50 text-gray-400 rounded-lg group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
                         <ItemIcon className="w-4 h-4" />
                     </div>
                 )}
-                <div>
-                    <h4 className="font-bold text-gray-900 text-sm">{label}</h4>
-                    {description && <p className="text-xs text-gray-500 mt-1">{description}</p>}
+                <div className="max-w-[180px] sm:max-w-xs">
+                    <h4 className="font-bold text-gray-900 text-sm whitespace-nowrap">{label}</h4>
+                    {description && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{description}</p>}
                 </div>
             </div>
             {toggle !== undefined ? (
                 <button
-                    onClick={() => setIsDarkMode(!isDarkMode)}
-                    className={`w-12 h-6 rounded-full transition-colors relative ${isDarkMode ? 'bg-indigo-600' : 'bg-gray-200'}`}
+                    onClick={onToggle}
+                    className={`w-12 h-6 rounded-full transition-colors relative flex-shrink-0 ${isToggled ? 'bg-indigo-600' : 'bg-gray-200'}`}
                 >
-                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${isDarkMode ? 'left-7' : 'left-1'}`} />
+                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${isToggled ? 'left-7' : 'left-1'}`} />
                 </button>
             ) : action ? (
                 <button
                     onClick={action}
-                    className="p-2 hover:bg-gray-50 rounded-xl transition-colors text-gray-400 hover:text-indigo-600"
+                    className="p-2 hover:bg-gray-50 rounded-xl transition-colors text-gray-400 hover:text-indigo-600 flex-shrink-0"
                 >
                     <ChevronRight className="w-5 h-5" />
                 </button>
@@ -132,12 +183,45 @@ export function SettingsPage() {
 
                     {/* Main Content */}
                     <div className="md:col-span-2">
+
+                        {/* Mentor Preferences */}
+                        {isMentorView && (
+                            <SettingSection title="Mentor Preferences" icon={Briefcase}>
+                                {mentorLoading ? (
+                                    <div className="flex items-center justify-center p-4">
+                                        <Shield className="w-6 h-6 text-gray-200 animate-pulse" />
+                                    </div>
+                                ) : (
+                                    <>
+                                        <SettingItem
+                                            label="Public Availability"
+                                            description="Toggle your profile visibility in search results."
+                                            toggle={true}
+                                            isToggled={mentorData?.status !== 'unavailable'}
+                                            onToggle={handleToggleAvailability}
+                                            icon={User}
+                                        />
+                                        <div className="pt-4 border-t border-gray-50">
+                                            <SettingItem
+                                                label="Hourly Rate"
+                                                description={`Current: $${mentorData?.hourly_rate || 0}/hr`}
+                                                action={() => toast.info("Rate updates coming soon in Profile section")}
+                                                icon={DollarSign}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+                            </SettingSection>
+                        )}
+
                         {/* Appearance */}
                         <SettingSection title="Appearance" icon={Sun}>
                             <SettingItem
                                 label="Dark Mode"
                                 description="Switch between light and dark themes."
-                                toggle={isDarkMode}
+                                toggle={true}
+                                isToggled={isDarkMode}
+                                onToggle={() => setIsDarkMode(!isDarkMode)}
                                 icon={isDarkMode ? Moon : Sun}
                             />
                             <div className="pt-4 border-t border-gray-50">
@@ -164,14 +248,6 @@ export function SettingsPage() {
                                     description="Receive a recovery link via email."
                                     action={handleForgotPassword}
                                     icon={HelpCircle}
-                                />
-                            </div>
-                            <div className="pt-4 border-t border-gray-50">
-                                <SettingItem
-                                    label="Active Sessions"
-                                    description="Manage your devices."
-                                    action={() => toast.info("Session management coming soon")}
-                                    icon={Shield}
                                 />
                             </div>
                         </SettingSection>
