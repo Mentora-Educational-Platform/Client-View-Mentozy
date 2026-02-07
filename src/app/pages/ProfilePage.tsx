@@ -217,9 +217,11 @@ export function ProfilePage() {
                                 <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-100">
                                     <CheckCircle2 className="w-3 h-3" /> Email Verified
                                 </span>
-                                <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-100">
-                                    <AlertCircle className="w-3 h-3" /> Parent Unverified
-                                </span>
+                                {(!formData.age || parseInt(formData.age) < 16) && (
+                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-100">
+                                        <AlertCircle className="w-3 h-3" /> Parent Unverified
+                                    </span>
+                                )}
                             </div>
                         </div>
 

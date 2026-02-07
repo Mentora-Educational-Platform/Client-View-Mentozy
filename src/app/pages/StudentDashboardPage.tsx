@@ -26,6 +26,9 @@ export function StudentDashboardPage() {
     useEffect(() => {
         const loadDashboardData = async () => {
             if (!user) return;
+            // Clear previous state to avoid flickering
+            setProfile(null);
+
             try {
                 const [profileData, enrollmentsData, bookingsData] = await Promise.all([
                     getUserProfile(user.id),
@@ -33,7 +36,15 @@ export function StudentDashboardPage() {
                     getStudentBookings(user.id)
                 ]);
 
-                if (profileData) setProfile(profileData);
+                if (profileData) {
+                    // Redirect if accessing wrong dashboard
+                    if (profileData.role === 'mentor') {
+                        navigate('/mentor-dashboard');
+                        return;
+                    }
+                    setProfile(profileData);
+                }
+
                 if (enrollmentsData) setEnrollments(enrollmentsData);
                 if (bookingsData) setBookings(bookingsData);
             } catch (error) {

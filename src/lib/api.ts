@@ -23,6 +23,7 @@ interface DBMentor {
     rating: number;
     total_reviews: number;
     created_at: string;
+    status?: string | null;
     // Joins
     profiles?: DBProfile;
     mentor_expertise?: { skill: string }[];
@@ -41,6 +42,7 @@ interface DBTrack {
 
 export interface Mentor {
     id: number;
+    user_id: string;
     name: string;
     role: string;
     company: string;
@@ -118,129 +120,24 @@ export interface Booking {
     profiles?: Profile; // Joined data (Mentor View: Student info)
 }
 
-// Fallback Data - CALIBRATED: Prices $15-$75, Natural Ratings
-const FALLBACK_MENTORS: Mentor[] = [
-    {
-        id: 101,
-        name: "Dr. Aris Thorne",
-        role: "Head of AI Research",
-        company: "DeepMind",
-        expertise: ["Neural Networks", "Ethics in AI"],
-        rating: 5.0,
-        reviews: 342,
-        image: "bg-indigo-600/10 text-indigo-600",
-        initials: "AT",
-        bio: "Specializing in the intersection of cognitive science and machine learning. 15+ years of experience.",
-        years_experience: 15,
-        hourly_rate: 75
-    },
-    {
-        id: 102,
-        name: "Elena Rodriguez",
-        role: "Senior UX Architect",
-        company: "Adobe",
-        expertise: ["Design Systems", "User Psychology"],
-        rating: 4.5,
-        reviews: 215,
-        image: "bg-rose-500/10 text-rose-600",
-        initials: "ER",
-        bio: "Passionate about creating inclusive digital experiences. I help designers master design systems.",
-        years_experience: 9,
-        hourly_rate: 65
-    },
-    {
-        id: 103,
-        name: "Marcus Holloway",
-        role: "Security Consultant",
-        company: "CrowdStrike",
-        expertise: ["Cybersecurity", "Cloud Security"],
-        rating: 4.3,
-        reviews: 128,
-        image: "bg-slate-800/10 text-slate-800",
-        initials: "MH",
-        bio: "Helping startups and enterprises secure their infrastructure. Certified ethical hacker.",
-        years_experience: 12,
-        hourly_rate: 55
-    },
-    {
-        id: 104,
-        name: "Sienna Kim",
-        role: "Marketing Director",
-        company: "Spotify",
-        expertise: ["Growth Hacking", "Brand Strategy"],
-        rating: 4.1,
-        reviews: 560,
-        image: "bg-emerald-500/10 text-emerald-600",
-        initials: "SK",
-        bio: "Expert at scaling user bases through data-driven marketing strategies.",
-        years_experience: 10,
-        hourly_rate: 45
-    },
-    {
-        id: 105,
-        name: "Rohal Sharma",
-        role: "Senior Instructor",
-        company: "TechNexus",
-        expertise: ["Full Stack Web", "React"],
-        rating: 4.5,
-        reviews: 142,
-        image: "bg-amber-500/10 text-amber-600",
-        initials: "RS",
-        bio: "Dedicated instructor with a passion for teaching modern web technologies.",
-        years_experience: 7,
-        hourly_rate: 35
-    },
-    {
-        id: 106,
-        name: "TechNova Academy",
-        role: "Educational Partner",
-        company: "Global Ed",
-        expertise: ["Bootcamps", "Certifications"],
-        rating: 4.3,
-        reviews: 1200,
-        image: "bg-blue-600/10 text-blue-600",
-        initials: "TN",
-        type: "online",
-        website: "technova.academy",
-        address: "Digital Campus",
-        founder: "Dr. Sarah Chen",
-        status: "active",
-        bio: "Provider of high-impact technical training programs.",
-        hourly_rate: 25
-    }
-];
+export interface Message {
+    id: string;
+    sender_id: string;
+    receiver_id: string;
+    content: string;
+    created_at: string;
+    is_read: boolean;
+}
 
-const FALLBACK_TRACKS: Track[] = [
-    {
-        title: "Full Stack Web Development",
-        level: "Beginner to Advanced",
-        duration: "6 Months",
-        projects: 8,
-        description: "Master the MERN stack (MongoDB, Express, React, Node.js) and build production-ready applications.",
-        modules: ["HTML/CSS & JavaScript", "React & State Management", "Node.js & APIs", "Database Design", "Deployment & DevOps"]
-    },
-    {
-        title: "Data Structures & Algorithms",
-        level: "Intermediate",
-        duration: "3 Months",
-        projects: 40,
-        description: "Crack coding interviews at top tech companies. Focus on problem-solving patterns and optimization.",
-        modules: ["Arrays & Strings", "Trees & Graphs", "Dynamic Programming", "System Design Basics", "Mock Interviews"]
-    },
-    {
-        title: "Product Management",
-        level: "Beginner",
-        duration: "4 Months",
-        projects: 5,
-        description: "Learn how to build products users love. From user research to roadmap planning and launch.",
-        modules: ["Market Research", "User Personas", "Wireframing", "Agile Methodologies", "Go-to-Market Strategy"]
-    }
-];
+// Fallback Data - CALIBRATED: Prices $15-$75, Natural Ratings
+
+
+const FALLBACK_TRACKS: Track[] = [];
 
 export const getMentors = async (): Promise<Mentor[]> => {
     try {
         const supabase = getSupabase();
-        if (!supabase) return FALLBACK_MENTORS;
+        if (!supabase) return [];
 
         const { data, error } = await supabase
             .from('mentors')
@@ -251,83 +148,66 @@ export const getMentors = async (): Promise<Mentor[]> => {
             `);
 
         if (error) {
-            console.warn("Error fetching mentors from Supabase, using fallback:", error.message);
-            return FALLBACK_MENTORS;
+            console.warn("Error fetching mentors from Supabase:", error.message);
+            return [];
         }
 
         if (!data || data.length === 0) {
-            return FALLBACK_MENTORS;
+            return [];
         }
 
         const dbMentors = data as unknown as DBMentor[];
 
-        const mappedMentors: Mentor[] = dbMentors
-            .filter((item) => {
-                const name = (item.profiles?.full_name || '').toLowerCase();
-                const bio = (item.bio || '').toLowerCase();
-                const company = (item.company || '').toLowerCase();
+        const mappedMentors: Mentor[] = dbMentors.map((item) => {
+            let bioData: any = null;
+            let bioText = item.bio || '';
 
-                // CALIBRATED FILTERING: Remove dwdsdaw and mentozy as requested
-                const isTestOrBanned =
-                    name.includes('dasd') || name.includes('ghgh') || name.includes('wdas') ||
-                    name.includes('test') || name.includes('dwds') || name.includes('mentozy') ||
-                    bio.includes('dasd') || bio.includes('ghgh') || bio.includes('dwds') ||
-                    company.includes('dasd') || company.includes('mentozy');
+            if (bioText.startsWith('{')) {
+                try {
+                    bioData = JSON.parse(bioText);
+                } catch (e) { }
+            }
 
-                const isTooShort = name.trim().length < 3;
+            const name = item.profiles?.full_name || 'Expert Mentor';
+            const role = bioData ? (bioData.role || 'Partner') : (item.bio ? item.bio.split('.')[0] : 'Instructor');
 
-                return !isTestOrBanned && !isTooShort;
-            })
-            .map((item) => {
-                let bioData: any = null;
-                let bioText = item.bio || '';
+            // PRICE CALIBRATION: Clamping between 15 and 75
+            let rate = item.hourly_rate || 20;
+            if (rate < 15) rate = 15;
+            if (rate > 75) rate = 75;
 
-                if (bioText.startsWith('{')) {
-                    try {
-                        bioData = JSON.parse(bioText);
-                    } catch (e) { }
-                }
+            // RATING CALIBRATION: Normalizing to 4.1 - 5.0 range
+            let rating = item.rating || 4.5;
+            if (rating < 4.1) rating = 4.1 + (Math.random() * 0.4);
+            if (rating > 5.0) rating = 5.0;
 
-                const name = item.profiles?.full_name || 'Expert Mentor';
-                const role = bioData ? (bioData.role || 'Partner') : (item.bio ? item.bio.split('.')[0] : 'Instructor');
+            return {
+                id: item.id,
+                user_id: item.user_id,
+                name: name,
+                role: role,
+                company: item.company || 'Global Expert',
+                expertise: item.mentor_expertise?.map((e) => e.skill) || ["Technology"],
+                rating: parseFloat(rating.toFixed(1)),
+                reviews: item.total_reviews || Math.floor(Math.random() * 50) + 10,
+                image: item.profiles?.avatar_url || 'bg-amber-500/10 text-amber-600',
+                initials: name.split(' ').map((n: string) => n[0]).join('').substring(0, 2),
+                bio: bioData ? undefined : item.bio || undefined,
+                years_experience: item.years_experience || 5,
+                hourly_rate: rate,
+                type: bioData?.type,
+                website: bioData?.website,
+                address: bioData?.address,
+                founder: bioData?.founder,
+                status: item.status || bioData?.status, // Prioritize DB column
+                domain: bioData?.domain
+            };
+        });
 
-                // PRICE CALIBRATION: Clamping between 15 and 75
-                let rate = item.hourly_rate || 20;
-                if (rate < 15) rate = 15;
-                if (rate > 75) rate = 75;
-
-                // RATING CALIBRATION: Normalizing to 4.1 - 5.0 range
-                let rating = item.rating || 4.5;
-                if (rating < 4.1) rating = 4.1 + (Math.random() * 0.4);
-                if (rating > 5.0) rating = 5.0;
-
-                return {
-                    id: item.id,
-                    name: name,
-                    role: role,
-                    company: item.company || 'Global Expert',
-                    expertise: item.mentor_expertise?.map((e) => e.skill) || ["Technology"],
-                    rating: parseFloat(rating.toFixed(1)),
-                    reviews: item.total_reviews || Math.floor(Math.random() * 50) + 10,
-                    image: item.profiles?.avatar_url || 'bg-amber-500/10 text-amber-600',
-                    initials: name.split(' ').map((n: string) => n[0]).join('').substring(0, 2),
-                    bio: bioData ? undefined : item.bio || undefined,
-                    years_experience: item.years_experience || 5,
-                    hourly_rate: rate,
-                    type: bioData?.type,
-                    website: bioData?.website,
-                    address: bioData?.address,
-                    founder: bioData?.founder,
-                    status: bioData?.status,
-                    domain: bioData?.domain
-                };
-            });
-
-        // Mix with premium fallbacks
-        return [...mappedMentors, ...FALLBACK_MENTORS].slice(0, 12);
+        return mappedMentors;
     } catch (e) {
         console.error("Unexpected error fetching mentors:", e);
-        return FALLBACK_MENTORS;
+        return [];
     }
 };
 
@@ -345,12 +225,12 @@ export const getTracks = async (): Promise<Track[]> => {
             .order('module_order', { foreignTable: 'track_modules', ascending: true });
 
         if (error) {
-            console.warn("Error fetching tracks from Supabase, using fallback:", error.message);
-            return FALLBACK_TRACKS;
+            console.warn("Error fetching tracks from Supabase:", error.message);
+            return [];
         }
 
         if (!data || data.length === 0) {
-            return FALLBACK_TRACKS;
+            return [];
         }
 
         const dbTracks = data as unknown as DBTrack[];
@@ -369,7 +249,7 @@ export const getTracks = async (): Promise<Track[]> => {
         return mappedTracks;
     } catch (e) {
         console.error("Unexpected error fetching tracks:", e);
-        return FALLBACK_TRACKS;
+        return [];
     }
 };
 
@@ -453,20 +333,8 @@ export const getStudentEnrollments = async (userId: string): Promise<Enrollment[
             } as Enrollment;
         });
 
-        // If no real enrollments, return professional demo courses
-        if (realEnrollments.length === 0) {
-            return FALLBACK_TRACKS.slice(0, 2).map((track, idx) => ({
-                id: `demo-${idx}`,
-                user_id: userId,
-                track_id: track.id || 0,
-                status: 'active',
-                progress: idx === 0 ? 45 : 12,
-                enrolled_at: new Date().toISOString(),
-                tracks: track
-            })) as Enrollment[];
-        }
-
         return realEnrollments;
+
     } catch (e) {
         console.error("Unexpected error in getStudentEnrollments:", e);
         return [];
@@ -519,6 +387,7 @@ export const getStudentBookings = async (userId: string): Promise<Booking[]> => 
                 const m = b.mentors;
                 mappedMentor = {
                     id: m.id,
+                    user_id: m.user_id,
                     name: m.profiles?.full_name || 'Unknown Mentor',
                     role: m.bio ? m.bio.split('.')[0] : 'Expert',
                     company: m.company || 'Independent',
@@ -721,55 +590,187 @@ export interface Contact {
     status: 'online' | 'offline';
 }
 
-export const getContacts = async (userId: string, role: 'student' | 'mentor'): Promise<Contact[]> => {
+// Messages
+export const getMessages = async (userId1: string, userId2: string): Promise<Message[]> => {
     try {
         const supabase = getSupabase();
         if (!supabase) return [];
 
-        // If I am a student, the user wants me to see OTHER STUDENTS ("logged in students"), not Mentors.
-        if (role === 'student') {
-            // Fetch other students
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('id, full_name, avatar_url')
-                .eq('role', 'student')
-                .neq('id', userId); // Exclude myself
+        const { data, error } = await supabase
+            .from('messages')
+            .select('*')
+            .or(`and(sender_id.eq.${userId1},receiver_id.eq.${userId2}),and(sender_id.eq.${userId2},receiver_id.eq.${userId1})`)
+            .order('created_at', { ascending: true });
 
-            if (error) {
-                console.error("Error fetching peer students:", error);
-                return [];
-            }
+        if (error) {
+            console.error("Error fetching messages:", error);
+            return [];
+        }
 
-            return data.map((profile: any) => ({
-                id: profile.id,
-                name: profile.full_name || 'Student',
-                role: 'student',
-                avatar: profile.avatar_url,
-                status: Math.random() > 0.4 ? 'online' : 'offline', // Simulation
-                lastMessage: 'Hey, are you studying?'
-            }));
+        return data as Message[];
+    } catch (e) {
+        console.error("Unexpected error in getMessages:", e);
+        return [];
+    }
+};
+
+export const sendMessage = async (senderId: string, receiverId: string, content: string): Promise<Message | null> => {
+    try {
+        const supabase = getSupabase();
+        if (!supabase) return null;
+
+        const { data, error } = await supabase
+            .from('messages')
+            .insert({
+                sender_id: senderId,
+                receiver_id: receiverId,
+                content: content
+            })
+            .select()
+            .single();
+
+        if (error) {
+            console.error("Error sending message:", error);
+            return null;
         }
-        // If I am a mentor, I want to see Students who booked me
-        else {
-            const bookings = await getMentorBookings(userId);
-            // Deduplicate students
-            const uniqueStudents = new Map<string, Contact>();
-            bookings.forEach(b => {
-                if (b.profiles && !uniqueStudents.has(b.profiles.id)) {
-                    uniqueStudents.set(b.profiles.id, {
-                        id: b.profiles.id,
-                        name: b.profiles.full_name,
-                        role: 'student',
-                        avatar: b.profiles.avatar_url,
-                        status: Math.random() > 0.5 ? 'online' : 'offline', // Simulation as requested
-                        lastMessage: b.mentor_note || 'New booking request'
-                    });
-                }
-            });
-            return Array.from(uniqueStudents.values());
+
+        return data as Message;
+    } catch (e) {
+        console.error("Unexpected error in sendMessage:", e);
+        return null;
+    }
+};
+
+export const getMentorByUserId = async (userId: string): Promise<any | null> => {
+    try {
+        const supabase = getSupabase();
+        if (!supabase) return null;
+
+        const { data, error } = await supabase
+            .from('mentors')
+            .select('*')
+            .eq('user_id', userId)
+            .single();
+
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        console.error("Error fetching mentor details:", e);
+        return null;
+    }
+};
+
+export const updateMentorProfile = async (userId: string, updates: any): Promise<boolean> => {
+    try {
+        const supabase = getSupabase();
+        if (!supabase) return false;
+
+        const { error } = await supabase
+            .from('mentors')
+            .update(updates)
+            .eq('user_id', userId);
+
+        if (error) throw error;
+        return true;
+    } catch (e) {
+        console.error("Error updating mentor profile:", e);
+        return false;
+    }
+};
+
+export const markMessageAsRead = async (messageId: string): Promise<boolean> => {
+    try {
+        const supabase = getSupabase();
+        if (!supabase) return false;
+
+        const { error } = await supabase
+            .from('messages')
+            .update({ is_read: true })
+            .eq('id', messageId);
+
+        if (error) throw error;
+        return true;
+    } catch (e) {
+        console.error("Error marking message as read:", e);
+        return false;
+    }
+};
+
+export const markAllAsRead = async (senderId: string, receiverId: string): Promise<boolean> => {
+    try {
+        const supabase = getSupabase();
+        if (!supabase) return false;
+
+        const { error } = await supabase
+            .from('messages')
+            .update({ is_read: true })
+            .eq('sender_id', senderId)
+            .eq('receiver_id', receiverId)
+            .eq('is_read', false);
+
+        if (error) throw error;
+        return true;
+    } catch (e) {
+        console.error("Error marking all as read:", e);
+        return false;
+    }
+};
+
+export const getContacts = async (userId: string, role: string): Promise<Contact[]> => {
+    try {
+        const supabase = getSupabase();
+        if (!supabase) return [];
+
+        // USER REQUEST: Students should ONLY see peers (students), Mentors ONLY see peers (mentors).
+        // Remove Mentor-Student logic from messages contacts as requested.
+
+        // 1. Get Peer Contacts (Same Role)
+        const { data: peers, error: peerError } = await supabase
+            .from('profiles')
+            .select('id, full_name, avatar_url, role')
+            .eq('role', role)
+            .neq('id', userId);
+
+        if (peerError) {
+            console.error("Error fetching peer contacts:", peerError);
+            return [];
         }
+
+        // 2. Map Peers to Contact format
+        // In a real app, lastMessage and unread count would be joined from messages table
+        // For now, we fetch just the unread status per-contact locally in the component
+        const peerContacts: Contact[] = (peers || []).map((p: any) => ({
+            id: p.id,
+            name: p.full_name || 'User',
+            role: p.role,
+            avatar: p.avatar_url,
+            status: 'offline', // Default, real-time presence would go here
+            lastMessage: 'Strict peer contact'
+        }));
+
+        return peerContacts;
     } catch (e) {
         console.error("Error fetching contacts:", e);
         return [];
+    }
+};
+
+// Update Mentor Status
+export const updateMentorStatus = async (userId: string, status: 'active' | 'unavailable'): Promise<boolean> => {
+    // ... existing code
+    try {
+        const supabase = getSupabase();
+        if (!supabase) return false;
+
+        const { error } = await supabase
+            .from('mentors')
+            .update({ status })
+            .eq('user_id', userId);
+
+        if (error) throw error;
+        return true;
+    } catch (e) {
+        console.error("Error updating mentor status:", e);
+        return false;
     }
 };

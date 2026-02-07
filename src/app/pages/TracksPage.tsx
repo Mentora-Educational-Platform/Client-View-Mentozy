@@ -68,6 +68,35 @@ export function TracksPage() {
           <div className="flex justify-center py-20">
             <Loader2 className="w-10 h-10 text-amber-500 animate-spin" />
           </div>
+        ) : tracks.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center space-y-8 max-w-xl mx-auto">
+            <div className="relative">
+              <div className="w-24 h-24 bg-amber-50 rounded-[2rem] flex items-center justify-center rotate-6">
+                <BookOpen className="w-12 h-12 text-amber-500 -rotate-6" />
+              </div>
+              <div className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full shadow-sm flex items-center justify-center border border-amber-100">
+                <Clock className="w-4 h-4 text-amber-500" />
+              </div>
+            </div>
+            <div>
+              <h2 className="text-3xl font-black text-gray-900 mb-4">Learning Tracks Coming Soon</h2>
+              <p className="text-gray-500 text-lg leading-relaxed">
+                We're currently curating expert-led learning paths to help you master new skills.
+                Follow our social channels or check back soon to be the first to enroll!
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-4 justify-center pt-4">
+              <div className="px-5 py-2.5 bg-gray-50 text-gray-400 text-xs font-black uppercase tracking-widest rounded-xl border border-gray-100">
+                Data Science
+              </div>
+              <div className="px-5 py-2.5 bg-gray-50 text-gray-400 text-xs font-black uppercase tracking-widest rounded-xl border border-gray-100">
+                Web Development
+              </div>
+              <div className="px-5 py-2.5 bg-gray-50 text-gray-400 text-xs font-black uppercase tracking-widest rounded-xl border border-gray-100">
+                Full Stack
+              </div>
+            </div>
+          </div>
         ) : (
           <div className="grid gap-8 max-w-5xl mx-auto">
             {tracks.map((track, index) => {

@@ -17,7 +17,7 @@ export function StudentAuthPage() {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: window.location.origin,
+                    redirectTo: 'https://mentozy.netlify.app/auth/callback',
                     queryParams: {
                         access_type: 'offline',
                         prompt: 'consent',

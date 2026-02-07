@@ -6,11 +6,13 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookingModal } from '../booking/BookingModal';
+import { MentorProfileModal } from './MentorProfileModal';
 
 export function MentorGallery() {
     const [mentors, setMentors] = useState<Mentor[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
+    const [profileModalOpen, setProfileModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
@@ -148,6 +150,11 @@ export function MentorGallery() {
                                             {mentor.role}
                                         </div>
 
+                                        {/* Status Badge */}
+                                        <div className={`text-[10px] uppercase font-black tracking-widest px-3 py-1 rounded-full mb-3 ${mentor.status === 'unavailable' ? 'bg-gray-100 text-gray-400' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
+                                            {mentor.status === 'unavailable' ? 'Offline' : 'Available Now'}
+                                        </div>
+
                                         {mentor.company && mentor.company !== 'Mentozy' && (
                                             <p className="text-sm font-bold text-gray-400 flex items-center gap-1">
                                                 at <span className="text-gray-900">{mentor.company}</span>
@@ -189,14 +196,36 @@ export function MentorGallery() {
                                         </div>
                                     </div>
 
-                                    <div className="mt-10 flex gap-3">
+                                    <div className="mt-8 flex gap-3">
+                                        <button
+                                            onClick={() => {
+                                                setSelectedMentor(mentor);
+                                                setProfileModalOpen(true);
+                                            }}
+                                            className="flex-1 py-4 bg-white border-2 border-gray-100 text-gray-700 text-sm font-bold rounded-2xl hover:border-gray-900 hover:text-gray-900 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <User className="w-4 h-4" /> View Profile
+                                        </button>
+                                    </div>
+
+                                    <div className="mt-3 flex gap-3">
                                         <button
                                             onClick={() => handleBookClick(mentor)}
-                                            className="flex-1 py-5 bg-gray-900 text-white text-sm font-black rounded-[2rem] hover:bg-amber-600 shadow-xl lg:shadow-none lg:hover:shadow-amber-200/50 transition-all active:scale-95 flex items-center justify-center gap-3 relative overflow-hidden group/btn"
+                                            disabled={mentor.status === 'unavailable'}
+                                            className={`flex-1 py-5 text-white text-sm font-black rounded-[2rem] shadow-xl lg:shadow-none transition-all flex items-center justify-center gap-3 relative overflow-hidden group/btn ${mentor.status === 'unavailable'
+                                                ? 'bg-gray-400 cursor-not-allowed opacity-70'
+                                                : 'bg-gray-900 hover:bg-amber-600 hover:shadow-amber-200/50 active:scale-95'
+                                                }`}
                                         >
-                                            <Calendar className="w-5 h-5 relative z-10" />
-                                            <span className="relative z-10">Instant Booking</span>
-                                            <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-orange-500 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500" />
+                                            {mentor.status === 'unavailable' ? (
+                                                <span className="relative z-10 uppercase tracking-wide">Unavailable</span>
+                                            ) : (
+                                                <>
+                                                    <Calendar className="w-5 h-5 relative z-10" />
+                                                    <span className="relative z-10">Instant Booking</span>
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-orange-500 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500" />
+                                                </>
+                                            )}
                                         </button>
                                         <button
                                             onClick={() => toast.info("Mentor's LinkedIn profile is private.")}
@@ -213,11 +242,29 @@ export function MentorGallery() {
             )}
 
             <BookingModal
-                isOpen={!!selectedMentor}
+                isOpen={!!selectedMentor && !profileModalOpen} // Ensure only one modal active if overlapping, though better to separate state
                 onClose={() => setSelectedMentor(null)}
                 mentorName={selectedMentor?.name || ''}
                 userPlan="Free"
                 onConfirm={handleConfirmBooking}
+            />
+
+            <MentorProfileModal
+                isOpen={profileModalOpen}
+                onClose={() => {
+                    setProfileModalOpen(false);
+                    // Don't clear selectedMentor here if we want to preseve it for booking transition? 
+                    // Actually usually 'selectedMentor' is shared.
+                    // If we close profile, we just close.
+                    if (!selectedMentor) setSelectedMentor(null);
+                }}
+                mentor={selectedMentor}
+                onBook={(m) => {
+                    setProfileModalOpen(false);
+                    // selectedMentor is already set. 
+                    // Just triggering booking flow.
+                    handleBookClick(m);
+                }}
             />
         </div>
     );

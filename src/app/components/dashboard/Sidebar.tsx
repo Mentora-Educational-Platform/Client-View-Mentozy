@@ -1,6 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Calendar, MessageSquare, PieChart, Award, LogOut, X, User, Users } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { LayoutDashboard, BookOpen, Calendar, MessageSquare, PieChart, Award, LogOut, X, User, Users, PlusCircle, Settings } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
+import { getUserProfile } from '../../../lib/api';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -10,10 +12,21 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
     const location = useLocation();
     const { signOut, user } = useAuth();
+    const [profileRole, setProfileRole] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (user?.id) {
+            getUserProfile(user.id).then(profile => {
+                if (profile?.role) {
+                    setProfileRole(profile.role);
+                }
+            });
+        }
+    }, [user]);
 
     const isActive = (path: string) => location.pathname === path;
 
-    const role = user?.user_metadata?.role || 'student';
+    const role = profileRole || user?.user_metadata?.role || 'student';
 
     const studentItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/student-dashboard' },
@@ -24,15 +37,18 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         { icon: PieChart, label: 'Analytics', path: '/analytics' },
         { icon: Award, label: 'Certifications', path: '/certifications' },
         { icon: User, label: 'Profile', path: '/profile' },
+        { icon: Settings, label: 'Settings', path: '/settings' },
     ];
 
     const mentorItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/mentor-dashboard' },
+        { icon: PlusCircle, label: 'Create Course', path: '/mentor-create-course' },
         { icon: Calendar, label: 'Calendar', path: '/mentor-calendar' },
         { icon: MessageSquare, label: 'Messages', path: '/mentor-messages' },
         { icon: PieChart, label: 'Analytics', path: '/mentor-analytics' },
         { icon: Award, label: 'Achievements', path: '/mentor-achievements' },
         { icon: User, label: 'Profile', path: '/mentor-profile' },
+        { icon: Settings, label: 'Settings', path: '/mentor-settings' },
     ];
 
     const isMentorPath = location.pathname.startsWith('/mentor-');

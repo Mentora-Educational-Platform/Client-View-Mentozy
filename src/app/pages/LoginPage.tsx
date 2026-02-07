@@ -72,7 +72,7 @@ export function LoginPage() {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: `${window.location.origin}/student-dashboard` // Defaulting to student dashboard, logic can handle role check later
+                    redirectTo: 'https://mentozy.netlify.app/auth/callback'
                 }
             });
 
