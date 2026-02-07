@@ -11,16 +11,33 @@ import { toast } from 'sonner';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { useAuth } from '../../context/AuthContext';
 import { getSupabase } from '../../lib/supabase';
-import { getMentorByUserId, updateMentorStatus } from '../../lib/api';
+import { getMentorByUserId, updateMentorStatus, updateMentorProfile } from '../../lib/api';
 
 export function SettingsPage() {
     const { user, signOut } = useAuth();
     const location = useLocation();
     const isMentorView = location.pathname.includes('mentor');
+    const supabase = getSupabase();
 
     // Mentor Specific State
     const [mentorData, setMentorData] = useState<any>(null);
     const [mentorLoading, setMentorLoading] = useState(isMentorView);
+    const [isEditingRate, setIsEditingRate] = useState(false);
+    const [newHourlyRate, setNewHourlyRate] = useState<string>('');
+
+    // Account State
+    const [isChangingEmail, setIsChangingEmail] = useState(false);
+    const [newEmail, setNewEmail] = useState('');
+    const [emailLoading, setEmailLoading] = useState(false);
+
+    // Preferences State
+    const [preferences, setPreferences] = useState({
+        emailNotifications: true,
+        browserPush: false,
+        profileVisibility: true, // Matches mentorData.status usually
+        showEmail: false,
+        language: 'en-US'
+    });
 
     // Theme State
     const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -28,16 +45,23 @@ export function SettingsPage() {
         return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
     });
 
-    // Load Mentor Data if applicable
+    // Load Data
     useEffect(() => {
-        const loadMentorData = async () => {
+        const loadData = async () => {
+            // 1. Load Mentor Data
             if (isMentorView && user?.id) {
                 const data = await getMentorByUserId(user.id);
                 setMentorData(data);
+                if (data?.hourly_rate) setNewHourlyRate(data.hourly_rate.toString());
                 setMentorLoading(false);
             }
+
+            // 2. Load User Preferences from Metadata
+            if (user?.user_metadata?.preferences) {
+                setPreferences(prev => ({ ...prev, ...user.user_metadata.preferences }));
+            }
         };
-        loadMentorData();
+        loadData();
     }, [isMentorView, user]);
 
     // Toggle Theme
@@ -51,9 +75,60 @@ export function SettingsPage() {
         }
     }, [isDarkMode]);
 
+    /* --- Handlers --- */
+
+    const handleUpdateHourlyRate = async () => {
+        if (!user?.id || !newHourlyRate) return;
+        const rate = parseFloat(newHourlyRate);
+        if (isNaN(rate) || rate < 0) {
+            toast.error("Please enter a valid hourly rate");
+            return;
+        }
+
+        // Call API to update profile
+        const success = await updateMentorProfile(user.id, { hourly_rate: rate });
+
+        if (success) {
+            toast.success(`Hourly rate updated to $${rate}/hr`);
+            setMentorData({ ...mentorData, hourly_rate: rate });
+            setIsEditingRate(false);
+        } else {
+            toast.error("Failed to update hourly rate");
+        }
+    };
+
+    const handleUpdatePreference = async (key: keyof typeof preferences, value: any) => {
+        const newPrefs = { ...preferences, [key]: value };
+        setPreferences(newPrefs);
+
+        if (supabase && user) {
+            const { error } = await supabase.auth.updateUser({
+                data: { preferences: newPrefs }
+            });
+            if (error) toast.error("Failed to save preference");
+        }
+    };
+
+    const handleChangeEmail = async () => {
+        if (!newEmail || !newEmail.includes('@')) {
+            toast.error("Invalid email address");
+            return;
+        }
+        setEmailLoading(true);
+        if (supabase) {
+            const { error } = await supabase.auth.updateUser({ email: newEmail });
+            if (error) {
+                toast.error(error.message);
+            } else {
+                toast.success("Confirmation link sent to both emails!");
+                setIsChangingEmail(false);
+            }
+        }
+        setEmailLoading(false);
+    };
+
     const handleForgotPassword = async () => {
         if (!user?.email) return;
-        const supabase = getSupabase();
         if (!supabase) return;
 
         // Dynamic redirect based on view
@@ -110,7 +185,8 @@ export function SettingsPage() {
         toggle,
         isToggled,
         onToggle,
-        icon: ItemIcon
+        icon: ItemIcon,
+        customRight
     }: {
         label: string,
         description?: string,
@@ -118,7 +194,8 @@ export function SettingsPage() {
         toggle?: boolean,
         isToggled?: boolean,
         onToggle?: () => void,
-        icon?: any
+        icon?: any,
+        customRight?: React.ReactNode
     }) => (
         <div className="flex items-center justify-between group text-left">
             <div className="flex gap-4">
@@ -132,7 +209,7 @@ export function SettingsPage() {
                     {description && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{description}</p>}
                 </div>
             </div>
-            {toggle !== undefined ? (
+            {customRight ? customRight : toggle !== undefined ? (
                 <button
                     onClick={onToggle}
                     className={`w-12 h-6 rounded-full transition-colors relative flex-shrink-0 ${isToggled ? 'bg-indigo-600' : 'bg-gray-200'}`}
@@ -171,11 +248,11 @@ export function SettingsPage() {
                             <User className="w-5 h-5" />
                             General
                         </button>
-                        <button onClick={() => toast.info("Notification settings coming soon")} className="w-full flex items-center gap-3 px-6 py-4 bg-white text-gray-500 hover:bg-gray-50 rounded-[1.5rem] font-bold text-sm transition-all border border-transparent hover:border-gray-100">
+                        <button onClick={() => toast.info("Notification settings below")} className="w-full flex items-center gap-3 px-6 py-4 bg-white text-gray-500 hover:bg-gray-50 rounded-[1.5rem] font-bold text-sm transition-all border border-transparent hover:border-gray-100">
                             <Bell className="w-5 h-5" />
                             Notifications
                         </button>
-                        <button onClick={() => toast.info("Privacy settings coming soon")} className="w-full flex items-center gap-3 px-6 py-4 bg-white text-gray-500 hover:bg-gray-50 rounded-[1.5rem] font-bold text-sm transition-all border border-transparent hover:border-gray-100">
+                        <button onClick={() => toast.info("Privacy settings below")} className="w-full flex items-center gap-3 px-6 py-4 bg-white text-gray-500 hover:bg-gray-50 rounded-[1.5rem] font-bold text-sm transition-all border border-transparent hover:border-gray-100">
                             <Lock className="w-5 h-5" />
                             Privacy
                         </button>
@@ -205,8 +282,35 @@ export function SettingsPage() {
                                             <SettingItem
                                                 label="Hourly Rate"
                                                 description={`Current: $${mentorData?.hourly_rate || 0}/hr`}
-                                                action={() => toast.info("Rate updates coming soon in Profile section")}
                                                 icon={DollarSign}
+                                                customRight={
+                                                    isEditingRate ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="relative">
+                                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
+                                                                <input
+                                                                    type="number"
+                                                                    value={newHourlyRate}
+                                                                    onChange={(e) => setNewHourlyRate(e.target.value)}
+                                                                    className="w-20 pl-6 pr-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500"
+                                                                />
+                                                            </div>
+                                                            <button onClick={handleUpdateHourlyRate} className="p-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                                                                <ChevronRight className="w-4 h-4" />
+                                                            </button>
+                                                            <button onClick={() => setIsEditingRate(false)} className="p-1.5 text-gray-400 hover:text-gray-600">
+                                                                <span className="text-xs font-bold">✕</span>
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => setIsEditingRate(true)}
+                                                            className="text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors"
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                    )
+                                                }
                                             />
                                         </div>
                                     </>
@@ -214,8 +318,8 @@ export function SettingsPage() {
                             </SettingSection>
                         )}
 
-                        {/* Appearance */}
-                        <SettingSection title="Appearance" icon={Sun}>
+                        {/* Appearance & Preferences */}
+                        <SettingSection title="Preferences" icon={Sun}>
                             <SettingItem
                                 label="Dark Mode"
                                 description="Switch between light and dark themes."
@@ -226,10 +330,51 @@ export function SettingsPage() {
                             />
                             <div className="pt-4 border-t border-gray-50">
                                 <SettingItem
+                                    label="Email Notifications"
+                                    description="Receive updates via email"
+                                    toggle={true}
+                                    isToggled={preferences.emailNotifications}
+                                    onToggle={() => handleUpdatePreference('emailNotifications', !preferences.emailNotifications)}
+                                    icon={Mail}
+                                />
+                            </div>
+                            <div className="pt-4 border-t border-gray-50">
+                                <SettingItem
+                                    label="Browser Push"
+                                    description="Receive push notifications"
+                                    toggle={true}
+                                    isToggled={preferences.browserPush}
+                                    onToggle={() => handleUpdatePreference('browserPush', !preferences.browserPush)}
+                                    icon={Bell}
+                                />
+                            </div>
+                            <div className="pt-4 border-t border-gray-50">
+                                <SettingItem
+                                    label="Show Email publicly"
+                                    description="Display email on your profile"
+                                    toggle={true}
+                                    isToggled={preferences.showEmail}
+                                    onToggle={() => handleUpdatePreference('showEmail', !preferences.showEmail)}
+                                    icon={User}
+                                />
+                            </div>
+                            <div className="pt-4 border-t border-gray-50">
+                                <SettingItem
                                     label="Language"
-                                    description="English (United States)"
-                                    action={() => toast.info("More languages coming soon!")}
+                                    description="Select your preferred language"
                                     icon={Globe}
+                                    customRight={
+                                        <select
+                                            value={preferences.language}
+                                            onChange={(e) => handleUpdatePreference('language', e.target.value)}
+                                            className="text-xs font-bold text-gray-600 bg-gray-50 border-none rounded-lg px-2 py-1.5 focus:ring-0 cursor-pointer"
+                                        >
+                                            <option value="en-US">English (US)</option>
+                                            <option value="es">Español</option>
+                                            <option value="fr">Français</option>
+                                            <option value="de">Deutsch</option>
+                                        </select>
+                                    }
                                 />
                             </div>
                         </SettingSection>
@@ -257,9 +402,39 @@ export function SettingsPage() {
                             <SettingItem
                                 label="Change Email"
                                 description={user?.email || "No email linked"}
-                                action={() => toast.info("Email change requires verification")}
                                 icon={Mail}
+                                customRight={
+                                    isChangingEmail ? (
+                                        <div className="flex flex-col gap-2 w-full max-w-[200px]">
+                                            <input
+                                                type="email"
+                                                placeholder="New Email"
+                                                value={newEmail}
+                                                onChange={(e) => setNewEmail(e.target.value)}
+                                                className="w-full pl-3 pr-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500"
+                                            />
+                                            <div className="flex gap-2 justify-end">
+                                                <button onClick={() => setIsChangingEmail(false)} className="px-3 py-1 text-xs font-bold text-gray-500 bg-gray-100 rounded-lg">Cancel</button>
+                                                <button
+                                                    onClick={handleChangeEmail}
+                                                    disabled={emailLoading}
+                                                    className="px-3 py-1 text-xs font-bold text-white bg-indigo-600 rounded-lg disabled:opacity-50"
+                                                >
+                                                    {emailLoading ? '...' : 'Verify'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => setIsChangingEmail(true)}
+                                            className="text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors"
+                                        >
+                                            Change
+                                        </button>
+                                    )
+                                }
                             />
+
                             <div className="pt-6 mt-6 border-t border-red-50 flex flex-col gap-4">
                                 <button
                                     onClick={() => signOut()}
