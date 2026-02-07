@@ -1,5 +1,5 @@
 
-import { Dialog, DialogContent } from '../../components/ui/dialog';
+import { Dialog, DialogContent } from '../../../components/ui/dialog';
 import { Mentor } from '../../../lib/api';
 import { User, Building2, MapPin, Star, ShieldCheck, Award, Briefcase, Zap, Calendar } from 'lucide-react';
 

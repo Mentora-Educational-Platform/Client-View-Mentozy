@@ -3,9 +3,9 @@ import { useEffect, useState, useMemo } from 'react';
 import { getMentors, Mentor, createBooking } from '../../../lib/api';
 import { useAuth } from '../../../context/AuthContext';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { BookingModal } from '../booking/BookingModal';
+import { BookingModal } from '../../../components/booking/BookingModal';
 import { MentorProfileModal } from './MentorProfileModal';
 
 export function MentorGallery() {
@@ -26,7 +26,7 @@ export function MentorGallery() {
     }, []);
 
     const { user } = useAuth();
-    const navigate = useNavigate();
+    const router = useRouter();
 
     const filteredMentors = useMemo(() => {
         return mentors.filter(m =>
@@ -40,7 +40,7 @@ export function MentorGallery() {
     const handleBookClick = (mentor: Mentor) => {
         if (!user) {
             toast.error("Please log in to book a session");
-            navigate('/login');
+            router.push('/login');
             return;
         }
         setSelectedMentor(mentor);
@@ -52,7 +52,7 @@ export function MentorGallery() {
         const success = await createBooking(user.id, selectedMentor.id, scheduledTime);
         if (success) {
             toast.success(`Session requested with ${selectedMentor.name}! Check your dashboard.`);
-            navigate('/student-dashboard');
+            router.push('/student-dashboard');
             return true;
         } else {
             toast.error("Failed to book session. Please try again.");

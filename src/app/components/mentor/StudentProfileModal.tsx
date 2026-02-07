@@ -1,5 +1,5 @@
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
 import { Profile } from '../../../lib/api';
 import { User, MapPin, GraduationCap, Clock, Target, Zap, BookOpen, BrainCircuit } from 'lucide-react';
 

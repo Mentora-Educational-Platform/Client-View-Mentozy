@@ -1,0 +1,2603 @@
+﻿
+> mentozy-client@0.1.0 build
+> next build
+
+   Γû▓ Next.js 15.1.6
+   - Environments: .env
+
+   Creating an optimized production build ...
+node.exe :  ΓÜá 
+Compiled with 
+warnings
+At line:1 char:1
++ & "C:\Program Files
+\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: ( ΓÜá Co   
+ mpiled with warn    
+ings:String) [],     
+RemoteException
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+
+./src/app/analytics/p
+age.tsx
+Attempted import 
+error: 
+'AnalyticsPage' is 
+not exported from '@/
+components/pages/Anal
+yticsPage' (imported 
+as 'AnalyticsPage').
+
+Import trace for 
+requested module:
+./src/app/analytics/p
+age.tsx
+
+./src/app/certificati
+ons/page.tsx
+Attempted import 
+error: 
+'CertificationsPage' 
+is not exported from 
+'@/components/pages/C
+ertificationsPage' 
+(imported as 'Certifi
+cationsPage').
+
+Import trace for 
+requested module:
+./src/app/certificati
+ons/page.tsx
+
+Failed to compile.
+
+./src/app/globals.css
+.webpack[javascript/a
+uto]!=!./node_modules
+/next/dist/build/webp
+ack/loaders/css-loade
+r/src/index.js??ruleS
+et[1].rules[13].oneOf
+[10].use[2]!./node_mo
+dules/next/dist/build
+/webpack/loaders/post
+css-loader/src/index.
+js??ruleSet[1].rules[
+13].oneOf[10].use[3]!
+./src/app/globals.css
+C:\NTG\Client-View-Me
+ntozy\node_modules\tw
+-animate-css\dist\tw-
+animate.css:1
+@property --tw-animat
+ion-delay{syntax:"*";
+inherits:false;initia
+l-value:0s}@property 
+--tw-animation-direct
+ion{syntax:"*";inheri
+ts:false;initial-valu
+e:normal}@property --
+tw-animation-duration
+{syntax:"*";inherits:
+false}@property --tw-
+animation-fill-mode{s
+yntax:"*";inherits:fa
+lse;initial-value:non
+e}@property --tw-anim
+ation-iteration-count
+{syntax:"*";inherits:
+false;initial-value:1
+}@property --tw-enter
+-blur{syntax:"*";inhe
+rits:false;initial-va
+lue:0}@property --tw-
+enter-opacity{syntax:
+"*";inherits:false;in
+itial-value:1}@proper
+ty --tw-enter-rotate{
+syntax:"*";inherits:f
+alse;initial-value:0}
+@property --tw-enter-
+scale{syntax:"*";inhe
+rits:false;initial-va
+lue:1}@property --tw-
+enter-translate-x{syn
+tax:"*";inherits:fals
+e;initial-value:0}@pr
+operty --tw-enter-tra
+nslate-y{syntax:"*";i
+nherits:false;initial
+-value:0}@property --
+tw-exit-blur{syntax:"
+*";inherits:false;ini
+tial-value:0}@propert
+y --tw-exit-opacity{s
+yntax:"*";inherits:fa
+lse;initial-value:1}@
+property --tw-exit-ro
+tate{syntax:"*";inher
+its:false;initial-val
+ue:0}@property --tw-e
+xit-scale{syntax:"*";
+inherits:false;initia
+l-value:1}@property -
+-tw-exit-translate-x{
+syntax:"*";inherits:f
+alse;initial-value:0}
+@property --tw-exit-t
+ranslate-y{syntax:"*"
+;inherits:false;initi
+al-value:0}@theme inl
+ine{--animation-delay
+-0: 0s; --animation-d
+elay-75: 75ms; --anim
+ation-delay-100: 
+.1s; --animation-dela
+y-150: .15s; --animat
+ion-delay-200: .2s; -
+-animation-delay-300:
+ .3s; --animation-del
+ay-500: .5s; --animat
+ion-delay-700: .7s; -
+-animation-delay-1000
+: 1s; --animation-rep
+eat-0: 0; --animation
+-repeat-1: 1; --anima
+tion-repeat-infinite:
+ infinite; --animatio
+n-direction-normal: 
+normal; --animation-d
+irection-reverse: 
+reverse; --animation-
+direction-alternate: 
+alternate; --animatio
+n-direction-alternate
+-reverse: 
+alternate-reverse; --
+animation-fill-mode-n
+one: none; --animatio
+n-fill-mode-forwards:
+ forwards; --animatio
+n-fill-mode-backwards
+: backwards; --animat
+ion-fill-mode-both: 
+both; 
+--percentage-0: 0; 
+--percentage-5: .05; 
+--percentage-10: .1; 
+--percentage-15: 
+.15; 
+--percentage-20: .2; 
+--percentage-25: 
+.25; 
+--percentage-30: .3; 
+--percentage-35: 
+.35; 
+--percentage-40: .4; 
+--percentage-45: 
+.45; 
+--percentage-50: .5; 
+--percentage-55: 
+.55; 
+--percentage-60: .6; 
+--percentage-65: 
+.65; 
+--percentage-70: .7; 
+--percentage-75: 
+.75; 
+--percentage-80: .8; 
+--percentage-85: 
+.85; 
+--percentage-90: .9; 
+--percentage-95: 
+.95; 
+--percentage-100: 1; 
+--percentage-translat
+e-full: 1; 
+--animate-in: enter v
+ar(--tw-animation-dur
+ation,var(--tw-durati
+on,.15s))var(--tw-eas
+e,ease)var(--tw-anima
+tion-delay,0s)var(--t
+w-animation-iteration
+-count,1)var(--tw-ani
+mation-direction,norm
+al)var(--tw-animation
+-fill-mode,none); 
+--animate-out: exit v
+ar(--tw-animation-dur
+ation,var(--tw-durati
+on,.15s))var(--tw-eas
+e,ease)var(--tw-anima
+tion-delay,0s)var(--t
+w-animation-iteration
+-count,1)var(--tw-ani
+mation-direction,norm
+al)var(--tw-animation
+-fill-mode,none); 
+@keyframes enter { 
+from { opacity: var(-
+-tw-enter-opacity,1);
+ transform: translate
+3d(var(--tw-enter-tra
+nslate-x,0),var(--tw-
+enter-translate-y,0),
+0)scale3d(var(--tw-en
+ter-scale,1),var(--tw
+-enter-scale,1),var(-
+-tw-enter-scale,1))ro
+tate(var(--tw-enter-r
+otate,0)); filter: bl
+ur(var(--tw-enter-blu
+r,0)); }}@keyframes 
+exit { to { opacity: 
+var(--tw-exit-opacity
+,1); transform: trans
+late3d(var(--tw-exit-
+translate-x,0),var(--
+tw-exit-translate-y,0
+),0)scale3d(var(--tw-
+exit-scale,1),var(--t
+w-exit-scale,1),var(-
+-tw-exit-scale,1))rot
+ate(var(--tw-exit-rot
+ate,0)); filter: blur
+(var(--tw-exit-blur,0
+)); }}--animate-accor
+dion-down: 
+accordion-down var(--
+tw-animation-duration
+,var(--tw-duration,.2
+s))var(--tw-ease,ease
+-out)var(--tw-animati
+on-delay,0s)var(--tw-
+animation-iteration-c
+ount,1)var(--tw-anima
+tion-direction,normal
+)var(--tw-animation-f
+ill-mode,none); --ani
+mate-accordion-up: 
+accordion-up var(--tw
+-animation-duration,v
+ar(--tw-duration,.2s)
+)var(--tw-ease,ease-o
+ut)var(--tw-animation
+-delay,0s)var(--tw-an
+imation-iteration-cou
+nt,1)var(--tw-animati
+on-direction,normal)v
+ar(--tw-animation-fil
+l-mode,none); --anima
+te-collapsible-down: 
+collapsible-down var(
+--tw-animation-durati
+on,var(--tw-duration,
+.2s))var(--tw-ease,ea
+se-out)var(--tw-anima
+tion-delay,0s)var(--t
+w-animation-iteration
+-count,1)var(--tw-ani
+mation-direction,norm
+al)var(--tw-animation
+-fill-mode,none); --a
+nimate-collapsible-up
+: collapsible-up var(
+--tw-animation-durati
+on,var(--tw-duration,
+.2s))var(--tw-ease,ea
+se-out)var(--tw-anima
+tion-delay,0s)var(--t
+w-animation-iteration
+-count,1)var(--tw-ani
+mation-direction,norm
+al)var(--tw-animation
+-fill-mode,none); 
+@keyframes 
+accordion-down { 
+from { height: 0; 
+}to { height: var(--r
+adix-accordion-conten
+t-height,var(--bits-a
+ccordion-content-heig
+ht,var(--reka-accordi
+on-content-height,var
+(--kb-accordion-conte
+nt-height,var(--ngp-a
+ccordion-content-heig
+ht,auto))))); 
+}}@keyframes 
+accordion-up { from 
+{ height: var(--radix
+-accordion-content-he
+ight,var(--bits-accor
+dion-content-height,v
+ar(--reka-accordion-c
+ontent-height,var(--k
+b-accordion-content-h
+eight,var(--ngp-accor
+dion-content-height,a
+uto))))); }to { 
+height: 0; 
+}}@keyframes 
+collapsible-down { 
+from { height: 0; 
+}to { height: var(--r
+adix-collapsible-cont
+ent-height,var(--bits
+-collapsible-content-
+height,var(--reka-col
+lapsible-content-heig
+ht,var(--kb-collapsib
+le-content-height,aut
+o)))); }}@keyframes 
+collapsible-up { 
+from { height: var(--
+radix-collapsible-con
+tent-height,var(--bit
+s-collapsible-content
+-height,var(--reka-co
+llapsible-content-hei
+ght,var(--kb-collapsi
+ble-content-height,au
+to)))); }to { 
+height: 0; }}--animat
+e-caret-blink: 
+caret-blink 1.25s 
+ease-out infinite; 
+@keyframes 
+caret-blink { 
+0%,70%,100% { 
+opacity: 1; }20%,50% 
+{ opacity: 0; 
+}}}@utility animation
+-duration-*{--tw-anim
+ation-duration: calc(
+--value(number)*1ms);
+ --tw-animation-durat
+ion: --value(--animat
+ion-duration-*,[durat
+ion],"initial",[*]); 
+animation-duration: c
+alc(--value(number)*1
+ms); 
+animation-duration: -
+-value(--animation-du
+ration-*,[duration],"
+initial",[*]);}@utili
+ty delay-*{animation-
+delay: calc(--value(n
+umber)*1ms); 
+animation-delay: --va
+lue(--animation-delay
+-*,[duration],"initia
+l",[*]); --tw-animati
+on-delay: calc(--valu
+e(number)*1ms); --tw-
+animation-delay: --va
+lue(--animation-delay
+-*,[duration],"initia
+l",[*]);}@utility rep
+eat-*{animation-itera
+tion-count: --value(-
+-animation-repeat-*,n
+umber,"initial",[*]);
+ --tw-animation-itera
+tion-count: --value(-
+-animation-repeat-*,n
+umber,"initial",[*]);
+}@utility direction-*
+{animation-direction:
+ --value(--animation-
+direction-*,"initial"
+,[*]); --tw-animation
+-direction: --value(-
+-animation-direction-
+*,"initial",[*]);}@ut
+ility fill-mode-*{ani
+mation-fill-mode: --v
+alue(--animation-fill
+-mode-*,"initial",[*]
+); --tw-animation-fil
+l-mode: --value(--ani
+mation-fill-mode-*,"i
+nitial",[*]);}@utilit
+y running{animation-p
+lay-state: 
+running;}@utility pau
+sed{animation-play-st
+ate: 
+paused;}@utility play
+-state-*{animation-pl
+ay-state: --value("in
+itial",[*]);}@utility
+ blur-in{--tw-enter-b
+lur: 20px;}@utility b
+lur-in-*{--tw-enter-b
+lur: calc(--value(num
+ber)*1px); 
+--tw-enter-blur: --va
+lue(--blur-*,[*]);}@u
+tility blur-out{--tw-
+exit-blur: 
+20px;}@utility blur-o
+ut-*{--tw-exit-blur: 
+calc(--value(number)*
+1px); 
+--tw-exit-blur: --val
+ue(--blur-*,[*]);}@ut
+ility fade-in{--tw-en
+ter-opacity: 
+0;}@utility fade-in-*
+{--tw-enter-opacity: 
+calc(--value(number)/
+100); 
+--tw-enter-opacity: -
+-value(--percentage-*
+,[*]);}@utility fade-
+out{--tw-exit-opacity
+: 0;}@utility fade-ou
+t-*{--tw-exit-opacity
+: calc(--value(number
+)/100); 
+--tw-exit-opacity: --
+value(--percentage-*,
+[*]);}@utility zoom-i
+n{--tw-enter-scale: 
+0;}@utility zoom-in-*
+{--tw-enter-scale: ca
+lc(--value(number)*1%
+); --tw-enter-scale: 
+calc(--value(ratio));
+ --tw-enter-scale: --
+value(--percentage-*,
+[*]);}@utility -zoom-
+in-*{--tw-enter-scale
+: calc(--value(number
+)*-1%); 
+--tw-enter-scale: cal
+c(--value(ratio)*-1);
+ --tw-enter-scale: --
+value(--percentage-*,
+[*]);}@utility zoom-o
+ut{--tw-exit-scale: 
+0;}@utility zoom-out-
+*{--tw-exit-scale: ca
+lc(--value(number)*1%
+); --tw-exit-scale: c
+alc(--value(ratio)); 
+--tw-exit-scale: --va
+lue(--percentage-*,[*
+]);}@utility -zoom-ou
+t-*{--tw-exit-scale: 
+calc(--value(number)*
+-1%); 
+--tw-exit-scale: calc
+(--value(ratio)*-1); 
+--tw-exit-scale: --va
+lue(--percentage-*,[*
+]);}@utility spin-in{
+--tw-enter-rotate: 
+30deg;}@utility spin-
+in-*{--tw-enter-rotat
+e: calc(--value(numbe
+r)*1deg); 
+--tw-enter-rotate: ca
+lc(--value(ratio)*360
+deg); 
+--tw-enter-rotate: --
+value(--rotate-*,[*])
+;}@utility -spin-in{-
+-tw-enter-rotate: 
+-30deg;}@utility -spi
+n-in-*{--tw-enter-rot
+ate: calc(--value(num
+ber)*-1deg); 
+--tw-enter-rotate: ca
+lc(--value(ratio)*-36
+0deg); 
+--tw-enter-rotate: --
+value(--rotate-*,[*])
+;}@utility spin-out{-
+-tw-exit-rotate: 
+30deg;}@utility spin-
+out-*{--tw-exit-rotat
+e: calc(--value(numbe
+r)*1deg); 
+--tw-exit-rotate: cal
+c(--value(ratio)*360d
+eg); 
+--tw-exit-rotate: --v
+alue(--rotate-*,[*]);
+}@utility -spin-out{-
+-tw-exit-rotate: 
+-30deg;}@utility -spi
+n-out-*{--tw-exit-rot
+ate: calc(--value(num
+ber)*-1deg); 
+--tw-exit-rotate: cal
+c(--value(ratio)*-360
+deg); 
+--tw-exit-rotate: --v
+alue(--rotate-*,[*]);
+}@utility slide-in-fr
+om-top{--tw-enter-tra
+nslate-y: 
+-100%;}@utility slide
+-in-from-top-*{--tw-e
+nter-translate-y: --s
+pacing(--value(intege
+r)*-1); --tw-enter-tr
+anslate-y: calc(--val
+ue(--percentage-*,--p
+ercentage-translate-*
+)*-100%); --tw-enter-
+translate-y: calc(--v
+alue(ratio)*-100%); -
+-tw-enter-translate-y
+: calc(--value(--tran
+slate-*,[percentage],
+[length])*-1);}@utili
+ty slide-in-from-bott
+om{--tw-enter-transla
+te-y: 100%;}@utility 
+slide-in-from-bottom-
+*{--tw-enter-translat
+e-y: --spacing(--valu
+e(integer)); --tw-ent
+er-translate-y: calc(
+--value(--percentage-
+*,--percentage-transl
+ate-*)*100%); --tw-en
+ter-translate-y: calc
+(--value(ratio)*100%)
+; --tw-enter-translat
+e-y: --value(--transl
+ate-*,[percentage],[l
+ength]);}@utility sli
+de-in-from-left{--tw-
+enter-translate-x: 
+-100%;}@utility slide
+-in-from-left-*{--tw-
+enter-translate-x: --
+spacing(--value(integ
+er)*-1); --tw-enter-t
+ranslate-x: calc(--va
+lue(--percentage-*,--
+percentage-translate-
+*)*-100%); --tw-enter
+-translate-x: calc(--
+value(ratio)*-100%); 
+--tw-enter-translate-
+x: calc(--value(--tra
+nslate-*,[percentage]
+,[length])*-1);}@util
+ity slide-in-from-rig
+ht{--tw-enter-transla
+te-x: 100%;}@utility 
+slide-in-from-right-*
+{--tw-enter-translate
+-x: --spacing(--value
+(integer)); --tw-ente
+r-translate-x: calc(-
+-value(--percentage-*
+,--percentage-transla
+te-*)*100%); --tw-ent
+er-translate-x: calc(
+--value(ratio)*100%);
+ --tw-enter-translate
+-x: --value(--transla
+te-*,[percentage],[le
+ngth]);}@utility slid
+e-in-from-start{&:dir
+(ltr){ --tw-enter-tra
+nslate-x: -100%; 
+}&:dir(rtl){ --tw-ent
+er-translate-x: 
+100%; }}@utility slid
+e-in-from-start-*{&:w
+here(:dir(ltr),[dir="
+ltr"],[dir="ltr"]*){ 
+--tw-enter-translate-
+x: --spacing(--value(
+integer)*-1); --tw-en
+ter-translate-x: calc
+(--value(--percentage
+-*,--percentage-trans
+late-*)*-100%); --tw-
+enter-translate-x: ca
+lc(--value(ratio)*-10
+0%); --tw-enter-trans
+late-x: calc(--value(
+--translate-*,[percen
+tage],[length])*-1); 
+}&:where(:dir(rtl),[d
+ir="rtl"],[dir="rtl"]
+*){ --tw-enter-transl
+ate-x: --spacing(--va
+lue(integer)); --tw-e
+nter-translate-x: cal
+c(--value(--percentag
+e-*,--percentage-tran
+slate-*)*100%); --tw-
+enter-translate-x: ca
+lc(--value(ratio)*100
+%); --tw-enter-transl
+ate-x: --value(--tran
+slate-*,[percentage],
+[length]); 
+}}@utility slide-in-f
+rom-end{&:dir(ltr){ -
+-tw-enter-translate-x
+: 100%; }&:dir(rtl){ 
+--tw-enter-translate-
+x: -100%; }}@utility 
+slide-in-from-end-*{&
+:where(:dir(ltr),[dir
+="ltr"],[dir="ltr"]*)
+{ --tw-enter-translat
+e-x: --spacing(--valu
+e(integer)); --tw-ent
+er-translate-x: calc(
+--value(--percentage-
+*,--percentage-transl
+ate-*)*100%); --tw-en
+ter-translate-x: calc
+(--value(ratio)*100%)
+; --tw-enter-translat
+e-x: --value(--transl
+ate-*,[percentage],[l
+ength]); }&:where(:di
+r(rtl),[dir="rtl"],[d
+ir="rtl"]*){ --tw-ent
+er-translate-x: --spa
+cing(--value(integer)
+*-1); --tw-enter-tran
+slate-x: calc(--value
+(--percentage-*,--per
+centage-translate-*)*
+-100%); --tw-enter-tr
+anslate-x: calc(--val
+ue(ratio)*-100%); --t
+w-enter-translate-x: 
+calc(--value(--transl
+ate-*,[percentage],[l
+ength])*-1); 
+}}@utility slide-out-
+to-top{--tw-exit-tran
+slate-y: 
+-100%;}@utility slide
+-out-to-top-*{--tw-ex
+it-translate-y: --spa
+cing(--value(integer)
+*-1); --tw-exit-trans
+late-y: calc(--value(
+--percentage-*,--perc
+entage-translate-*)*-
+100%); --tw-exit-tran
+slate-y: calc(--value
+(ratio)*-100%); --tw-
+exit-translate-y: cal
+c(--value(--translate
+-*,[percentage],[leng
+th])*-1);}@utility sl
+ide-out-to-bottom{--t
+w-exit-translate-y: 
+100%;}@utility slide-
+out-to-bottom-*{--tw-
+exit-translate-y: --s
+pacing(--value(intege
+r)); --tw-exit-transl
+ate-y: calc(--value(-
+-percentage-*,--perce
+ntage-translate-*)*10
+0%); --tw-exit-transl
+ate-y: calc(--value(r
+atio)*100%); --tw-exi
+t-translate-y: --valu
+e(--translate-*,[perc
+entage],[length]);}@u
+tility slide-out-to-l
+eft{--tw-exit-transla
+te-x: 
+-100%;}@utility slide
+-out-to-left-*{--tw-e
+xit-translate-x: --sp
+acing(--value(integer
+)*-1); --tw-exit-tran
+slate-x: calc(--value
+(--percentage-*,--per
+centage-translate-*)*
+-100%); --tw-exit-tra
+nslate-x: calc(--valu
+e(ratio)*-100%); --tw
+-exit-translate-x: ca
+lc(--value(--translat
+e-*,[percentage],[len
+gth])*-1);}@utility s
+lide-out-to-right{--t
+w-exit-translate-x: 
+100%;}@utility slide-
+out-to-right-*{--tw-e
+xit-translate-x: --sp
+acing(--value(integer
+)); --tw-exit-transla
+te-x: calc(--value(--
+percentage-*,--percen
+tage-translate-*)*100
+%); --tw-exit-transla
+te-x: calc(--value(ra
+tio)*100%); --tw-exit
+-translate-x: --value
+(--translate-*,[perce
+ntage],[length]);}@ut
+ility slide-out-to-st
+art{&:dir(ltr){ --tw-
+exit-translate-x: 
+-100%; }&:dir(rtl){ -
+-tw-exit-translate-x:
+ 100%; }}@utility sli
+de-out-to-start-*{&:w
+here(:dir(ltr),[dir="
+ltr"],[dir="ltr"]*){ 
+--tw-exit-translate-x
+: --spacing(--value(i
+nteger)*-1); --tw-exi
+t-translate-x: calc(-
+-value(--percentage-*
+,--percentage-transla
+te-*)*-100%); --tw-ex
+it-translate-x: calc(
+--value(ratio)*-100%)
+; --tw-exit-translate
+-x: calc(--value(--tr
+anslate-*,[percentage
+],[length])*-1); }&:w
+here(:dir(rtl),[dir="
+rtl"],[dir="rtl"]*){ 
+--tw-exit-translate-x
+: --spacing(--value(i
+nteger)); --tw-exit-t
+ranslate-x: calc(--va
+lue(--percentage-*,--
+percentage-translate-
+*)*100%); --tw-exit-t
+ranslate-x: calc(--va
+lue(ratio)*100%); --t
+w-exit-translate-x: -
+-value(--translate-*,
+[percentage],[length]
+); }}@utility slide-o
+ut-to-end{&:dir(ltr){
+ --tw-exit-translate-
+x: 100%; 
+}&:dir(rtl){ --tw-exi
+t-translate-x: 
+-100%; }}@utility sli
+de-out-to-end-*{&:whe
+re(:dir(ltr),[dir="lt
+r"],[dir="ltr"]*){ --
+tw-exit-translate-x: 
+--spacing(--value(int
+eger)); --tw-exit-tra
+nslate-x: calc(--valu
+e(--percentage-*,--pe
+rcentage-translate-*)
+*100%); --tw-exit-tra
+nslate-x: calc(--valu
+e(ratio)*100%); --tw-
+exit-translate-x: --v
+alue(--translate-*,[p
+ercentage],[length]);
+ }&:where(:dir(rtl),[
+dir="rtl"],[dir="rtl"
+]*){ --tw-exit-transl
+ate-x: --spacing(--va
+lue(integer)*-1); --t
+w-exit-translate-x: c
+alc(--value(--percent
+age-*,--percentage-tr
+anslate-*)*-100%); --
+tw-exit-translate-x: 
+calc(--value(ratio)*-
+100%); --tw-exit-tran
+slate-x: calc(--value
+(--translate-*,[perce
+ntage],[length])*-1);
+ }}
+^
+
+SyntaxError: Invalid 
+or unexpected token
+    at wrapSafe (node
+:internal/modules/cjs
+/loader:1692:18)
+    at 
+Module._compile (node
+:internal/modules/cjs
+/loader:1735:20)
+    at Object..js (no
+de:internal/modules/c
+js/loader:1893:10)
+    at Module.load (n
+ode:internal/modules/
+cjs/loader:1481:32)
+    at Module._load (
+node:internal/modules
+/cjs/loader:1300:12)
+    at TracingChannel
+.traceSync (node:diag
+nostics_channel:328:1
+4)
+    at 
+wrapModuleLoad (node:
+internal/modules/cjs/
+loader:245:24)
+    at 
+Module.<anonymous> (n
+ode:internal/modules/
+cjs/loader:1504:12)
+    at mod.require (C
+:\NTG\Client-View-Men
+tozy\node_modules\nex
+t\dist\server\require
+-hook.js:65:28)
+    at require (node:
+internal/modules/help
+ers:152:16)
+
+Import trace for 
+requested module:
+./src/app/globals.css
+.webpack[javascript/a
+uto]!=!./node_modules
+/next/dist/build/webp
+ack/loaders/css-loade
+r/src/index.js??ruleS
+et[1].rules[13].oneOf
+[10].use[2]!./node_mo
+dules/next/dist/build
+/webpack/loaders/post
+css-loader/src/index.
+js??ruleSet[1].rules[
+13].oneOf[10].use[3]!
+./src/app/globals.css
+./src/app/globals.css
+
+./src/app/globals.css
+C:\NTG\Client-View-Me
+ntozy\node_modules\tw
+-animate-css\dist\tw-
+animate.css:1
+@property --tw-animat
+ion-delay{syntax:"*";
+inherits:false;initia
+l-value:0s}@property 
+--tw-animation-direct
+ion{syntax:"*";inheri
+ts:false;initial-valu
+e:normal}@property --
+tw-animation-duration
+{syntax:"*";inherits:
+false}@property --tw-
+animation-fill-mode{s
+yntax:"*";inherits:fa
+lse;initial-value:non
+e}@property --tw-anim
+ation-iteration-count
+{syntax:"*";inherits:
+false;initial-value:1
+}@property --tw-enter
+-blur{syntax:"*";inhe
+rits:false;initial-va
+lue:0}@property --tw-
+enter-opacity{syntax:
+"*";inherits:false;in
+itial-value:1}@proper
+ty --tw-enter-rotate{
+syntax:"*";inherits:f
+alse;initial-value:0}
+@property --tw-enter-
+scale{syntax:"*";inhe
+rits:false;initial-va
+lue:1}@property --tw-
+enter-translate-x{syn
+tax:"*";inherits:fals
+e;initial-value:0}@pr
+operty --tw-enter-tra
+nslate-y{syntax:"*";i
+nherits:false;initial
+-value:0}@property --
+tw-exit-blur{syntax:"
+*";inherits:false;ini
+tial-value:0}@propert
+y --tw-exit-opacity{s
+yntax:"*";inherits:fa
+lse;initial-value:1}@
+property --tw-exit-ro
+tate{syntax:"*";inher
+its:false;initial-val
+ue:0}@property --tw-e
+xit-scale{syntax:"*";
+inherits:false;initia
+l-value:1}@property -
+-tw-exit-translate-x{
+syntax:"*";inherits:f
+alse;initial-value:0}
+@property --tw-exit-t
+ranslate-y{syntax:"*"
+;inherits:false;initi
+al-value:0}@theme inl
+ine{--animation-delay
+-0: 0s; --animation-d
+elay-75: 75ms; --anim
+ation-delay-100: 
+.1s; --animation-dela
+y-150: .15s; --animat
+ion-delay-200: .2s; -
+-animation-delay-300:
+ .3s; --animation-del
+ay-500: .5s; --animat
+ion-delay-700: .7s; -
+-animation-delay-1000
+: 1s; --animation-rep
+eat-0: 0; --animation
+-repeat-1: 1; --anima
+tion-repeat-infinite:
+ infinite; --animatio
+n-direction-normal: 
+normal; --animation-d
+irection-reverse: 
+reverse; --animation-
+direction-alternate: 
+alternate; --animatio
+n-direction-alternate
+-reverse: 
+alternate-reverse; --
+animation-fill-mode-n
+one: none; --animatio
+n-fill-mode-forwards:
+ forwards; --animatio
+n-fill-mode-backwards
+: backwards; --animat
+ion-fill-mode-both: 
+both; 
+--percentage-0: 0; 
+--percentage-5: .05; 
+--percentage-10: .1; 
+--percentage-15: 
+.15; 
+--percentage-20: .2; 
+--percentage-25: 
+.25; 
+--percentage-30: .3; 
+--percentage-35: 
+.35; 
+--percentage-40: .4; 
+--percentage-45: 
+.45; 
+--percentage-50: .5; 
+--percentage-55: 
+.55; 
+--percentage-60: .6; 
+--percentage-65: 
+.65; 
+--percentage-70: .7; 
+--percentage-75: 
+.75; 
+--percentage-80: .8; 
+--percentage-85: 
+.85; 
+--percentage-90: .9; 
+--percentage-95: 
+.95; 
+--percentage-100: 1; 
+--percentage-translat
+e-full: 1; 
+--animate-in: enter v
+ar(--tw-animation-dur
+ation,var(--tw-durati
+on,.15s))var(--tw-eas
+e,ease)var(--tw-anima
+tion-delay,0s)var(--t
+w-animation-iteration
+-count,1)var(--tw-ani
+mation-direction,norm
+al)var(--tw-animation
+-fill-mode,none); 
+--animate-out: exit v
+ar(--tw-animation-dur
+ation,var(--tw-durati
+on,.15s))var(--tw-eas
+e,ease)var(--tw-anima
+tion-delay,0s)var(--t
+w-animation-iteration
+-count,1)var(--tw-ani
+mation-direction,norm
+al)var(--tw-animation
+-fill-mode,none); 
+@keyframes enter { 
+from { opacity: var(-
+-tw-enter-opacity,1);
+ transform: translate
+3d(var(--tw-enter-tra
+nslate-x,0),var(--tw-
+enter-translate-y,0),
+0)scale3d(var(--tw-en
+ter-scale,1),var(--tw
+-enter-scale,1),var(-
+-tw-enter-scale,1))ro
+tate(var(--tw-enter-r
+otate,0)); filter: bl
+ur(var(--tw-enter-blu
+r,0)); }}@keyframes 
+exit { to { opacity: 
+var(--tw-exit-opacity
+,1); transform: trans
+late3d(var(--tw-exit-
+translate-x,0),var(--
+tw-exit-translate-y,0
+),0)scale3d(var(--tw-
+exit-scale,1),var(--t
+w-exit-scale,1),var(-
+-tw-exit-scale,1))rot
+ate(var(--tw-exit-rot
+ate,0)); filter: blur
+(var(--tw-exit-blur,0
+)); }}--animate-accor
+dion-down: 
+accordion-down var(--
+tw-animation-duration
+,var(--tw-duration,.2
+s))var(--tw-ease,ease
+-out)var(--tw-animati
+on-delay,0s)var(--tw-
+animation-iteration-c
+ount,1)var(--tw-anima
+tion-direction,normal
+)var(--tw-animation-f
+ill-mode,none); --ani
+mate-accordion-up: 
+accordion-up var(--tw
+-animation-duration,v
+ar(--tw-duration,.2s)
+)var(--tw-ease,ease-o
+ut)var(--tw-animation
+-delay,0s)var(--tw-an
+imation-iteration-cou
+nt,1)var(--tw-animati
+on-direction,normal)v
+ar(--tw-animation-fil
+l-mode,none); --anima
+te-collapsible-down: 
+collapsible-down var(
+--tw-animation-durati
+on,var(--tw-duration,
+.2s))var(--tw-ease,ea
+se-out)var(--tw-anima
+tion-delay,0s)var(--t
+w-animation-iteration
+-count,1)var(--tw-ani
+mation-direction,norm
+al)var(--tw-animation
+-fill-mode,none); --a
+nimate-collapsible-up
+: collapsible-up var(
+--tw-animation-durati
+on,var(--tw-duration,
+.2s))var(--tw-ease,ea
+se-out)var(--tw-anima
+tion-delay,0s)var(--t
+w-animation-iteration
+-count,1)var(--tw-ani
+mation-direction,norm
+al)var(--tw-animation
+-fill-mode,none); 
+@keyframes 
+accordion-down { 
+from { height: 0; 
+}to { height: var(--r
+adix-accordion-conten
+t-height,var(--bits-a
+ccordion-content-heig
+ht,var(--reka-accordi
+on-content-height,var
+(--kb-accordion-conte
+nt-height,var(--ngp-a
+ccordion-content-heig
+ht,auto))))); 
+}}@keyframes 
+accordion-up { from 
+{ height: var(--radix
+-accordion-content-he
+ight,var(--bits-accor
+dion-content-height,v
+ar(--reka-accordion-c
+ontent-height,var(--k
+b-accordion-content-h
+eight,var(--ngp-accor
+dion-content-height,a
+uto))))); }to { 
+height: 0; 
+}}@keyframes 
+collapsible-down { 
+from { height: 0; 
+}to { height: var(--r
+adix-collapsible-cont
+ent-height,var(--bits
+-collapsible-content-
+height,var(--reka-col
+lapsible-content-heig
+ht,var(--kb-collapsib
+le-content-height,aut
+o)))); }}@keyframes 
+collapsible-up { 
+from { height: var(--
+radix-collapsible-con
+tent-height,var(--bit
+s-collapsible-content
+-height,var(--reka-co
+llapsible-content-hei
+ght,var(--kb-collapsi
+ble-content-height,au
+to)))); }to { 
+height: 0; }}--animat
+e-caret-blink: 
+caret-blink 1.25s 
+ease-out infinite; 
+@keyframes 
+caret-blink { 
+0%,70%,100% { 
+opacity: 1; }20%,50% 
+{ opacity: 0; 
+}}}@utility animation
+-duration-*{--tw-anim
+ation-duration: calc(
+--value(number)*1ms);
+ --tw-animation-durat
+ion: --value(--animat
+ion-duration-*,[durat
+ion],"initial",[*]); 
+animation-duration: c
+alc(--value(number)*1
+ms); 
+animation-duration: -
+-value(--animation-du
+ration-*,[duration],"
+initial",[*]);}@utili
+ty delay-*{animation-
+delay: calc(--value(n
+umber)*1ms); 
+animation-delay: --va
+lue(--animation-delay
+-*,[duration],"initia
+l",[*]); --tw-animati
+on-delay: calc(--valu
+e(number)*1ms); --tw-
+animation-delay: --va
+lue(--animation-delay
+-*,[duration],"initia
+l",[*]);}@utility rep
+eat-*{animation-itera
+tion-count: --value(-
+-animation-repeat-*,n
+umber,"initial",[*]);
+ --tw-animation-itera
+tion-count: --value(-
+-animation-repeat-*,n
+umber,"initial",[*]);
+}@utility direction-*
+{animation-direction:
+ --value(--animation-
+direction-*,"initial"
+,[*]); --tw-animation
+-direction: --value(-
+-animation-direction-
+*,"initial",[*]);}@ut
+ility fill-mode-*{ani
+mation-fill-mode: --v
+alue(--animation-fill
+-mode-*,"initial",[*]
+); --tw-animation-fil
+l-mode: --value(--ani
+mation-fill-mode-*,"i
+nitial",[*]);}@utilit
+y running{animation-p
+lay-state: 
+running;}@utility pau
+sed{animation-play-st
+ate: 
+paused;}@utility play
+-state-*{animation-pl
+ay-state: --value("in
+itial",[*]);}@utility
+ blur-in{--tw-enter-b
+lur: 20px;}@utility b
+lur-in-*{--tw-enter-b
+lur: calc(--value(num
+ber)*1px); 
+--tw-enter-blur: --va
+lue(--blur-*,[*]);}@u
+tility blur-out{--tw-
+exit-blur: 
+20px;}@utility blur-o
+ut-*{--tw-exit-blur: 
+calc(--value(number)*
+1px); 
+--tw-exit-blur: --val
+ue(--blur-*,[*]);}@ut
+ility fade-in{--tw-en
+ter-opacity: 
+0;}@utility fade-in-*
+{--tw-enter-opacity: 
+calc(--value(number)/
+100); 
+--tw-enter-opacity: -
+-value(--percentage-*
+,[*]);}@utility fade-
+out{--tw-exit-opacity
+: 0;}@utility fade-ou
+t-*{--tw-exit-opacity
+: calc(--value(number
+)/100); 
+--tw-exit-opacity: --
+value(--percentage-*,
+[*]);}@utility zoom-i
+n{--tw-enter-scale: 
+0;}@utility zoom-in-*
+{--tw-enter-scale: ca
+lc(--value(number)*1%
+); --tw-enter-scale: 
+calc(--value(ratio));
+ --tw-enter-scale: --
+value(--percentage-*,
+[*]);}@utility -zoom-
+in-*{--tw-enter-scale
+: calc(--value(number
+)*-1%); 
+--tw-enter-scale: cal
+c(--value(ratio)*-1);
+ --tw-enter-scale: --
+value(--percentage-*,
+[*]);}@utility zoom-o
+ut{--tw-exit-scale: 
+0;}@utility zoom-out-
+*{--tw-exit-scale: ca
+lc(--value(number)*1%
+); --tw-exit-scale: c
+alc(--value(ratio)); 
+--tw-exit-scale: --va
+lue(--percentage-*,[*
+]);}@utility -zoom-ou
+t-*{--tw-exit-scale: 
+calc(--value(number)*
+-1%); 
+--tw-exit-scale: calc
+(--value(ratio)*-1); 
+--tw-exit-scale: --va
+lue(--percentage-*,[*
+]);}@utility spin-in{
+--tw-enter-rotate: 
+30deg;}@utility spin-
+in-*{--tw-enter-rotat
+e: calc(--value(numbe
+r)*1deg); 
+--tw-enter-rotate: ca
+lc(--value(ratio)*360
+deg); 
+--tw-enter-rotate: --
+value(--rotate-*,[*])
+;}@utility -spin-in{-
+-tw-enter-rotate: 
+-30deg;}@utility -spi
+n-in-*{--tw-enter-rot
+ate: calc(--value(num
+ber)*-1deg); 
+--tw-enter-rotate: ca
+lc(--value(ratio)*-36
+0deg); 
+--tw-enter-rotate: --
+value(--rotate-*,[*])
+;}@utility spin-out{-
+-tw-exit-rotate: 
+30deg;}@utility spin-
+out-*{--tw-exit-rotat
+e: calc(--value(numbe
+r)*1deg); 
+--tw-exit-rotate: cal
+c(--value(ratio)*360d
+eg); 
+--tw-exit-rotate: --v
+alue(--rotate-*,[*]);
+}@utility -spin-out{-
+-tw-exit-rotate: 
+-30deg;}@utility -spi
+n-out-*{--tw-exit-rot
+ate: calc(--value(num
+ber)*-1deg); 
+--tw-exit-rotate: cal
+c(--value(ratio)*-360
+deg); 
+--tw-exit-rotate: --v
+alue(--rotate-*,[*]);
+}@utility slide-in-fr
+om-top{--tw-enter-tra
+nslate-y: 
+-100%;}@utility slide
+-in-from-top-*{--tw-e
+nter-translate-y: --s
+pacing(--value(intege
+r)*-1); --tw-enter-tr
+anslate-y: calc(--val
+ue(--percentage-*,--p
+ercentage-translate-*
+)*-100%); --tw-enter-
+translate-y: calc(--v
+alue(ratio)*-100%); -
+-tw-enter-translate-y
+: calc(--value(--tran
+slate-*,[percentage],
+[length])*-1);}@utili
+ty slide-in-from-bott
+om{--tw-enter-transla
+te-y: 100%;}@utility 
+slide-in-from-bottom-
+*{--tw-enter-translat
+e-y: --spacing(--valu
+e(integer)); --tw-ent
+er-translate-y: calc(
+--value(--percentage-
+*,--percentage-transl
+ate-*)*100%); --tw-en
+ter-translate-y: calc
+(--value(ratio)*100%)
+; --tw-enter-translat
+e-y: --value(--transl
+ate-*,[percentage],[l
+ength]);}@utility sli
+de-in-from-left{--tw-
+enter-translate-x: 
+-100%;}@utility slide
+-in-from-left-*{--tw-
+enter-translate-x: --
+spacing(--value(integ
+er)*-1); --tw-enter-t
+ranslate-x: calc(--va
+lue(--percentage-*,--
+percentage-translate-
+*)*-100%); --tw-enter
+-translate-x: calc(--
+value(ratio)*-100%); 
+--tw-enter-translate-
+x: calc(--value(--tra
+nslate-*,[percentage]
+,[length])*-1);}@util
+ity slide-in-from-rig
+ht{--tw-enter-transla
+te-x: 100%;}@utility 
+slide-in-from-right-*
+{--tw-enter-translate
+-x: --spacing(--value
+(integer)); --tw-ente
+r-translate-x: calc(-
+-value(--percentage-*
+,--percentage-transla
+te-*)*100%); --tw-ent
+er-translate-x: calc(
+--value(ratio)*100%);
+ --tw-enter-translate
+-x: --value(--transla
+te-*,[percentage],[le
+ngth]);}@utility slid
+e-in-from-start{&:dir
+(ltr){ --tw-enter-tra
+nslate-x: -100%; 
+}&:dir(rtl){ --tw-ent
+er-translate-x: 
+100%; }}@utility slid
+e-in-from-start-*{&:w
+here(:dir(ltr),[dir="
+ltr"],[dir="ltr"]*){ 
+--tw-enter-translate-
+x: --spacing(--value(
+integer)*-1); --tw-en
+ter-translate-x: calc
+(--value(--percentage
+-*,--percentage-trans
+late-*)*-100%); --tw-
+enter-translate-x: ca
+lc(--value(ratio)*-10
+0%); --tw-enter-trans
+late-x: calc(--value(
+--translate-*,[percen
+tage],[length])*-1); 
+}&:where(:dir(rtl),[d
+ir="rtl"],[dir="rtl"]
+*){ --tw-enter-transl
+ate-x: --spacing(--va
+lue(integer)); --tw-e
+nter-translate-x: cal
+c(--value(--percentag
+e-*,--percentage-tran
+slate-*)*100%); --tw-
+enter-translate-x: ca
+lc(--value(ratio)*100
+%); --tw-enter-transl
+ate-x: --value(--tran
+slate-*,[percentage],
+[length]); 
+}}@utility slide-in-f
+rom-end{&:dir(ltr){ -
+-tw-enter-translate-x
+: 100%; }&:dir(rtl){ 
+--tw-enter-translate-
+x: -100%; }}@utility 
+slide-in-from-end-*{&
+:where(:dir(ltr),[dir
+="ltr"],[dir="ltr"]*)
+{ --tw-enter-translat
+e-x: --spacing(--valu
+e(integer)); --tw-ent
+er-translate-x: calc(
+--value(--percentage-
+*,--percentage-transl
+ate-*)*100%); --tw-en
+ter-translate-x: calc
+(--value(ratio)*100%)
+; --tw-enter-translat
+e-x: --value(--transl
+ate-*,[percentage],[l
+ength]); }&:where(:di
+r(rtl),[dir="rtl"],[d
+ir="rtl"]*){ --tw-ent
+er-translate-x: --spa
+cing(--value(integer)
+*-1); --tw-enter-tran
+slate-x: calc(--value
+(--percentage-*,--per
+centage-translate-*)*
+-100%); --tw-enter-tr
+anslate-x: calc(--val
+ue(ratio)*-100%); --t
+w-enter-translate-x: 
+calc(--value(--transl
+ate-*,[percentage],[l
+ength])*-1); 
+}}@utility slide-out-
+to-top{--tw-exit-tran
+slate-y: 
+-100%;}@utility slide
+-out-to-top-*{--tw-ex
+it-translate-y: --spa
+cing(--value(integer)
+*-1); --tw-exit-trans
+late-y: calc(--value(
+--percentage-*,--perc
+entage-translate-*)*-
+100%); --tw-exit-tran
+slate-y: calc(--value
+(ratio)*-100%); --tw-
+exit-translate-y: cal
+c(--value(--translate
+-*,[percentage],[leng
+th])*-1);}@utility sl
+ide-out-to-bottom{--t
+w-exit-translate-y: 
+100%;}@utility slide-
+out-to-bottom-*{--tw-
+exit-translate-y: --s
+pacing(--value(intege
+r)); --tw-exit-transl
+ate-y: calc(--value(-
+-percentage-*,--perce
+ntage-translate-*)*10
+0%); --tw-exit-transl
+ate-y: calc(--value(r
+atio)*100%); --tw-exi
+t-translate-y: --valu
+e(--translate-*,[perc
+entage],[length]);}@u
+tility slide-out-to-l
+eft{--tw-exit-transla
+te-x: 
+-100%;}@utility slide
+-out-to-left-*{--tw-e
+xit-translate-x: --sp
+acing(--value(integer
+)*-1); --tw-exit-tran
+slate-x: calc(--value
+(--percentage-*,--per
+centage-translate-*)*
+-100%); --tw-exit-tra
+nslate-x: calc(--valu
+e(ratio)*-100%); --tw
+-exit-translate-x: ca
+lc(--value(--translat
+e-*,[percentage],[len
+gth])*-1);}@utility s
+lide-out-to-right{--t
+w-exit-translate-x: 
+100%;}@utility slide-
+out-to-right-*{--tw-e
+xit-translate-x: --sp
+acing(--value(integer
+)); --tw-exit-transla
+te-x: calc(--value(--
+percentage-*,--percen
+tage-translate-*)*100
+%); --tw-exit-transla
+te-x: calc(--value(ra
+tio)*100%); --tw-exit
+-translate-x: --value
+(--translate-*,[perce
+ntage],[length]);}@ut
+ility slide-out-to-st
+art{&:dir(ltr){ --tw-
+exit-translate-x: 
+-100%; }&:dir(rtl){ -
+-tw-exit-translate-x:
+ 100%; }}@utility sli
+de-out-to-start-*{&:w
+here(:dir(ltr),[dir="
+ltr"],[dir="ltr"]*){ 
+--tw-exit-translate-x
+: --spacing(--value(i
+nteger)*-1); --tw-exi
+t-translate-x: calc(-
+-value(--percentage-*
+,--percentage-transla
+te-*)*-100%); --tw-ex
+it-translate-x: calc(
+--value(ratio)*-100%)
+; --tw-exit-translate
+-x: calc(--value(--tr
+anslate-*,[percentage
+],[length])*-1); }&:w
+here(:dir(rtl),[dir="
+rtl"],[dir="rtl"]*){ 
+--tw-exit-translate-x
+: --spacing(--value(i
+nteger)); --tw-exit-t
+ranslate-x: calc(--va
+lue(--percentage-*,--
+percentage-translate-
+*)*100%); --tw-exit-t
+ranslate-x: calc(--va
+lue(ratio)*100%); --t
+w-exit-translate-x: -
+-value(--translate-*,
+[percentage],[length]
+); }}@utility slide-o
+ut-to-end{&:dir(ltr){
+ --tw-exit-translate-
+x: 100%; 
+}&:dir(rtl){ --tw-exi
+t-translate-x: 
+-100%; }}@utility sli
+de-out-to-end-*{&:whe
+re(:dir(ltr),[dir="lt
+r"],[dir="ltr"]*){ --
+tw-exit-translate-x: 
+--spacing(--value(int
+eger)); --tw-exit-tra
+nslate-x: calc(--valu
+e(--percentage-*,--pe
+rcentage-translate-*)
+*100%); --tw-exit-tra
+nslate-x: calc(--valu
+e(ratio)*100%); --tw-
+exit-translate-x: --v
+alue(--translate-*,[p
+ercentage],[length]);
+ }&:where(:dir(rtl),[
+dir="rtl"],[dir="rtl"
+]*){ --tw-exit-transl
+ate-x: --spacing(--va
+lue(integer)*-1); --t
+w-exit-translate-x: c
+alc(--value(--percent
+age-*,--percentage-tr
+anslate-*)*-100%); --
+tw-exit-translate-x: 
+calc(--value(ratio)*-
+100%); --tw-exit-tran
+slate-x: calc(--value
+(--translate-*,[perce
+ntage],[length])*-1);
+ }}
+^
+
+SyntaxError: Invalid 
+or unexpected token
+    at wrapSafe (node
+:internal/modules/cjs
+/loader:1692:18)
+    at 
+Module._compile (node
+:internal/modules/cjs
+/loader:1735:20)
+    at Object..js (no
+de:internal/modules/c
+js/loader:1893:10)
+    at Module.load (n
+ode:internal/modules/
+cjs/loader:1481:32)
+    at Module._load (
+node:internal/modules
+/cjs/loader:1300:12)
+    at TracingChannel
+.traceSync (node:diag
+nostics_channel:328:1
+4)
+    at 
+wrapModuleLoad (node:
+internal/modules/cjs/
+loader:245:24)
+    at 
+Module.<anonymous> (n
+ode:internal/modules/
+cjs/loader:1504:12)
+    at mod.require (C
+:\NTG\Client-View-Men
+tozy\node_modules\nex
+t\dist\server\require
+-hook.js:65:28)
+    at require (node:
+internal/modules/help
+ers:152:16)
+    at 
+tryRunOrWebpackError 
+(C:\NTG\Client-View-M
+entozy\node_modules\n
+ext\dist\compiled\web
+pack\bundle5.js:28:31
+4962)
+    at __webpack_requ
+ire_module__ (C:\NTG\
+Client-View-Mentozy\n
+ode_modules\next\dist
+\compiled\webpack\bun
+dle5.js:28:131434)
+    at __nested_webpa
+ck_require_161179__ (
+C:\NTG\Client-View-Me
+ntozy\node_modules\ne
+xt\dist\compiled\webp
+ack\bundle5.js:28:130
+872)
+    at C:\NTG\Client-
+View-Mentozy\node_mod
+ules\next\dist\compil
+ed\webpack\bundle5.js
+:28:131723
+    at 
+symbolIterator (C:\NT
+G\Client-View-Mentozy
+\node_modules\next\di
+st\compiled\neo-async
+\async.js:1:14444)
+    at done (C:\NTG\C
+lient-View-Mentozy\no
+de_modules\next\dist\
+compiled\neo-async\as
+ync.js:1:14824)
+    at Hook.eval [as 
+callAsync] (eval at 
+create (C:\NTG\Client
+-View-Mentozy\node_mo
+dules\next\dist\compi
+led\webpack\bundle5.j
+s:13:9218), 
+<anonymous>:15:1)
+    at Hook.CALL_ASYN
+C_DELEGATE [as 
+_callAsync] (C:\NTG\C
+lient-View-Mentozy\no
+de_modules\next\dist\
+compiled\webpack\bund
+le5.js:13:6372)
+    at C:\NTG\Client-
+View-Mentozy\node_mod
+ules\next\dist\compil
+ed\webpack\bundle5.js
+:28:130593
+    at 
+symbolIterator (C:\NT
+G\Client-View-Mentozy
+\node_modules\next\di
+st\compiled\neo-async
+\async.js:1:14402)
+-- inner error --
+C:\NTG\Client-View-Me
+ntozy\node_modules\tw
+-animate-css\dist\tw-
+animate.css:1
+@property --tw-animat
+ion-delay{syntax:"*";
+inherits:false;initia
+l-value:0s}@property 
+--tw-animation-direct
+ion{syntax:"*";inheri
+ts:false;initial-valu
+e:normal}@property --
+tw-animation-duration
+{syntax:"*";inherits:
+false}@property --tw-
+animation-fill-mode{s
+yntax:"*";inherits:fa
+lse;initial-value:non
+e}@property --tw-anim
+ation-iteration-count
+{syntax:"*";inherits:
+false;initial-value:1
+}@property --tw-enter
+-blur{syntax:"*";inhe
+rits:false;initial-va
+lue:0}@property --tw-
+enter-opacity{syntax:
+"*";inherits:false;in
+itial-value:1}@proper
+ty --tw-enter-rotate{
+syntax:"*";inherits:f
+alse;initial-value:0}
+@property --tw-enter-
+scale{syntax:"*";inhe
+rits:false;initial-va
+lue:1}@property --tw-
+enter-translate-x{syn
+tax:"*";inherits:fals
+e;initial-value:0}@pr
+operty --tw-enter-tra
+nslate-y{syntax:"*";i
+nherits:false;initial
+-value:0}@property --
+tw-exit-blur{syntax:"
+*";inherits:false;ini
+tial-value:0}@propert
+y --tw-exit-opacity{s
+yntax:"*";inherits:fa
+lse;initial-value:1}@
+property --tw-exit-ro
+tate{syntax:"*";inher
+its:false;initial-val
+ue:0}@property --tw-e
+xit-scale{syntax:"*";
+inherits:false;initia
+l-value:1}@property -
+-tw-exit-translate-x{
+syntax:"*";inherits:f
+alse;initial-value:0}
+@property --tw-exit-t
+ranslate-y{syntax:"*"
+;inherits:false;initi
+al-value:0}@theme inl
+ine{--animation-delay
+-0: 0s; --animation-d
+elay-75: 75ms; --anim
+ation-delay-100: 
+.1s; --animation-dela
+y-150: .15s; --animat
+ion-delay-200: .2s; -
+-animation-delay-300:
+ .3s; --animation-del
+ay-500: .5s; --animat
+ion-delay-700: .7s; -
+-animation-delay-1000
+: 1s; --animation-rep
+eat-0: 0; --animation
+-repeat-1: 1; --anima
+tion-repeat-infinite:
+ infinite; --animatio
+n-direction-normal: 
+normal; --animation-d
+irection-reverse: 
+reverse; --animation-
+direction-alternate: 
+alternate; --animatio
+n-direction-alternate
+-reverse: 
+alternate-reverse; --
+animation-fill-mode-n
+one: none; --animatio
+n-fill-mode-forwards:
+ forwards; --animatio
+n-fill-mode-backwards
+: backwards; --animat
+ion-fill-mode-both: 
+both; 
+--percentage-0: 0; 
+--percentage-5: .05; 
+--percentage-10: .1; 
+--percentage-15: 
+.15; 
+--percentage-20: .2; 
+--percentage-25: 
+.25; 
+--percentage-30: .3; 
+--percentage-35: 
+.35; 
+--percentage-40: .4; 
+--percentage-45: 
+.45; 
+--percentage-50: .5; 
+--percentage-55: 
+.55; 
+--percentage-60: .6; 
+--percentage-65: 
+.65; 
+--percentage-70: .7; 
+--percentage-75: 
+.75; 
+--percentage-80: .8; 
+--percentage-85: 
+.85; 
+--percentage-90: .9; 
+--percentage-95: 
+.95; 
+--percentage-100: 1; 
+--percentage-translat
+e-full: 1; 
+--animate-in: enter v
+ar(--tw-animation-dur
+ation,var(--tw-durati
+on,.15s))var(--tw-eas
+e,ease)var(--tw-anima
+tion-delay,0s)var(--t
+w-animation-iteration
+-count,1)var(--tw-ani
+mation-direction,norm
+al)var(--tw-animation
+-fill-mode,none); 
+--animate-out: exit v
+ar(--tw-animation-dur
+ation,var(--tw-durati
+on,.15s))var(--tw-eas
+e,ease)var(--tw-anima
+tion-delay,0s)var(--t
+w-animation-iteration
+-count,1)var(--tw-ani
+mation-direction,norm
+al)var(--tw-animation
+-fill-mode,none); 
+@keyframes enter { 
+from { opacity: var(-
+-tw-enter-opacity,1);
+ transform: translate
+3d(var(--tw-enter-tra
+nslate-x,0),var(--tw-
+enter-translate-y,0),
+0)scale3d(var(--tw-en
+ter-scale,1),var(--tw
+-enter-scale,1),var(-
+-tw-enter-scale,1))ro
+tate(var(--tw-enter-r
+otate,0)); filter: bl
+ur(var(--tw-enter-blu
+r,0)); }}@keyframes 
+exit { to { opacity: 
+var(--tw-exit-opacity
+,1); transform: trans
+late3d(var(--tw-exit-
+translate-x,0),var(--
+tw-exit-translate-y,0
+),0)scale3d(var(--tw-
+exit-scale,1),var(--t
+w-exit-scale,1),var(-
+-tw-exit-scale,1))rot
+ate(var(--tw-exit-rot
+ate,0)); filter: blur
+(var(--tw-exit-blur,0
+)); }}--animate-accor
+dion-down: 
+accordion-down var(--
+tw-animation-duration
+,var(--tw-duration,.2
+s))var(--tw-ease,ease
+-out)var(--tw-animati
+on-delay,0s)var(--tw-
+animation-iteration-c
+ount,1)var(--tw-anima
+tion-direction,normal
+)var(--tw-animation-f
+ill-mode,none); --ani
+mate-accordion-up: 
+accordion-up var(--tw
+-animation-duration,v
+ar(--tw-duration,.2s)
+)var(--tw-ease,ease-o
+ut)var(--tw-animation
+-delay,0s)var(--tw-an
+imation-iteration-cou
+nt,1)var(--tw-animati
+on-direction,normal)v
+ar(--tw-animation-fil
+l-mode,none); --anima
+te-collapsible-down: 
+collapsible-down var(
+--tw-animation-durati
+on,var(--tw-duration,
+.2s))var(--tw-ease,ea
+se-out)var(--tw-anima
+tion-delay,0s)var(--t
+w-animation-iteration
+-count,1)var(--tw-ani
+mation-direction,norm
+al)var(--tw-animation
+-fill-mode,none); --a
+nimate-collapsible-up
+: collapsible-up var(
+--tw-animation-durati
+on,var(--tw-duration,
+.2s))var(--tw-ease,ea
+se-out)var(--tw-anima
+tion-delay,0s)var(--t
+w-animation-iteration
+-count,1)var(--tw-ani
+mation-direction,norm
+al)var(--tw-animation
+-fill-mode,none); 
+@keyframes 
+accordion-down { 
+from { height: 0; 
+}to { height: var(--r
+adix-accordion-conten
+t-height,var(--bits-a
+ccordion-content-heig
+ht,var(--reka-accordi
+on-content-height,var
+(--kb-accordion-conte
+nt-height,var(--ngp-a
+ccordion-content-heig
+ht,auto))))); 
+}}@keyframes 
+accordion-up { from 
+{ height: var(--radix
+-accordion-content-he
+ight,var(--bits-accor
+dion-content-height,v
+ar(--reka-accordion-c
+ontent-height,var(--k
+b-accordion-content-h
+eight,var(--ngp-accor
+dion-content-height,a
+uto))))); }to { 
+height: 0; 
+}}@keyframes 
+collapsible-down { 
+from { height: 0; 
+}to { height: var(--r
+adix-collapsible-cont
+ent-height,var(--bits
+-collapsible-content-
+height,var(--reka-col
+lapsible-content-heig
+ht,var(--kb-collapsib
+le-content-height,aut
+o)))); }}@keyframes 
+collapsible-up { 
+from { height: var(--
+radix-collapsible-con
+tent-height,var(--bit
+s-collapsible-content
+-height,var(--reka-co
+llapsible-content-hei
+ght,var(--kb-collapsi
+ble-content-height,au
+to)))); }to { 
+height: 0; }}--animat
+e-caret-blink: 
+caret-blink 1.25s 
+ease-out infinite; 
+@keyframes 
+caret-blink { 
+0%,70%,100% { 
+opacity: 1; }20%,50% 
+{ opacity: 0; 
+}}}@utility animation
+-duration-*{--tw-anim
+ation-duration: calc(
+--value(number)*1ms);
+ --tw-animation-durat
+ion: --value(--animat
+ion-duration-*,[durat
+ion],"initial",[*]); 
+animation-duration: c
+alc(--value(number)*1
+ms); 
+animation-duration: -
+-value(--animation-du
+ration-*,[duration],"
+initial",[*]);}@utili
+ty delay-*{animation-
+delay: calc(--value(n
+umber)*1ms); 
+animation-delay: --va
+lue(--animation-delay
+-*,[duration],"initia
+l",[*]); --tw-animati
+on-delay: calc(--valu
+e(number)*1ms); --tw-
+animation-delay: --va
+lue(--animation-delay
+-*,[duration],"initia
+l",[*]);}@utility rep
+eat-*{animation-itera
+tion-count: --value(-
+-animation-repeat-*,n
+umber,"initial",[*]);
+ --tw-animation-itera
+tion-count: --value(-
+-animation-repeat-*,n
+umber,"initial",[*]);
+}@utility direction-*
+{animation-direction:
+ --value(--animation-
+direction-*,"initial"
+,[*]); --tw-animation
+-direction: --value(-
+-animation-direction-
+*,"initial",[*]);}@ut
+ility fill-mode-*{ani
+mation-fill-mode: --v
+alue(--animation-fill
+-mode-*,"initial",[*]
+); --tw-animation-fil
+l-mode: --value(--ani
+mation-fill-mode-*,"i
+nitial",[*]);}@utilit
+y running{animation-p
+lay-state: 
+running;}@utility pau
+sed{animation-play-st
+ate: 
+paused;}@utility play
+-state-*{animation-pl
+ay-state: --value("in
+itial",[*]);}@utility
+ blur-in{--tw-enter-b
+lur: 20px;}@utility b
+lur-in-*{--tw-enter-b
+lur: calc(--value(num
+ber)*1px); 
+--tw-enter-blur: --va
+lue(--blur-*,[*]);}@u
+tility blur-out{--tw-
+exit-blur: 
+20px;}@utility blur-o
+ut-*{--tw-exit-blur: 
+calc(--value(number)*
+1px); 
+--tw-exit-blur: --val
+ue(--blur-*,[*]);}@ut
+ility fade-in{--tw-en
+ter-opacity: 
+0;}@utility fade-in-*
+{--tw-enter-opacity: 
+calc(--value(number)/
+100); 
+--tw-enter-opacity: -
+-value(--percentage-*
+,[*]);}@utility fade-
+out{--tw-exit-opacity
+: 0;}@utility fade-ou
+t-*{--tw-exit-opacity
+: calc(--value(number
+)/100); 
+--tw-exit-opacity: --
+value(--percentage-*,
+[*]);}@utility zoom-i
+n{--tw-enter-scale: 
+0;}@utility zoom-in-*
+{--tw-enter-scale: ca
+lc(--value(number)*1%
+); --tw-enter-scale: 
+calc(--value(ratio));
+ --tw-enter-scale: --
+value(--percentage-*,
+[*]);}@utility -zoom-
+in-*{--tw-enter-scale
+: calc(--value(number
+)*-1%); 
+--tw-enter-scale: cal
+c(--value(ratio)*-1);
+ --tw-enter-scale: --
+value(--percentage-*,
+[*]);}@utility zoom-o
+ut{--tw-exit-scale: 
+0;}@utility zoom-out-
+*{--tw-exit-scale: ca
+lc(--value(number)*1%
+); --tw-exit-scale: c
+alc(--value(ratio)); 
+--tw-exit-scale: --va
+lue(--percentage-*,[*
+]);}@utility -zoom-ou
+t-*{--tw-exit-scale: 
+calc(--value(number)*
+-1%); 
+--tw-exit-scale: calc
+(--value(ratio)*-1); 
+--tw-exit-scale: --va
+lue(--percentage-*,[*
+]);}@utility spin-in{
+--tw-enter-rotate: 
+30deg;}@utility spin-
+in-*{--tw-enter-rotat
+e: calc(--value(numbe
+r)*1deg); 
+--tw-enter-rotate: ca
+lc(--value(ratio)*360
+deg); 
+--tw-enter-rotate: --
+value(--rotate-*,[*])
+;}@utility -spin-in{-
+-tw-enter-rotate: 
+-30deg;}@utility -spi
+n-in-*{--tw-enter-rot
+ate: calc(--value(num
+ber)*-1deg); 
+--tw-enter-rotate: ca
+lc(--value(ratio)*-36
+0deg); 
+--tw-enter-rotate: --
+value(--rotate-*,[*])
+;}@utility spin-out{-
+-tw-exit-rotate: 
+30deg;}@utility spin-
+out-*{--tw-exit-rotat
+e: calc(--value(numbe
+r)*1deg); 
+--tw-exit-rotate: cal
+c(--value(ratio)*360d
+eg); 
+--tw-exit-rotate: --v
+alue(--rotate-*,[*]);
+}@utility -spin-out{-
+-tw-exit-rotate: 
+-30deg;}@utility -spi
+n-out-*{--tw-exit-rot
+ate: calc(--value(num
+ber)*-1deg); 
+--tw-exit-rotate: cal
+c(--value(ratio)*-360
+deg); 
+--tw-exit-rotate: --v
+alue(--rotate-*,[*]);
+}@utility slide-in-fr
+om-top{--tw-enter-tra
+nslate-y: 
+-100%;}@utility slide
+-in-from-top-*{--tw-e
+nter-translate-y: --s
+pacing(--value(intege
+r)*-1); --tw-enter-tr
+anslate-y: calc(--val
+ue(--percentage-*,--p
+ercentage-translate-*
+)*-100%); --tw-enter-
+translate-y: calc(--v
+alue(ratio)*-100%); -
+-tw-enter-translate-y
+: calc(--value(--tran
+slate-*,[percentage],
+[length])*-1);}@utili
+ty slide-in-from-bott
+om{--tw-enter-transla
+te-y: 100%;}@utility 
+slide-in-from-bottom-
+*{--tw-enter-translat
+e-y: --spacing(--valu
+e(integer)); --tw-ent
+er-translate-y: calc(
+--value(--percentage-
+*,--percentage-transl
+ate-*)*100%); --tw-en
+ter-translate-y: calc
+(--value(ratio)*100%)
+; --tw-enter-translat
+e-y: --value(--transl
+ate-*,[percentage],[l
+ength]);}@utility sli
+de-in-from-left{--tw-
+enter-translate-x: 
+-100%;}@utility slide
+-in-from-left-*{--tw-
+enter-translate-x: --
+spacing(--value(integ
+er)*-1); --tw-enter-t
+ranslate-x: calc(--va
+lue(--percentage-*,--
+percentage-translate-
+*)*-100%); --tw-enter
+-translate-x: calc(--
+value(ratio)*-100%); 
+--tw-enter-translate-
+x: calc(--value(--tra
+nslate-*,[percentage]
+,[length])*-1);}@util
+ity slide-in-from-rig
+ht{--tw-enter-transla
+te-x: 100%;}@utility 
+slide-in-from-right-*
+{--tw-enter-translate
+-x: --spacing(--value
+(integer)); --tw-ente
+r-translate-x: calc(-
+-value(--percentage-*
+,--percentage-transla
+te-*)*100%); --tw-ent
+er-translate-x: calc(
+--value(ratio)*100%);
+ --tw-enter-translate
+-x: --value(--transla
+te-*,[percentage],[le
+ngth]);}@utility slid
+e-in-from-start{&:dir
+(ltr){ --tw-enter-tra
+nslate-x: -100%; 
+}&:dir(rtl){ --tw-ent
+er-translate-x: 
+100%; }}@utility slid
+e-in-from-start-*{&:w
+here(:dir(ltr),[dir="
+ltr"],[dir="ltr"]*){ 
+--tw-enter-translate-
+x: --spacing(--value(
+integer)*-1); --tw-en
+ter-translate-x: calc
+(--value(--percentage
+-*,--percentage-trans
+late-*)*-100%); --tw-
+enter-translate-x: ca
+lc(--value(ratio)*-10
+0%); --tw-enter-trans
+late-x: calc(--value(
+--translate-*,[percen
+tage],[length])*-1); 
+}&:where(:dir(rtl),[d
+ir="rtl"],[dir="rtl"]
+*){ --tw-enter-transl
+ate-x: --spacing(--va
+lue(integer)); --tw-e
+nter-translate-x: cal
+c(--value(--percentag
+e-*,--percentage-tran
+slate-*)*100%); --tw-
+enter-translate-x: ca
+lc(--value(ratio)*100
+%); --tw-enter-transl
+ate-x: --value(--tran
+slate-*,[percentage],
+[length]); 
+}}@utility slide-in-f
+rom-end{&:dir(ltr){ -
+-tw-enter-translate-x
+: 100%; }&:dir(rtl){ 
+--tw-enter-translate-
+x: -100%; }}@utility 
+slide-in-from-end-*{&
+:where(:dir(ltr),[dir
+="ltr"],[dir="ltr"]*)
+{ --tw-enter-translat
+e-x: --spacing(--valu
+e(integer)); --tw-ent
+er-translate-x: calc(
+--value(--percentage-
+*,--percentage-transl
+ate-*)*100%); --tw-en
+ter-translate-x: calc
+(--value(ratio)*100%)
+; --tw-enter-translat
+e-x: --value(--transl
+ate-*,[percentage],[l
+ength]); }&:where(:di
+r(rtl),[dir="rtl"],[d
+ir="rtl"]*){ --tw-ent
+er-translate-x: --spa
+cing(--value(integer)
+*-1); --tw-enter-tran
+slate-x: calc(--value
+(--percentage-*,--per
+centage-translate-*)*
+-100%); --tw-enter-tr
+anslate-x: calc(--val
+ue(ratio)*-100%); --t
+w-enter-translate-x: 
+calc(--value(--transl
+ate-*,[percentage],[l
+ength])*-1); 
+}}@utility slide-out-
+to-top{--tw-exit-tran
+slate-y: 
+-100%;}@utility slide
+-out-to-top-*{--tw-ex
+it-translate-y: --spa
+cing(--value(integer)
+*-1); --tw-exit-trans
+late-y: calc(--value(
+--percentage-*,--perc
+entage-translate-*)*-
+100%); --tw-exit-tran
+slate-y: calc(--value
+(ratio)*-100%); --tw-
+exit-translate-y: cal
+c(--value(--translate
+-*,[percentage],[leng
+th])*-1);}@utility sl
+ide-out-to-bottom{--t
+w-exit-translate-y: 
+100%;}@utility slide-
+out-to-bottom-*{--tw-
+exit-translate-y: --s
+pacing(--value(intege
+r)); --tw-exit-transl
+ate-y: calc(--value(-
+-percentage-*,--perce
+ntage-translate-*)*10
+0%); --tw-exit-transl
+ate-y: calc(--value(r
+atio)*100%); --tw-exi
+t-translate-y: --valu
+e(--translate-*,[perc
+entage],[length]);}@u
+tility slide-out-to-l
+eft{--tw-exit-transla
+te-x: 
+-100%;}@utility slide
+-out-to-left-*{--tw-e
+xit-translate-x: --sp
+acing(--value(integer
+)*-1); --tw-exit-tran
+slate-x: calc(--value
+(--percentage-*,--per
+centage-translate-*)*
+-100%); --tw-exit-tra
+nslate-x: calc(--valu
+e(ratio)*-100%); --tw
+-exit-translate-x: ca
+lc(--value(--translat
+e-*,[percentage],[len
+gth])*-1);}@utility s
+lide-out-to-right{--t
+w-exit-translate-x: 
+100%;}@utility slide-
+out-to-right-*{--tw-e
+xit-translate-x: --sp
+acing(--value(integer
+)); --tw-exit-transla
+te-x: calc(--value(--
+percentage-*,--percen
+tage-translate-*)*100
+%); --tw-exit-transla
+te-x: calc(--value(ra
+tio)*100%); --tw-exit
+-translate-x: --value
+(--translate-*,[perce
+ntage],[length]);}@ut
+ility slide-out-to-st
+art{&:dir(ltr){ --tw-
+exit-translate-x: 
+-100%; }&:dir(rtl){ -
+-tw-exit-translate-x:
+ 100%; }}@utility sli
+de-out-to-start-*{&:w
+here(:dir(ltr),[dir="
+ltr"],[dir="ltr"]*){ 
+--tw-exit-translate-x
+: --spacing(--value(i
+nteger)*-1); --tw-exi
+t-translate-x: calc(-
+-value(--percentage-*
+,--percentage-transla
+te-*)*-100%); --tw-ex
+it-translate-x: calc(
+--value(ratio)*-100%)
+; --tw-exit-translate
+-x: calc(--value(--tr
+anslate-*,[percentage
+],[length])*-1); }&:w
+here(:dir(rtl),[dir="
+rtl"],[dir="rtl"]*){ 
+--tw-exit-translate-x
+: --spacing(--value(i
+nteger)); --tw-exit-t
+ranslate-x: calc(--va
+lue(--percentage-*,--
+percentage-translate-
+*)*100%); --tw-exit-t
+ranslate-x: calc(--va
+lue(ratio)*100%); --t
+w-exit-translate-x: -
+-value(--translate-*,
+[percentage],[length]
+); }}@utility slide-o
+ut-to-end{&:dir(ltr){
+ --tw-exit-translate-
+x: 100%; 
+}&:dir(rtl){ --tw-exi
+t-translate-x: 
+-100%; }}@utility sli
+de-out-to-end-*{&:whe
+re(:dir(ltr),[dir="lt
+r"],[dir="ltr"]*){ --
+tw-exit-translate-x: 
+--spacing(--value(int
+eger)); --tw-exit-tra
+nslate-x: calc(--valu
+e(--percentage-*,--pe
+rcentage-translate-*)
+*100%); --tw-exit-tra
+nslate-x: calc(--valu
+e(ratio)*100%); --tw-
+exit-translate-x: --v
+alue(--translate-*,[p
+ercentage],[length]);
+ }&:where(:dir(rtl),[
+dir="rtl"],[dir="rtl"
+]*){ --tw-exit-transl
+ate-x: --spacing(--va
+lue(integer)*-1); --t
+w-exit-translate-x: c
+alc(--value(--percent
+age-*,--percentage-tr
+anslate-*)*-100%); --
+tw-exit-translate-x: 
+calc(--value(ratio)*-
+100%); --tw-exit-tran
+slate-x: calc(--value
+(--translate-*,[perce
+ntage],[length])*-1);
+ }}
+^
+
+SyntaxError: Invalid 
+or unexpected token
+    at wrapSafe (node
+:internal/modules/cjs
+/loader:1692:18)
+    at 
+Module._compile (node
+:internal/modules/cjs
+/loader:1735:20)
+    at Object..js (no
+de:internal/modules/c
+js/loader:1893:10)
+    at Module.load (n
+ode:internal/modules/
+cjs/loader:1481:32)
+    at Module._load (
+node:internal/modules
+/cjs/loader:1300:12)
+    at TracingChannel
+.traceSync (node:diag
+nostics_channel:328:1
+4)
+    at 
+wrapModuleLoad (node:
+internal/modules/cjs/
+loader:245:24)
+    at 
+Module.<anonymous> (n
+ode:internal/modules/
+cjs/loader:1504:12)
+    at mod.require (C
+:\NTG\Client-View-Men
+tozy\node_modules\nex
+t\dist\server\require
+-hook.js:65:28)
+    at require (node:
+internal/modules/help
+ers:152:16)
+    at 
+Object.<anonymous> (C
+:\NTG\Client-View-Men
+tozy\node_modules\nex
+t\dist\build\webpack\
+loaders\css-loader\sr
+c\index.js??ruleSet[1
+].rules[13].oneOf[10]
+.use[2]!C:\NTG\Client
+-View-Mentozy\node_mo
+dules\next\dist\build
+\webpack\loaders\post
+css-loader\src\index.
+js??ruleSet[1].rules[
+13].oneOf[10].use[3]!
+C:\NTG\Client-View-Me
+ntozy\src\app\globals
+.css:1:7)
+    at C:\NTG\Client-
+View-Mentozy\node_mod
+ules\next\dist\compil
+ed\webpack\bundle5.js
+:28:955548
+    at Hook.eval [as 
+call] (eval at 
+create (C:\NTG\Client
+-View-Mentozy\node_mo
+dules\next\dist\compi
+led\webpack\bundle5.j
+s:13:8996), 
+<anonymous>:7:1)
+    at 
+Hook.CALL_DELEGATE 
+[as _call] (C:\NTG\Cl
+ient-View-Mentozy\nod
+e_modules\next\dist\c
+ompiled\webpack\bundl
+e5.js:13:6266)
+    at C:\NTG\Client-
+View-Mentozy\node_mod
+ules\next\dist\compil
+ed\webpack\bundle5.js
+:28:131467
+    at 
+tryRunOrWebpackError 
+(C:\NTG\Client-View-M
+entozy\node_modules\n
+ext\dist\compiled\web
+pack\bundle5.js:28:31
+4916)
+    at __webpack_requ
+ire_module__ (C:\NTG\
+Client-View-Mentozy\n
+ode_modules\next\dist
+\compiled\webpack\bun
+dle5.js:28:131434)
+    at __nested_webpa
+ck_require_161179__ (
+C:\NTG\Client-View-Me
+ntozy\node_modules\ne
+xt\dist\compiled\webp
+ack\bundle5.js:28:130
+872)
+    at C:\NTG\Client-
+View-Mentozy\node_mod
+ules\next\dist\compil
+ed\webpack\bundle5.js
+:28:131723
+    at 
+symbolIterator (C:\NT
+G\Client-View-Mentozy
+\node_modules\next\di
+st\compiled\neo-async
+\async.js:1:14444)
+
+Generated code for C:
+\NTG\Client-View-Ment
+ozy\node_modules\next
+\dist\build\webpack\l
+oaders\css-loader\src
+\index.js??ruleSet[1]
+.rules[13].oneOf[10].
+use[2]!C:\NTG\Client-
+View-Mentozy\node_mod
+ules\next\dist\build\
+webpack\loaders\postc
+ss-loader\src\index.j
+s??ruleSet[1].rules[1
+3].oneOf[10].use[3]!C
+:\NTG\Client-View-Men
+tozy\src\app\globals.
+css
+
+Import trace for 
+requested module:
+./src/app/globals.css
+
+
+> Build failed 
+because of webpack 
+errors

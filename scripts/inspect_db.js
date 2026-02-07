@@ -11,7 +11,7 @@ envContent.split('\n').forEach(line => {
     if (key && value) env[key.trim()] = value.trim();
 });
 
-const supabase = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY);
+const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 async function inspect() {
     console.log('--- Database Inspection ---');
