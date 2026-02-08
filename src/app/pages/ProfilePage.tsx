@@ -405,29 +405,29 @@ export function ProfilePage() {
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-xs font-bold text-gray-500">
                                         <span>Course Completion</span>
-                                        <span className="text-indigo-600">85%</span>
+                                        <span className="text-indigo-600">0%</span>
                                     </div>
                                     <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                                        <div className="h-full bg-indigo-500 w-[85%] shadow-sm"></div>
+                                        <div className="h-full bg-indigo-50 w-[0%] shadow-sm"></div>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-xs font-bold text-gray-500">
                                         <span>Skill Points</span>
-                                        <span className="text-emerald-600">12,490 XP</span>
+                                        <span className="text-emerald-600">0 XP</span>
                                     </div>
                                     <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                                        <div className="h-full bg-emerald-500 w-[60%] shadow-sm"></div>
+                                        <div className="h-full bg-emerald-500 w-[0%] shadow-sm"></div>
                                     </div>
                                 </div>
                             </div>
                             <div className="mt-8 pt-8 border-t border-gray-100 grid grid-cols-2 gap-4 relative z-10">
                                 <div>
-                                    <div className="text-2xl font-black text-gray-900">14</div>
+                                    <div className="text-2xl font-black text-gray-900">{profile?.streak || 0}</div>
                                     <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Streak</div>
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-black text-gray-900">28</div>
+                                    <div className="text-2xl font-black text-gray-900">0</div>
                                     <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Modules</div>
                                 </div>
                             </div>
@@ -439,16 +439,10 @@ export function ProfilePage() {
                                 <Award className="w-5 h-5 text-indigo-500" />
                                 Recent Badges
                             </h3>
-                            <div className="flex gap-4">
-
-                                <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-500 border border-indigo-100 shadow-sm hover:scale-110 transition-transform">
-                                    <Target className="w-6 h-6" />
-                                </div>
-                                <div className="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 border border-rose-100 shadow-sm hover:scale-110 transition-transform">
-                                    <Zap className="w-6 h-6" />
-                                </div>
+                            <div className="py-4">
+                                <p className="text-xs text-gray-400 italic">No badges earned yet. Complete milestones to unlock rewards!</p>
                             </div>
-                            <button onClick={() => toast.info("Portfolio feature coming soon!")} className="w-full mt-8 py-3 bg-gray-50 text-[10px] font-black uppercase tracking-widest text-gray-500 rounded-xl hover:bg-gray-100 transition-all">
+                            <button onClick={() => toast.info("Portfolio feature coming soon!")} className="w-full mt-4 py-3 bg-gray-50 text-[10px] font-black uppercase tracking-widest text-gray-500 rounded-xl hover:bg-gray-100 transition-all">
                                 View Portfolio
                             </button>
                         </div>
