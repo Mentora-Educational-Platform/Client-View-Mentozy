@@ -5,3 +5,5 @@
 [build.environment]
   NODE_VERSION = "20"
   NPM_FLAGS = "--force"
+  NETLIFY_NEXT_PLUGIN_SKIP_INSTALL = "true"
+  NETLIFY_SKIP_NEXTJS_PLUGIN = "true"
