@@ -24,7 +24,7 @@ export function CareerPage() {
       mode: 'Remote',
       icon: <Code2 className="w-6 h-6" />,
       description: 'Contribute to end-to-end development, building reliable features across frontend and backend.',
-      stack: ['React / Next.js', 'Node.js', 'Supabase', 'GitHub'],
+      stack: ['React / Vite', 'Node.js', 'Supabase', 'GitHub'],
       responsibilities: [
         'Develop full stack features and APIs',
         'Implement platform functionality and auth flows',
