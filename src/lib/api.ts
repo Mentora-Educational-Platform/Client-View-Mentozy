@@ -460,7 +460,7 @@ export const getMentorBookings = async (userId: string): Promise<Booking[]> => {
             return [];
         }
 
-        const { data, error } = await supabase
+        const { data: bookingsData, error: bookingsError } = await supabase
             .from('bookings')
             .select(`
                 *, 
@@ -469,12 +469,19 @@ export const getMentorBookings = async (userId: string): Promise<Booking[]> => {
             `)
             .eq('mentor_id', mentorData.id);
 
-        if (error) {
-            console.error("Error fetching bookings:", error);
+        // Also fetch booked slots from availability table as "real sessions"
+        const { data: slotsData, error: slotsError } = await supabase
+            .from('mentor_availability')
+            .select('*')
+            .eq('mentor_id', mentorData.id)
+            .eq('is_booked', true);
+
+        if (bookingsError || slotsError) {
+            console.error("Error fetching sessions:", bookingsError || slotsError);
             return [];
         }
 
-        return data.map((b: any) => ({
+        const realBookings = (bookingsData || []).map((b: any) => ({
             id: b.id,
             user_id: b.student_id,
             mentor_id: b.mentor_id,
@@ -484,7 +491,27 @@ export const getMentorBookings = async (userId: string): Promise<Booking[]> => {
             mentor_note: b.mentor_note,
             payment_link: b.payment_link,
             profiles: b.profiles
-        })) as Booking[];
+        }));
+
+        const availabilityBookings = (slotsData || []).map((s: any) => {
+            // Check if this slot already has a booking to avoid duplicates
+            if (realBookings.some(rb => rb.scheduled_at === s.start_time)) return null;
+
+            return {
+                id: s.id,
+                user_id: 'unknown',
+                mentor_id: s.mentor_id,
+                status: 'confirmed',
+                scheduled_at: s.start_time,
+                profiles: {
+                    id: 'unknown',
+                    full_name: 'Scheduled Student',
+                    role: 'student'
+                }
+            };
+        }).filter(Boolean) as Booking[];
+
+        return [...realBookings, ...availabilityBookings];
     } catch (e) {
         console.error("Unexpected error in getMentorBookings:", e);
         return [];

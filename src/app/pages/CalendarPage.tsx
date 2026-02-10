@@ -38,7 +38,7 @@ export function CalendarPage() {
         async function loadBookings() {
             if (!user) return;
             const data = await getStudentBookings(user.id);
-            setBookings(data);
+            setBookings(data || []);
         }
         loadBookings();
     }, [user]);

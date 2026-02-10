@@ -69,7 +69,7 @@ export function MentorDashboardPage() {
                     setProfile(userProfile);
                 }
 
-                setBookings(userBookings);
+                setBookings(userBookings || []);
 
                 // 2. Fetch Mentor Details (Rate)
                 if (supabase) {

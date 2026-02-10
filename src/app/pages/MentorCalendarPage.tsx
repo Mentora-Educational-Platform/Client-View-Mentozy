@@ -147,8 +147,8 @@ export function MentorCalendarPage() {
                                             {booking.status}
                                         </span>
                                     </div>
-                                    <h4 className="font-bold text-gray-900 mb-1">Session with Student</h4>
-                                    <p className="text-xs text-gray-500 font-medium mb-3">Topic discussion & Mentoring</p>
+                                    <h4 className="font-bold text-gray-900 mb-1">Session with {booking.profiles?.full_name || 'Student'}</h4>
+                                    <p className="text-xs text-gray-500 font-medium mb-3">{booking.profiles?.role === 'student' ? 'Topic discussion & Mentoring' : 'Mentoring Session'}</p>
 
                                     <div className="flex gap-2">
                                         <button onClick={() => toast.info("Rescheduling feature coming soon")} className="flex-1 py-1.5 bg-white text-gray-700 text-xs font-bold rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
