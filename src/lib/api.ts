@@ -1,4 +1,4 @@
-import { getSupabase } from './supabase';
+ import { getSupabase } from './supabase';
 
 // Database Types (matching Schema)
 interface DBProfile {
