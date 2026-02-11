@@ -31,13 +31,13 @@ export function WhoItsFor() {
       <div className="container mx-auto px-6">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <span className="text-amber-600 font-semibold tracking-wider text-sm uppercase mb-3 block">
-            Become a Success Story
+            Who Mentozy Is For
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight">
-            For Students
+            Built for learners at every stage
           </h2>
           <p className="text-lg text-gray-600">
-            Get personalized support in coding, placements, interviews, and more.
+            Whether you're just starting out or looking to pivot, we connect you with mentors who have walked your path.
           </p>
         </div>
 
