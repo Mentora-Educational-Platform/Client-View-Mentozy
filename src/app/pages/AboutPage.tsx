@@ -6,7 +6,21 @@ import {
 import { motion } from 'motion/react';
 
 export function AboutPage() {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
 
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
 
   return (
     <div className="pt-32 pb-32 bg-[#fafafa] min-h-screen font-sans relative overflow-hidden">
@@ -29,9 +43,6 @@ export function AboutPage() {
           <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-8 tracking-tight">
             Mentozy: Learning and <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-500">Mentorship</span>
           </h1>
-          <p className="text-2xl md:text-3xl font-semibold text-amber-700 mb-6 italic">
-            "Mentozy is a human-led mentorship platform connecting students with industry mentors."
-          </p>
           <p className="text-xl md:text-2xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
             Bridging the gap between education, real-world skills, and meaningful career guidance.
           </p>
@@ -59,61 +70,38 @@ export function AboutPage() {
                 </p>
               </div>
             </motion.div>
-
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              className="flex justify-center items-center"
+              className="glass-morphism-heavy p-10 rounded-[3rem] border border-white relative overflow-hidden group shadow-2xl"
             >
-              <div className="glass-morphism-heavy p-4 rounded-[2rem] border border-white shadow-2xl bg-white/40 overflow-hidden max-w-[540px]">
-                <iframe
-                  src="https://www.linkedin.com/embed/feed/update/urn:li:share:7427420815719092224?collapsed=1"
-                  height="511"
-                  width="100%"
-                  style={{ maxWidth: '504px', minWidth: '300px' }}
-                  frameBorder="0"
-                  allowFullScreen={true}
-                  title="Embedded post"
-                  className="rounded-xl"
-                ></iframe>
+              <div className="absolute top-0 right-0 p-8">
+                <Target className="w-20 h-20 text-amber-500/10 group-hover:scale-110 transition-transform duration-500" />
+              </div>
+              <div className="relative z-10 space-y-6">
+                <h3 className="text-2xl font-bold text-gray-900">Vision and Scope</h3>
+                <p className="text-gray-600">Supporting learners across all stages, from school-level to professional domains.</p>
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { icon: BookOpen, label: "Academic Subjects" },
+                    { icon: Award, label: "Exam Prep" },
+                    { icon: Cpu, label: "Technology & AI" },
+                    { icon: Briefcase, label: "Career Guidance" },
+                    { icon: Users, label: "Internships" },
+                    { icon: Layers, label: "Resume Building" },
+                    { icon: MessageSquare, label: "Interview Prep" },
+                    { icon: TrendingUp, label: "Skill development" }
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-3 p-3 rounded-2xl bg-white/50 border border-white/20">
+                      <item.icon className="w-5 h-5 text-amber-600" />
+                      <span className="text-sm font-medium text-gray-700">{item.label}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </motion.div>
           </div>
-        </section>
-
-        {/* Vision & Pillars Section (Redundant card removed to make room for embed) */}
-        <section className="mb-32">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="glass-morphism p-10 rounded-[3rem] border border-white relative overflow-hidden group shadow-xl"
-          >
-            <div className="absolute top-0 right-0 p-8">
-              <Target className="w-20 h-20 text-amber-500/10 group-hover:scale-110 transition-transform duration-500" />
-            </div>
-            <div className="relative z-10 space-y-6">
-              <h3 className="text-3xl font-bold text-gray-900 text-center mb-8">Vision and Scope</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                  { icon: BookOpen, label: "Academic Subjects" },
-                  { icon: Award, label: "Exam Prep" },
-                  { icon: Cpu, label: "Technology & AI" },
-                  { icon: Briefcase, label: "Career Guidance" },
-                  { icon: Users, label: "Internships" },
-                  { icon: Layers, label: "Resume Building" },
-                  { icon: MessageSquare, label: "Interview Prep" },
-                  { icon: TrendingUp, label: "Skill development" }
-                ].map((item, idx) => (
-                  <div key={idx} className="flex flex-col items-center text-center gap-3 p-4 rounded-2xl bg-white/50 border border-white/20 hover:bg-amber-50 transition-colors">
-                    <item.icon className="w-8 h-8 text-amber-600" />
-                    <span className="text-sm font-bold text-gray-800">{item.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
         </section>
 
         {/* Core Pillars Section */}
@@ -160,8 +148,7 @@ export function AboutPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
+              viewport={{ once: true, delay: 0.1 }}
               className="glass-morphism-heavy p-10 rounded-[3rem] border border-white shadow-xl hover:shadow-orange-100/50 transition-all duration-500"
             >
               <div className="w-16 h-16 bg-orange-100 rounded-3xl flex items-center justify-center text-orange-600 mb-8 border border-white">
@@ -303,8 +290,7 @@ export function AboutPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
+              viewport={{ once: true, delay: 0.1 }}
               className="bg-amber-600 p-12 rounded-[3rem] text-white overflow-hidden relative"
             >
               <div className="absolute bottom-0 left-0 p-12 opacity-10">
