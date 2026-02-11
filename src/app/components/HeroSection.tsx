@@ -16,18 +16,17 @@ export function HeroSection() {
               </p>
 
               <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                Online Mentorship Platform for
+                Find the Right Mentor for
                 <span className="relative inline-block ml-3">
                   <span className="relative z-10 px-5 py-2 rounded-2xl bg-amber-300">
-                    Students & Mentors
+                    Coding, Career & Startups
                   </span>
                   <span className="absolute inset-0 bg-amber-400 rounded-2xl blur-md opacity-30" />
                 </span>
               </h1>
 
               <p className="text-lg text-gray-600 max-w-xl leading-relaxed">
-                Not just courses — real people, real guidance.
-                Learn from seniors, mentors, and professionals who genuinely want to help you grow.
+                Mentozy is a mentorship marketplace connecting students with verified mentors in software development, startup building, and career guidance across India.
               </p>
             </div>
 

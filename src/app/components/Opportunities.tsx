@@ -55,11 +55,10 @@ export function Opportunities() {
               <Building2 className="w-3 h-3" /> Join the Team
             </div>
             <h2 className="text-4xl font-bold text-gray-900 tracking-tight mb-4">
-              Teach & Earn as a Mentor
+              For Mentors
             </h2>
             <p className="text-lg text-gray-600">
-              We are looking for passionate builders who want real startup experience.
-              Help us democratize mentorship.
+              Share your expertise and guide the next generation of learners.
             </p>
           </div>
 

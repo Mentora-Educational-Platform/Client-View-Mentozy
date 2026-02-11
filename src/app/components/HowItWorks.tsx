@@ -33,10 +33,10 @@ export function HowItWorks() {
             Process
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight">
-            How It Works
+            How Mentozy Works
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed">
-            We've simplified the path to professional growth into three actionable steps.
+            Browse mentors, book 1:1 sessions, and accelerate your learning.
           </p>
         </div>
 
