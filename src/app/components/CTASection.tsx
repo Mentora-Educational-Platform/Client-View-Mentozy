@@ -19,8 +19,7 @@ export function CTASection() {
             </div>
 
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight leading-tight">
-              Ready to accelerate your <br className="hidden md:block" />
-              <span className="text-amber-600">career growth?</span>
+              Book Verified Mentors
             </h2>
 
             <p className="text-lg text-gray-600 mb-10 leading-relaxed max-w-2xl mx-auto">

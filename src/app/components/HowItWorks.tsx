@@ -26,14 +26,14 @@ export function HowItWorks() {
     <section id="how-it-works" className="py-24 bg-white-50 relative overflow-hidden">
       {/* Decorative background blob - Amber based */}
       <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-amber-100/40 rounded-full blur-3xl opacity-50 pointer-events-none" />
-      
+
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-3xl mx-auto text-center mb-20">
           <span className="text-amber-600 font-semibold tracking-wider text-sm uppercase bg-amber-50 px-3 py-1 rounded-full border border-amber-100 mb-4 inline-block">
             Process
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight">
-            Your journey to mastery
+            How It Works
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed">
             We've simplified the path to professional growth into three actionable steps.
@@ -48,7 +48,7 @@ export function HowItWorks() {
             <div key={index} className="relative group">
               {/* Card Container */}
               <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 h-full relative z-10 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-amber-100">
-                
+
                 {/* Step Number Badge */}
                 <div className="absolute -top-4 left-8 bg-gray-900 text-white text-xs font-bold py-1 px-3 rounded-full border-4 border-gray-50 group-hover:bg-amber-500 transition-colors duration-300">
                   Step {step.id}

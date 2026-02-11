@@ -39,6 +39,7 @@ const MessagesPage = lazy(() => import('./pages/MessagesPage').then(module => ({
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
 const CertificationsPage = lazy(() => import('./pages/CertificationsPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then(module => ({ default: module.SettingsPage })));
+const KeywordLandingPage = lazy(() => import('./pages/KeywordLandingPage').then(module => ({ default: module.KeywordLandingPage })));
 
 export type Page = 'home' | 'careers' | 'mentors' | 'tracks' | 'about' | 'contact' | 'login' | 'signup' | 'student-auth' | 'student-onboarding' | 'student-dashboard';
 
@@ -205,6 +206,42 @@ function App() {
         <Route path="/mentor-achievements" element={
           <Suspense fallback={<PageLoader />}>
             <MentorAchievementsPage />
+          </Suspense>
+        } />
+        <Route path="/mentors-for-computer-science" element={
+          <Suspense fallback={<PageLoader />}>
+            <KeywordLandingPage
+              keyword="Computer Science"
+              title="Expert Mentors for Computer Science Students"
+              description="Connect with senior software engineers and computer science professionals. Learn coding, system design, and algorithms from the best."
+            />
+          </Suspense>
+        } />
+        <Route path="/mentors-for-startups" element={
+          <Suspense fallback={<PageLoader />}>
+            <KeywordLandingPage
+              keyword="Startups"
+              title="Startup Mentorship for Aspiring Founders"
+              description="Get guidance from successful founders and venture capitalists. Build your MVP, raise funding, and scale your startup."
+            />
+          </Suspense>
+        } />
+        <Route path="/career-guidance-mentors" element={
+          <Suspense fallback={<PageLoader />}>
+            <KeywordLandingPage
+              keyword="Career Guidance"
+              title="Professional Career Guidance Mentors"
+              description="Unsure about your next career move? Our mentors provide personalized career counseling and roadmap planning."
+            />
+          </Suspense>
+        } />
+        <Route path="/coding-mentors-india" element={
+          <Suspense fallback={<PageLoader />}>
+            <KeywordLandingPage
+              keyword="Coding in India"
+              title="Top Coding Mentors in India"
+              description="Learn to code from India's best developers. Master React, Node.js, Python, and more with expert-led mentorship."
+            />
           </Suspense>
         } />
         <Route path="/mentor-calendar" element={
