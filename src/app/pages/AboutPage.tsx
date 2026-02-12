@@ -91,7 +91,7 @@ export function AboutPage() {
                     { icon: Users, label: "Internships" },
                     { icon: Layers, label: "Resume Building" },
                     { icon: MessageSquare, label: "Interview Prep" },
-                    { icon: TrendingUp, label: "Skill development" }
+                    { icon: TrendingUp, label: "Skill Development" }
                   ].map((item, idx) => (
                     <div key={idx} className="flex items-center gap-3 p-3 rounded-2xl bg-white/50 border border-white/20">
                       <item.icon className="w-5 h-5 text-amber-600" />
@@ -128,7 +128,7 @@ export function AboutPage() {
                 <Heart className="w-8 h-8 fill-amber-500/20" />
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-4">Mentorship at the Center</h3>
-              <p className="text-gray-600 mb-8">Direct interaction through multiple channels ensuring clarity, accountability, and personalized support.</p>
+              <p className="text-gray-600 mb-8">Direct interaction through multiple channels, ensuring clarity, accountability, and personalized support.</p>
               <ul className="space-y-3">
                 {[
                   "Recorded courses and content",
@@ -148,7 +148,8 @@ export function AboutPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, delay: 0.1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
               className="glass-morphism-heavy p-10 rounded-[3rem] border border-white shadow-xl hover:shadow-orange-100/50 transition-all duration-500"
             >
               <div className="w-16 h-16 bg-orange-100 rounded-3xl flex items-center justify-center text-orange-600 mb-8 border border-white">
@@ -251,7 +252,7 @@ export function AboutPage() {
               <h2 className="text-3xl font-bold text-gray-900">Values & Philosophy</h2>
               <div className="prose prose-lg text-gray-600">
                 <p>
-                  We prioritize genuine learning outcomes, contributor growth, and community-driven progress. Our philosophy centeres on building genuine relationships between learners and mentors.
+                  We prioritize genuine learning outcomes, contributor growth, and community-driven progress. Our philosophy centers on building genuine relationships between learners and mentors.
                 </p>
                 <p>
                   Maintaining transparency and ethics in all interactions is non-negotiable. We are building Mentozy for the long-term, focusing on collective growth.
@@ -290,7 +291,8 @@ export function AboutPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, delay: 0.1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
               className="bg-amber-600 p-12 rounded-[3rem] text-white overflow-hidden relative"
             >
               <div className="absolute bottom-0 left-0 p-12 opacity-10">
@@ -300,7 +302,7 @@ export function AboutPage() {
                 <div className="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-bold uppercase tracking-widest inline-block border border-white/10">Team Culture</div>
                 <h3 className="text-3xl font-bold">Ownership & Growth</h3>
                 <p className="text-white/90 leading-relaxed text-lg">
-                  An early team structured as an internship-driven environment where contributors gain real startup experience and portfolio-ready work.
+                  Our early team is structured as an internship-driven environment where contributors gain real startup experience and portfolio-ready work.
                 </p>
                 <div className="grid grid-cols-2 gap-4 pt-4">
                   <div className="flex items-start gap-2">
