@@ -23,15 +23,34 @@
   <link rel="icon" href="/favicon.png" sizes="192x192" type="image/png">
   <link rel="shortcut icon" href="/favicon.png" type="image/png">
 
-  <!-- Structured Data (Huge Boost) -->
+  <!-- Organization & Website Schema for Google Search Display -->
   <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Mentozy",
-      "url": "https://mentozy.app",
-      "logo": "https://mentozy.app/logo.png"
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Mentozy",
+    "url": "https://mentozy.app",
+    "logo": "https://mentozy.app/logo.png",
+    "sameAs": [
+      "https://www.linkedin.com/company/mentozy",
+      "https://twitter.com/mentozyapp",
+      "https://www.instagram.com/mentozy/"
+    ]
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Mentozy",
+    "url": "https://mentozy.app",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://mentozy.app/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
     }
+  }
   </script>
 
   <script type="application/ld+json">
