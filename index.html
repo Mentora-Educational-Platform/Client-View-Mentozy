@@ -89,6 +89,14 @@
         padding: 6rem 1.5rem;
         background-color: #ffffff;
       ">
+      <script>
+        // High-performance flicker prevention: Hide SEO bridge immediately if JavaScript is enabled
+        // This ensures the pre-rendered content is only seen by search engine bots
+        (function () {
+          const bridge = document.getElementById('seo-bridge');
+          if (bridge) bridge.style.display = 'none';
+        })();
+      </script>
       <div style="text-align: center; margin-bottom: 5rem;">
         <div style="
             display: inline-flex;
@@ -172,8 +180,8 @@
             We believe that learning is most powerful when it is human-centric and outcome-oriented. Our community is
             built
             on trust, featuring verified profiles and a steadfast commitment to mutual success. By joining Mentozy, you
-            join a movement to democratize professional knowledge and high-quality mentorship. Explore our mentors for
-            computer science, startups, career guidance, and coding in India today.
+            join a movement to democratize professional knowledge and high-quality mentorship. Start your journey with
+            verified mentors today.
           </p>
         </div>
       </div>
