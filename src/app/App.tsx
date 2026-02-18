@@ -4,6 +4,7 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { Loader2 } from 'lucide-react';
 import { AuthProvider } from '../context/AuthContext';
+import { AssistantBot } from './components/AssistantBot';
 import { HomePage } from './pages/HomePage';
 import { Toaster } from 'sonner';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -94,6 +95,7 @@ function App() {
   return (
     <AuthProvider>
       <Toaster position="top-center" richColors /> {/* Added Toaster component */}
+      <AssistantBot />
       <Routes>
         {/* Public Pages with Layout */}
         <Route element={<Layout />}>
