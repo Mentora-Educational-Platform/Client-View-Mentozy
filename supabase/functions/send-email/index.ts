@@ -33,13 +33,13 @@ serve(async (req: Request) => {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: 'wearementozy@gmail.com',
+                user: 'contact@mentozy.app',
                 pass: smtpPassword,
             },
         });
 
         const info = await transporter.sendMail({
-            from: '"Mentozy Team" <wearementozy@gmail.com>',
+            from: '"Mentozy Team" <contact@mentozy.app>',
             to: to,
             subject: subject,
             text: text,

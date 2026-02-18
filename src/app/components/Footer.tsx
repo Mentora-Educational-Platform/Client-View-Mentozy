@@ -56,7 +56,7 @@ export const Footer = memo(function Footer() {
 
             <div className="flex items-center gap-2 text-sm text-gray-500 hover:text-amber-600 transition-colors">
               <Mail className="w-4 h-4" />
-              <a href="mailto:wearementozy@gmail.com">wearementozy@gmail.com</a>
+              <a href="mailto:contact@mentozy.app">contact@mentozy.app</a>
             </div>
           </div>
 

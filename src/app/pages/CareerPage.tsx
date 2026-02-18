@@ -156,7 +156,7 @@ export function CareerPage() {
                   Application via Email
                 </div>
                 <a
-                  href={`mailto:wearementozy@gmail.com?subject=Application for ${job.role}`}
+                  href={`mailto:contact@mentozy.app?subject=Application for ${job.role}`}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-amber-600 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                 >
                   Apply Now <Mail className="w-4 h-4" />
