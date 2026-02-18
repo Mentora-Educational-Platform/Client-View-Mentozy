@@ -2,6 +2,9 @@ import { MENTOZY_KNOWLEDGE } from '../app/data/mentozy-knowledge';
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
+// DEBUG: Verify which key is loaded
+console.log('Sanajaya Bot: Loaded API Key:', GEMINI_API_KEY ? `...${GEMINI_API_KEY.slice(-6)}` : 'UNDEFINED');
+
 export async function generateSanjayaResponse(userMessage: string, chatHistory: { role: 'user' | 'assistant', content: string }[]) {
     if (!GEMINI_API_KEY) {
         console.error('Missing Gemini API Key');
