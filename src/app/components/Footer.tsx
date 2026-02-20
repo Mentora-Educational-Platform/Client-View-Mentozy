@@ -25,10 +25,10 @@ export const Footer = memo(function Footer() {
   };
 
   return (
-    <footer className="bg-gray-50 pt-20 pb-10 border-t border-gray-100">
-      <div className="container mx-auto px-6">
+    <footer className="bg-gray-50 pt-12 md:pt-20 pb-10 border-t border-gray-100">
+      <div className="container mx-auto px-4 md:px-6">
 
-        <div className="grid lg:grid-cols-4 gap-12 mb-16">
+        <div className="grid lg:grid-cols-4 gap-8 md:gap-12 mb-12 md:mb-16">
           <div className="lg:col-span-1">
             <Link
               to="/"
@@ -60,7 +60,7 @@ export const Footer = memo(function Footer() {
             </div>
           </div>
 
-          <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-8">
+          <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-8 text-center sm:text-left">
             <div>
               <h4 className="font-bold text-gray-900 mb-6">Platform</h4>
               <ul className="space-y-4 text-sm text-gray-500">
@@ -90,7 +90,7 @@ export const Footer = memo(function Footer() {
               <ul className="space-y-4 text-sm text-gray-500">
                 {links.legal.map((link, i) => (
                   <li key={i}>
-                    <a href={link.path} className="hover:text-amber-600 transition-colors text-left w-full sm:w-auto block">
+                    <a href={link.path} className="hover:text-amber-600 transition-colors block w-full sm:w-auto">
                       {link.label}
                     </a>
                   </li>
@@ -100,8 +100,8 @@ export const Footer = memo(function Footer() {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-gray-400">
+        <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-4">
+          <p className="text-sm text-gray-400 text-center md:text-left">
             © {new Date().getFullYear()} Mentozy Inc. All rights reserved.
           </p>
 

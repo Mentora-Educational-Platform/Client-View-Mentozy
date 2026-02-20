@@ -29,7 +29,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md supports-[backdrop-filter]:bg-white/60 transition-all duration-300">
-      <div className="container mx-auto px-6 py-4">
+      <div className="container mx-auto px-4 sm:px-6 py-3 md:py-4">
         <div className="flex items-center justify-between">
           <Link
             to="/"
@@ -109,7 +109,7 @@ export function Header() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white">
+        <div className="md:hidden border-t border-gray-100 bg-white absolute w-full inset-x-0 shadow-lg pb-4">
           <nav className="flex flex-col p-4 gap-2">
             {navItems.map((item) => (
               <NavLink
@@ -124,18 +124,18 @@ export function Header() {
                 {item.label}
               </NavLink>
             ))}
-            <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-gray-100">
+            <div className="flex flex-col gap-3 mt-2 pt-4 border-t border-gray-100">
               <Link
                 to="/login"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="px-4 py-3 text-center text-gray-600 font-bold hover:bg-gray-50 rounded-xl transition-colors"
+                className="px-4 py-3 text-center text-gray-600 font-bold hover:bg-gray-50 rounded-xl transition-colors border border-gray-200"
               >
                 Log In
               </Link>
               <Link
                 to="/signup"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="px-4 py-3 text-center bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-colors"
+                className="px-4 py-3 text-center bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-colors shadow-md"
               >
                 Sign Up
               </Link>

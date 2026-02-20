@@ -1,4 +1,4 @@
-import { Check, X, Minus } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 
 export function WhatWeDoDifferently() {
   const principles = [
@@ -32,21 +32,21 @@ export function WhatWeDoDifferently() {
   ];
 
   return (
-    <section className="py-24 bg-white relative">
+    <section className="py-16 md:py-24 bg-white relative">
       {/* Decorative top border */}
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
 
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-4 md:px-6">
         <div className="max-w-6xl mx-auto">
           {/* Section Header */}
-          <div className="text-center mb-16">
+          <div className="text-center mb-12 md:mb-16">
             <span className="text-amber-600 font-semibold tracking-wider text-sm uppercase mb-3 block">
               Our Approach
             </span>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 tracking-tight">
               Why Mentozy is different
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
               We believe in a learning model that prioritizes your growth, not just your subscription.
             </p>
           </div>
@@ -69,27 +69,27 @@ export function WhatWeDoDifferently() {
                   </div>
                 ))}
               </div>
-              
-<div className="pt-10">
-  <div className="relative p-6 md:p-8 bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-200 shadow-sm">
 
-    {/* Decorative quote mark */}
-    <span className="absolute -top-4 -left-4 text-5xl text-gray-200 select-none">
-      “
-    </span>
+              <div className="pt-10">
+                <div className="relative p-6 md:p-8 bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-200 shadow-sm">
 
-    <p className="text-gray-700 italic leading-relaxed text-base md:text-lg">
-      Education is not just about consuming content,
-      <span className="text-gray-900 font-medium">
-        {" "}it’s about connecting with those who have walked the path before you.
-      </span>
-    </p>
+                  {/* Decorative quote mark */}
+                  <span className="absolute -top-4 -left-4 text-5xl text-gray-200 select-none">
+                    “
+                  </span>
 
-    {/* Philosophy Marker */}
-    <p className="mt-3 text-sm text-gray-500">— Mentozy Philosophy</p>
+                  <p className="text-gray-700 italic leading-relaxed text-sm md:text-base lg:text-lg">
+                    Education is not just about consuming content,
+                    <span className="text-gray-900 font-medium">
+                      {" "}it’s about connecting with those who have walked the path before you.
+                    </span>
+                  </p>
 
-  </div>
-</div>
+                  {/* Philosophy Marker */}
+                  <p className="mt-3 text-sm text-gray-500">— Mentozy Philosophy</p>
+
+                </div>
+              </div>
 
             </div>
 
@@ -117,12 +117,12 @@ export function WhatWeDoDifferently() {
                           {item.typical}
                         </span>
                       </div>
-                      
+
                       {/* Mentozy Side */}
                       <div className="p-6 flex flex-col sm:flex-row sm:items-center gap-3 bg-amber-50/10 relative">
                         {/* Hover Highlight */}
                         <div className="absolute inset-0 bg-amber-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        
+
                         <Check className="w-5 h-5 text-amber-600 shrink-0 relative z-10" />
                         <span className="text-gray-900 font-semibold text-sm sm:text-base relative z-10">
                           {item.mentozy}

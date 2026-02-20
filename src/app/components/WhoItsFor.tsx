@@ -24,19 +24,19 @@ export function WhoItsFor() {
   ];
 
   return (
-    <section className="py-24 bg-white relative overflow-hidden">
+    <section className="py-16 md:py-24 bg-white relative overflow-hidden">
       {/* Subtle background decoration */}
       <div className="absolute left-0 top-1/3 -translate-y-1/2 w-[600px] h-[600px] bg-amber-50/60 rounded-full blur-3xl -z-10 pointer-events-none" />
 
-      <div className="container mx-auto px-6">
-        <div className="max-w-3xl mx-auto text-center mb-16">
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="max-w-3xl mx-auto text-center mb-12 md:mb-16">
           <span className="text-amber-600 font-semibold tracking-wider text-sm uppercase mb-3 block">
             Who Mentozy Is For
           </span>
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 tracking-tight">
             Built for learners at every stage
           </h2>
-          <p className="text-lg text-gray-600">
+          <p className="text-base md:text-lg text-gray-600">
             Whether you're just starting out or looking to pivot, we connect you with mentors who have walked your path.
           </p>
         </div>
@@ -45,7 +45,7 @@ export function WhoItsFor() {
           {audiences.map((audience, index) => (
             <div
               key={index}
-              className="group relative bg-white border border-gray-100 rounded-2xl p-8 hover:border-amber-200 hover:shadow-xl transition-all duration-300 flex flex-col h-full"
+              className="group relative bg-white border border-gray-100 rounded-2xl p-6 md:p-8 hover:border-amber-200 hover:shadow-xl transition-all duration-300 flex flex-col h-full"
             >
               {/* Icon */}
               <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm">

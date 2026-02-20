@@ -88,17 +88,17 @@ export function AssistantBot() {
     };
 
     return (
-        <div className="fixed bottom-8 right-8 z-[9999]">
+        <div className="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-[9999]">
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.8, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                        className="absolute bottom-20 right-0 w-[400px] bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col"
+                        className="fixed inset-0 w-full h-full md:absolute md:bottom-20 md:right-0 md:w-[400px] md:h-[600px] md:inset-auto bg-white md:rounded-3xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col z-[99999] md:z-auto"
                     >
                         {/* Header */}
-                        <div className="bg-gradient-to-r from-emerald-600 to-blue-600 p-6 text-white overflow-hidden relative">
+                        <div className="bg-gradient-to-r from-emerald-600 to-blue-600 p-6 text-white overflow-hidden relative shrink-0">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
                             <div className="flex items-center justify-between relative z-10">
                                 <div className="flex items-center gap-3">
@@ -120,7 +120,7 @@ export function AssistantBot() {
                         </div>
 
                         {/* Chat Content */}
-                        <div className="h-[500px] p-6 bg-gray-50 overflow-y-auto space-y-4">
+                        <div className="flex-1 p-6 bg-gray-50 overflow-y-auto space-y-4">
                             {messages.map((msg, i) => (
                                 <div
                                     key={i}
@@ -158,7 +158,7 @@ export function AssistantBot() {
 
                         {/* Input */}
                         <form
-                            className="p-4 bg-white border-t border-gray-100"
+                            className="p-4 bg-white border-t border-gray-100 shrink-0"
                             onSubmit={(e) => { e.preventDefault(); handleSend(); }}
                         >
                             <div className="relative">

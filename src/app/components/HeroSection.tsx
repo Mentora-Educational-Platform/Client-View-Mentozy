@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 
 export function HeroSection() {
   return (
-    <section className="relative py-24 overflow-hidden bg-gradient-to-b from-white via-amber-50/40 to-white">
-      <div className="container mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+    <section className="relative py-16 md:py-24 overflow-hidden bg-gradient-to-b from-white via-amber-50/40 to-white">
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="grid lg:grid-cols-2 gap-12 md:gap-16 items-center">
 
           {/* Left Content */}
           <div className="space-y-10 relative z-10">
@@ -15,7 +15,7 @@ export function HeroSection() {
                 Learn • Connect • Grow
               </p>
 
-              <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
                 Online Mentorship Platform for
                 <span className="relative inline-block ml-3">
                   <span className="relative z-10 px-5 py-2 rounded-2xl bg-amber-300">
@@ -25,15 +25,15 @@ export function HeroSection() {
                 </span>
               </h1>
 
-              <p className="text-lg text-gray-600 max-w-xl leading-relaxed">
+              <p className="text-base md:text-lg text-gray-600 max-w-xl leading-relaxed">
                 Not just courses — real people, real guidance.
                 Learn from seniors, mentors, and professionals who genuinely want to help you grow.
               </p>
             </div>
 
             {/* CTAs */}
-            <div className="flex flex-wrap items-center gap-6">
-              <Link to="/signup" className="group inline-flex items-center gap-4 bg-amber-400 hover:bg-amber-500 text-gray-900 px-8 py-4 rounded-full font-semibold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+              <Link to="/signup" className="w-full sm:w-auto justify-center group inline-flex items-center gap-4 bg-amber-400 hover:bg-amber-500 text-gray-900 px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-semibold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5">
                 Start learning for free
                 <span className="bg-white rounded-full p-2 group-hover:translate-x-1 transition-transform">
                   <ArrowRight className="w-4 h-4 text-gray-900" />
@@ -42,7 +42,7 @@ export function HeroSection() {
 
               <Link
                 to="/login"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors underline underline-offset-4 decoration-gray-300"
+                className="w-full sm:w-auto text-center text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors underline underline-offset-4 decoration-gray-300 py-2 sm:py-0"
               >
                 Already on Mentozy? Log in
               </Link>
@@ -50,7 +50,7 @@ export function HeroSection() {
           </div>
 
           {/* Right Visual */}
-          <div className="relative h-[520px] lg:h-[620px] flex items-center justify-center">
+          <div className="relative h-[400px] sm:h-[480px] lg:h-[620px] flex items-center justify-center mt-8 lg:mt-0">
 
             {/* Video Card */}
             <div className="relative w-full max-w-[460px] h-full rounded-[2.5rem] overflow-hidden bg-white shadow-xl border border-gray-200">

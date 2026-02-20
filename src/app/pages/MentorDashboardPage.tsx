@@ -142,11 +142,11 @@ export function MentorDashboardPage() {
     return (
         <DashboardLayout>
             {/* Welcome Banner */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-700 p-8 text-white shadow-xl shadow-blue-500/10 mb-8">
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-700 p-6 md:p-8 text-white shadow-xl shadow-blue-500/10 mb-8">
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
-                        <h1 className="text-3xl font-bold mb-2">Welcome back, {firstName}!</h1>
-                        <p className="text-blue-100/90 text-lg">You have <span className="font-bold text-white">{pendingBookings.length} pending requests</span> to review.</p>
+                        <h1 className="text-2xl md:text-3xl font-bold mb-2">Welcome back, {firstName}!</h1>
+                        <p className="text-blue-100/90 text-base md:text-lg">You have <span className="font-bold text-white">{pendingBookings.length} pending requests</span> to review.</p>
                     </div>
                 </div>
                 {/* Decoration Circles */}

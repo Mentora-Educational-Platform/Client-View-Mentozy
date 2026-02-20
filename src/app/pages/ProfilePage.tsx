@@ -136,7 +136,7 @@ export function ProfilePage() {
             <div className="max-w-6xl mx-auto space-y-10 pb-20">
 
                 {/* 1. Identity & Trust (Above the fold) */}
-                <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-xl relative overflow-hidden group">
+                <div className="bg-white rounded-[3rem] p-6 md:p-10 border border-gray-100 shadow-xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl -mr-20 -mt-20 opacity-40 group-hover:opacity-60 transition-opacity"></div>
 
                     <div className="flex flex-col lg:flex-row items-center gap-10 relative z-10">
@@ -247,8 +247,8 @@ export function ProfilePage() {
 
                     <div className="lg:col-span-2 space-y-10">
                         {/* 2. About Me Section (Human) */}
-                        <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+                        <div className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-gray-100 shadow-sm">
+                            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-6 md:mb-8 flex items-center gap-3">
                                 About Me
                             </h2>
                             <div className="space-y-8">
@@ -299,8 +299,8 @@ export function ProfilePage() {
                         </div>
 
                         {/* 3. Learning Preferences & Interests */}
-                        <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+                        <div className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-gray-100 shadow-sm">
+                            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-6 md:mb-8 flex items-center gap-3">
                                 <Target className="w-6 h-6 text-indigo-500" />
                                 Learning Preferences
                             </h2>
@@ -395,9 +395,9 @@ export function ProfilePage() {
                     {/* Right Column: 4. Activity & Progress Summary */}
                     <div className="space-y-10">
                         {/* Progress Summary Card */}
-                        <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-xl shadow-indigo-100/50 relative overflow-hidden">
+                        <div className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-gray-100 shadow-xl shadow-indigo-100/50 relative overflow-hidden">
                             <Layout className="absolute -bottom-6 -right-6 w-32 h-32 text-gray-50 -rotate-12" />
-                            <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-900">
+                            <h3 className="text-lg md:text-xl font-bold mb-6 flex items-center gap-2 text-gray-900">
                                 <Zap className="w-5 h-5 text-amber-500 fill-amber-500" />
                                 Growth Engine
                             </h3>
@@ -434,7 +434,7 @@ export function ProfilePage() {
                         </div>
 
                         {/* Recent Badges Placeholder */}
-                        <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm">
+                        <div className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-gray-100 shadow-sm">
                             <h3 className="font-bold text-gray-900 mb-6 flex items-center gap-2">
                                 <Award className="w-5 h-5 text-indigo-500" />
                                 Recent Badges

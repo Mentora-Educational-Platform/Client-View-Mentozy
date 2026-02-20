@@ -130,8 +130,8 @@ export function LoginPage() {
                 </div>
 
                 <div className="mx-auto w-full max-w-sm lg:w-96">
-                    <div className="mb-10">
-                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">Welcome back</h1>
+                    <div className="mb-8 md:mb-10">
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight mb-2">Welcome back</h1>
                         <p className="text-gray-500 text-sm">
                             Please enter your details to sign in.
                         </p>

@@ -100,11 +100,11 @@ export function StudentDashboardPage() {
     return (
         <DashboardLayout>
             {/* Header / Welcome Banner */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-500 to-orange-600 p-8 text-white shadow-xl shadow-amber-500/10 mb-8">
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-500 to-orange-600 p-6 md:p-8 text-white shadow-xl shadow-amber-500/10 mb-8">
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
-                        <h1 className="text-3xl font-bold mb-2">Welcome back, {firstName}!</h1>
-                        <p className="text-amber-100/90 text-lg">Ready to power up your brain today?</p>
+                        <h1 className="text-2xl md:text-3xl font-bold mb-2">Welcome back, {firstName}!</h1>
+                        <p className="text-amber-100/90 text-base md:text-lg">Ready to power up your brain today?</p>
                     </div>
 
                     {/* Search / Quick Action Area */}

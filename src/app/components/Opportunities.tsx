@@ -46,18 +46,18 @@ export function Opportunities() {
   };
 
   return (
-    <section className="py-24 bg-white">
-      <div className="container mx-auto px-6">
+    <section className="py-16 md:py-24 bg-white">
+      <div className="container mx-auto px-4 md:px-6">
 
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-100 text-amber-700 text-xs font-bold uppercase tracking-wider mb-4">
               <Building2 className="w-3 h-3" /> Join the Team
             </div>
-            <h2 className="text-4xl font-bold text-gray-900 tracking-tight mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight mb-4">
               Teach & Earn as a Mentor
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-base md:text-lg text-gray-600">
               We are looking for passionate builders who want real startup experience.
               Help us democratize mentorship.
             </p>
@@ -85,7 +85,7 @@ export function Opportunities() {
             <div
               key={job.id}
               onClick={handleClick}
-              className="group relative bg-white md:bg-gray-50/30 hover:bg-white border border-gray-100 rounded-2xl p-5 md:px-6 md:py-5 transition-all duration-300 hover:shadow-xl hover:shadow-gray-100 hover:border-amber-200 cursor-pointer"
+              className="group relative bg-white md:bg-gray-50/30 hover:bg-white border border-gray-100 rounded-2xl p-4 md:px-6 md:py-5 transition-all duration-300 hover:shadow-xl hover:shadow-gray-100 hover:border-amber-200 cursor-pointer"
             >
               <div className="md:grid md:grid-cols-12 md:gap-4 items-center">
                 <div className="col-span-5 flex items-center gap-4 mb-4 md:mb-0">

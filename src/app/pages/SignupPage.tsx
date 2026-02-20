@@ -12,8 +12,8 @@ export function SignupPage() {
                             <div className="w-2 h-2 bg-amber-500 rounded-sm"></div>
                         </Link>
                     </div>
-                    <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Welcome to Mentozy</h1>
-                    <p className="mt-3 text-lg text-gray-600">
+                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">Welcome to Mentozy</h1>
+                    <p className="mt-3 text-base md:text-lg text-gray-600">
                         Choose how you want to use the platform to get started.
                     </p>
                 </div>
@@ -22,12 +22,12 @@ export function SignupPage() {
                     {/* Student Card */}
                     <Link
                         to="/student-auth"
-                        className="group relative flex flex-col items-center p-10 bg-white border-2 border-gray-100 rounded-3xl hover:border-amber-400 hover:shadow-xl hover:shadow-amber-500/5 transition-all duration-300 text-center"
+                        className="group relative flex flex-col items-center p-6 md:p-10 bg-white border-2 border-gray-100 rounded-3xl hover:border-amber-400 hover:shadow-xl hover:shadow-amber-500/5 transition-all duration-300 text-center"
                     >
-                        <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-600 mb-6 group-hover:scale-110 transition-transform duration-300">
-                            <GraduationCap className="w-10 h-10" />
+                        <div className="w-16 h-16 md:w-20 md:h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-600 mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <GraduationCap className="w-8 h-8 md:w-10 md:h-10" />
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-2">Student</h3>
+                        <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Student</h3>
                         <p className="text-gray-500 mb-8">I want to learn, find mentors, and build skills.</p>
                         <div className="mt-auto opacity-0 group-hover:opacity-100 transition-opacity text-amber-600 font-semibold flex items-center gap-2">
                             Continue <ChevronRight className="w-4 h-4" />
@@ -37,12 +37,12 @@ export function SignupPage() {
                     {/* Teacher/Mentor Card */}
                     <Link
                         to="/teacher-type"
-                        className="group relative flex flex-col items-center p-10 bg-white border-2 border-gray-100 rounded-3xl hover:border-blue-400 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 text-center"
+                        className="group relative flex flex-col items-center p-6 md:p-10 bg-white border-2 border-gray-100 rounded-3xl hover:border-blue-400 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 text-center"
                     >
-                        <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-6 group-hover:scale-110 transition-transform duration-300">
-                            <Briefcase className="w-10 h-10" />
+                        <div className="w-16 h-16 md:w-20 md:h-20 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <Briefcase className="w-8 h-8 md:w-10 md:h-10" />
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-2">Mentor / Teacher</h3>
+                        <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Mentor / Teacher</h3>
                         <p className="text-gray-500 mb-8">I want to guide students and share my expertise.</p>
                         <div className="mt-auto opacity-0 group-hover:opacity-100 transition-opacity text-blue-600 font-semibold flex items-center gap-2">
                             Continue <ChevronRight className="w-4 h-4" />
