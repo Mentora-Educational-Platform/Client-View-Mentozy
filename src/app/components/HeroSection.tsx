@@ -16,11 +16,16 @@ export function HeroSection() {
               </p>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                <span className="relative inline-block mt-2">
-                  <span className="relative z-10 px-5 py-2 rounded-2xl bg-amber-300">
-                    Learn, Teach and Grow
+                Learn easier,<br />
+                <span className="inline-block ml-8 md:ml-16">Teach faster</span><br />
+                <span className="inline-flex items-center flex-wrap gap-x-3 mt-2 md:mt-4">
+                  And
+                  <span className="relative inline-block">
+                    <span className="relative z-10 px-5 py-2 rounded-2xl bg-amber-300">
+                      Grow together
+                    </span>
+                    <span className="absolute inset-0 bg-amber-400 rounded-2xl blur-md opacity-30" />
                   </span>
-                  <span className="absolute inset-0 bg-amber-400 rounded-2xl blur-md opacity-30" />
                 </span>
               </h1>
 
