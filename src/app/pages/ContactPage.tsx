@@ -23,7 +23,7 @@ export function ContactPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-400">Email us at</p>
-                    <a href="mailto:contact@mentozy.app" className="font-medium hover:text-amber-400 transition-colors">contact@mentozy.app</a>
+                    <a href="mailto:hello@mentozy.app" className="font-medium hover:text-amber-400 transition-colors">hello@mentozy.app</a>
                   </div>
                 </div>
 
