@@ -95,7 +95,7 @@ export function AssistantBot() {
                         initial={{ opacity: 0, scale: 0.8, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                        className="absolute bottom-20 right-0 w-[350px] bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col"
+                        className="absolute bottom-20 right-0 w-[400px] bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col"
                     >
                         {/* Header */}
                         <div className="bg-gradient-to-r from-emerald-600 to-blue-600 p-6 text-white overflow-hidden relative">
@@ -120,7 +120,7 @@ export function AssistantBot() {
                         </div>
 
                         {/* Chat Content */}
-                        <div className="h-[400px] p-6 bg-gray-50 overflow-y-auto space-y-4">
+                        <div className="h-[500px] p-6 bg-gray-50 overflow-y-auto space-y-4">
                             {messages.map((msg, i) => (
                                 <div
                                     key={i}
@@ -192,15 +192,7 @@ export function AssistantBot() {
                 <div className="relative w-16 h-16 bg-white rounded-full shadow-xl flex items-center justify-center border border-gray-50 overflow-hidden">
                     <PeacockFeatherIcon />
                 </div>
-                {!isOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-lg"
-                    >
-                        1
-                    </motion.div>
-                )}
+
             </motion.button>
         </div>
     );

@@ -6,7 +6,13 @@ export interface BotQA {
 }
 
 export const BOT_RESPONSES: BotQA[] = [
-    // PLATFORM OVERVIEW
+    // PLATFORM OVERVIEW & TEAM
+    {
+        id: 'team-1',
+        question: "Who is founder?",
+        answer: "Harshita Bhaskaruni",
+        keywords: ["founder", "ceo", "creator", "owner", "harshita", "bhaskaruni"]
+    },
     {
         id: 'overview-1',
         question: "What is Mentozy?",
@@ -682,7 +688,7 @@ export const BOT_RESPONSES: BotQA[] = [
     {
         id: 'greet-11',
         question: "Who are you?",
-        answer: "Mentozy Assistant.",
+        answer: "A messenger in Mahabharat but now a Messenger for Mentozy you want to know anything about Mentozy?",
         keywords: ["who are you", "your name"]
     },
     {
