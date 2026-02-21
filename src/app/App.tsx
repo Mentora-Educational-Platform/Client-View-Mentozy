@@ -26,6 +26,7 @@ const DashboardMentorsPage = lazy(() => import('./pages/DashboardMentorsPage').t
 const AuthCallbackPage = lazy(() => import('./pages/AuthCallbackPage').then(module => ({ default: module.AuthCallbackPage })));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage').then(module => ({ default: module.ForgotPasswordPage })));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage').then(module => ({ default: module.ResetPasswordPage })));
+const EmailUpdatePage = lazy(() => import('./pages/EmailUpdatePage').then(module => ({ default: module.EmailUpdatePage })));
 
 
 
@@ -157,6 +158,11 @@ function App() {
         <Route path="/reset-password" element={
           <Suspense fallback={<PageLoader />}>
             <ResetPasswordPage />
+          </Suspense>
+        } />
+        <Route path="/email-update" element={
+          <Suspense fallback={<PageLoader />}>
+            <EmailUpdatePage />
           </Suspense>
         } />
         {/* Missing Mentor Routes Added Back */}

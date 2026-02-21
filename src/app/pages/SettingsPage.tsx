@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
     Moon, Sun, Key, Mail,
     MessageCircle, LogOut, Trash2,
@@ -16,6 +16,7 @@ import { getMentorByUserId, updateMentorStatus } from '../../lib/api';
 export function SettingsPage() {
     const { user, signOut } = useAuth();
     const location = useLocation();
+    const navigate = useNavigate();
     const isMentorView = location.pathname.includes('mentor');
 
     // Mentor Specific State
@@ -276,7 +277,7 @@ export function SettingsPage() {
                             <SettingItem
                                 label="Change Email"
                                 description={user?.email || "No email linked"}
-                                action={() => toast.info("Email change requires verification")}
+                                action={() => navigate('/email-update')}
                                 icon={Mail}
                             />
                             <div className="pt-4 border-t border-gray-50">
