@@ -99,9 +99,17 @@ export function AuthCallbackPage() {
                 </div>
 
                 {/* Text Area */}
-                <div className="text-center animate-pulse mt-4">
-                    <h2 className="text-3xl md:text-5xl font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-teal-600 via-blue-600 to-indigo-600 tracking-[0.2em] md:tracking-[0.3em] drop-shadow-md pb-2">
-                        v.a.s.u.d.e.v.a.....
+                <div className="text-center mt-4 h-16 flex items-center justify-center">
+                    <h2 className="text-3xl md:text-5xl font-serif italic tracking-[0.2em] md:tracking-[0.3em] drop-shadow-md pb-2 flex">
+                        {"v.a.s.u.d.e.v.a.....".split('').map((char, index) => (
+                            <span
+                                key={index}
+                                className="opacity-0 animate-[fade-in_0.5s_ease-in-out_forwards] text-transparent bg-clip-text bg-gradient-to-r from-teal-600 via-blue-600 to-indigo-600"
+                                style={{ animationDelay: `${index * 0.15}s` }}
+                            >
+                                {char}
+                            </span>
+                        ))}
                     </h2>
                 </div>
             </div>
