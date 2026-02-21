@@ -5,6 +5,7 @@ import { getUserProfile } from '../../lib/api';
 import { getSupabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
+import { FullScreenLoader } from '../components/FullScreenLoader';
 
 export function LoginPage() {
     const navigate = useNavigate();
@@ -85,6 +86,7 @@ export function LoginPage() {
 
     return (
         <div className="min-h-screen bg-white flex font-sans">
+            {loading && <FullScreenLoader />}
             {/* Left Side - Visual / Brand Area */}
             <div className="hidden lg:flex lg:w-1/2 bg-gray-50 items-center justify-center relative overflow-hidden">
                 {/* Abstract shapes or image */}
