@@ -1,51 +1,40 @@
-import { useEffect } from 'react';
-import { getSupabase } from '../../lib/supabase';
-import { Loader2 } from 'lucide-react';
+import { useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import { supabase } from "../../lib/supabase"
 
 export function AuthCallbackPage() {
+    const navigate = useNavigate()
+
     useEffect(() => {
         const handleRedirect = async () => {
-            const supabase = getSupabase();
             if (!supabase) return;
+            const { data: { session } } = await supabase.auth.getSession()
 
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                window.location.href = '/login';
-                return;
+            if (!session) return
+
+            // Fetch role from profiles table
+            const { data: profile, error } = await supabase
+                .from("profiles")
+                .select("role")
+                .eq("id", session.user.id)
+                .single()
+
+            if (error || !profile) {
+                navigate("/")
+                return
             }
 
-            try {
-                const { data: profile, error } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', session.user.id)
-                    .single();
-
-                if (error) throw error;
-
-                if (profile && (profile.role === 'mentor' || profile.role === 'teacher')) {
-                    window.location.href = '/mentor-dashboard';
-                } else {
-                    window.location.href = '/student-dashboard';
-                }
-            } catch (err) {
-                console.error("Error in auth callback:", err);
-                window.location.href = '/student-dashboard'; // Fallback
+            if (profile.role === "mentor") {
+                navigate("/mentor-dashboard")
+            } else {
+                navigate("/student-dashboard")
             }
-        };
+        }
 
-        handleRedirect();
-    }, []);
+        handleRedirect()
+    }, [navigate])
 
-    return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 font-sans">
-            <div className="text-center space-y-4">
-                <Loader2 className="w-10 h-10 text-amber-500 animate-spin mx-auto" />
-                <h2 className="text-xl font-bold text-gray-900">Completing login...</h2>
-                <p className="text-gray-500 text-sm font-medium">Redirecting you to your dashboard.</p>
-            </div>
-        </div>
-    );
+    return <p>Redirecting...</p>
 }
 
 export default AuthCallbackPage;
