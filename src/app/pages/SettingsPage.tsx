@@ -57,15 +57,34 @@ export function SettingsPage() {
         if (!supabase) return;
 
         // Dynamic redirect based on view
-        const nextParam = isMentorView ? '/mentor-settings' : '/settings';
         const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-            redirectTo: `${window.location.origin}/auth/callback?next=${nextParam}`,
+            redirectTo: `${window.location.origin}/reset-password`,
         });
 
         if (error) {
             toast.error(error.message);
         } else {
             toast.success("Password reset email sent!");
+        }
+    };
+
+    const handleGetVerified = async () => {
+        if (!user?.email) return;
+        const supabase = getSupabase();
+        if (!supabase) return;
+
+        const { error } = await supabase.auth.resend({
+            type: 'signup',
+            email: user.email,
+            options: {
+                emailRedirectTo: `${window.location.origin}/auth/callback`
+            }
+        });
+
+        if (error) {
+            toast.error(error.message || "Failed to send verification email");
+        } else {
+            toast.success("Verification link sent! Please check your email inbox.");
         }
     };
 
@@ -260,6 +279,14 @@ export function SettingsPage() {
                                 action={() => toast.info("Email change requires verification")}
                                 icon={Mail}
                             />
+                            <div className="pt-4 border-t border-gray-50">
+                                <SettingItem
+                                    label="Get Verified"
+                                    description="Receive a verification link to confirm your email."
+                                    action={handleGetVerified}
+                                    icon={Shield}
+                                />
+                            </div>
                             <div className="pt-6 mt-6 border-t border-red-50 flex flex-col gap-4">
                                 <button
                                     onClick={() => signOut()}
