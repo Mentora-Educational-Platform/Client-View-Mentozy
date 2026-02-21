@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { Twitter, Linkedin, Instagram, Send, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { SiCrunchbase, SiProducthunt } from 'react-icons/si';
 
 
 export const Footer = memo(function Footer() {
@@ -111,6 +112,12 @@ export const Footer = memo(function Footer() {
             </a>
             <a href="https://www.linkedin.com/company/mentozy?trk=public_jobs_topcard_logo" className="text-gray-400 hover:text-amber-600 transition-colors hover:scale-110 transform">
               <Linkedin className="w-5 h-5" />
+            </a>
+            <a href="https://www.crunchbase.com/organization/mentozy" className="text-gray-400 hover:text-amber-600 transition-colors hover:scale-110 transform" target="_blank" rel="noopener noreferrer">
+              <SiCrunchbase className="w-5 h-5" />
+            </a>
+            <a href="https://www.producthunt.com/products/mentozy" className="text-gray-400 hover:text-amber-600 transition-colors hover:scale-110 transform" target="_blank" rel="noopener noreferrer">
+              <SiProducthunt className="w-5 h-5" />
             </a>
             <a href="#" className="text-gray-400 hover:text-amber-600 transition-colors hover:scale-110 transform">
               <Instagram className="w-5 h-5" />
