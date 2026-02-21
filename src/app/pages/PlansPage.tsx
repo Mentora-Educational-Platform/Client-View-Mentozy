@@ -1,7 +1,8 @@
-import { Check, X, Zap } from 'lucide-react';
+import { useState } from 'react';
+import { Check, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const plans = [
+const studentPlans = [
   {
     name: 'Free',
     price: '$0',
@@ -68,13 +69,83 @@ const plans = [
   }
 ];
 
+const teacherPlans = [
+  {
+    name: 'Free',
+    price: '$0',
+    period: '/month',
+    description: 'Individual mentor',
+    features: [
+      { name: '8% commission on sessions', included: true },
+      { name: '8% commission on courses', included: true },
+      { name: 'Staff dashboards', included: false },
+      { name: 'Virtual events', included: false },
+      { name: 'Student community', included: false },
+    ],
+    cta: 'Get Started',
+    popular: false,
+    color: 'gray'
+  },
+  {
+    name: 'Premium',
+    price: '$50',
+    period: '/month',
+    description: 'For organisations',
+    features: [
+      { name: 'Single organisation (Online only)', included: true },
+      { name: '5 staff + 1 admin dashboard', included: true },
+      { name: '8% commission on fees', included: true },
+      { name: 'Virtual events', included: false },
+      { name: 'Student community', included: false },
+    ],
+    cta: 'Subscribe Now',
+    popular: true,
+    color: 'amber'
+  },
+  {
+    name: 'Ultra',
+    price: '$95',
+    period: '/month',
+    description: 'Online/offline schools',
+    features: [
+      { name: 'Online & offline schools allowed', included: true },
+      { name: '12 staff + 1 admin dashboard', included: true },
+      { name: 'Virtual events can be posted', included: true },
+      { name: '8% commission on fees', included: true },
+      { name: 'Student community', included: false },
+    ],
+    cta: 'Go Ultra',
+    popular: false,
+    color: 'indigo'
+  },
+  {
+    name: 'Unlimited',
+    price: '$150',
+    period: '/month',
+    description: 'Everything you need',
+    features: [
+      { name: 'Unlimited staff & admin dashboards', included: true },
+      { name: 'Can create student community', included: true },
+      { name: 'Recommended inst. on landing page', included: true },
+      { name: 'Virtual events can be posted', included: true },
+      { name: '8% commission on fees', included: true },
+    ],
+    cta: 'Contact Sales',
+    popular: false,
+    color: 'rose'
+  }
+];
+
 export function PlansPage() {
+  const [planType, setPlanType] = useState<'student' | 'teacher'>('student');
+  const activePlans = planType === 'student' ? studentPlans : teacherPlans;
+
   return (
     <div className="pt-24 pb-20 bg-gray-50 min-h-screen font-sans">
       <div className="container mx-auto px-6">
-        
+
         {/* Header */}
-        <div className="max-w-3xl mx-auto text-center mb-16">
+        <div className="max-w-3xl mx-auto text-center mb-10">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Simple Plans for <span className="text-amber-600">Big Dreams</span>
           </h1>
@@ -83,11 +154,35 @@ export function PlansPage() {
           </p>
         </div>
 
+        {/* Toggle Student / Teacher */}
+        <div className="flex justify-center mb-16">
+          <div className="bg-white p-1.5 rounded-full border border-gray-200 inline-flex shadow-sm">
+            <button
+              onClick={() => setPlanType('student')}
+              className={`px-8 py-3 rounded-full text-sm font-bold transition-all ${planType === 'student'
+                ? 'bg-amber-600 text-white shadow-md'
+                : 'text-gray-600 hover:text-amber-600'
+                }`}
+            >
+              For Students
+            </button>
+            <button
+              onClick={() => setPlanType('teacher')}
+              className={`px-8 py-3 rounded-full text-sm font-bold transition-all ${planType === 'teacher'
+                ? 'bg-amber-600 text-white shadow-md'
+                : 'text-gray-600 hover:text-amber-600'
+                }`}
+            >
+              For Teachers
+            </button>
+          </div>
+        </div>
+
         {/* Plans Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-          {plans.map((plan) => (
-            <div 
-              key={plan.name} 
+          {activePlans.map((plan) => (
+            <div
+              key={plan.name}
               className={`relative bg-white rounded-3xl p-8 border hover:shadow-xl transition-all duration-300 flex flex-col
                 ${plan.popular ? 'border-amber-500 shadow-lg scale-105 z-10' : 'border-gray-200 shadow-sm'}
               `}
@@ -129,8 +224,8 @@ export function PlansPage() {
               </ul>
 
               <button className={`w-full py-3.5 rounded-xl font-bold transition-all
-                ${plan.popular 
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:shadow-lg hover:shadow-amber-500/25' 
+                ${plan.popular
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:shadow-lg hover:shadow-amber-500/25'
                   : 'bg-gray-900 text-white hover:bg-gray-800'}
               `}>
                 {plan.cta}
@@ -141,10 +236,10 @@ export function PlansPage() {
 
         {/* Trust/FAQ Section Snippet */}
         <div className="mt-20 text-center">
-            <p className="text-gray-500 text-sm">
-                *Unlimited plans are subject to reasonable use policy. Need a custom team plan? 
-                <Link to="/contact" className="text-amber-600 font-bold ml-1 hover:underline">Contact us</Link>
-            </p>
+          <p className="text-gray-500 text-sm">
+            *Unlimited plans are subject to reasonable use policy. Need a custom team plan?
+            <Link to="/contact" className="text-amber-600 font-bold ml-1 hover:underline">Contact us</Link>
+          </p>
         </div>
 
       </div>
