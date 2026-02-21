@@ -30,10 +30,15 @@ export function LoginPage() {
             const supabase = getSupabase();
             if (!supabase) throw new Error("Supabase client not initialized");
 
-            const { data, error } = await supabase.auth.signInWithPassword({
+            // Add artificial delay so loader is visible
+            const loginPromise = supabase.auth.signInWithPassword({
                 email: formData.email,
                 password: formData.password,
             });
+            const delayPromise = new Promise(resolve => setTimeout(resolve, 2500));
+
+            const [loginResult] = await Promise.all([loginPromise, delayPromise]);
+            const { data, error } = loginResult;
 
             if (error) throw error;
 
