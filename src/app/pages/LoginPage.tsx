@@ -72,7 +72,7 @@ export function LoginPage() {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: 'https://mentozy.app/auth/callback',
+                    redirectTo: `${window.location.origin}/auth/callback`,
                 },
             });
 
