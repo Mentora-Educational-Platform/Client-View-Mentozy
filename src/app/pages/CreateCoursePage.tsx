@@ -1,18 +1,22 @@
 
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { BookOpen, Save } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { CourseModulesEditor, Module } from '../components/course/CourseModulesEditor';
 import { createCourse } from '../../lib/api';
-import { useNavigate } from 'react-router-dom';
+import { getSupabase } from '../../lib/supabase';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 export function CreateCoursePage() {
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
+    const [fetchingDraft, setFetchingDraft] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
     const [actionStatus, setActionStatus] = useState<'published' | 'draft'>('published');
+    const [editingCourseId, setEditingCourseId] = useState<number | null>(null);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -25,18 +29,75 @@ export function CreateCoursePage() {
 
     const [modules, setModules] = useState<Module[]>([]);
 
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const editId = queryParams.get('edit');
+
+        if (editId) {
+            setFetchingDraft(true);
+            setEditingCourseId(parseInt(editId));
+
+            async function fetchDraft() {
+                try {
+                    const supabase = getSupabase();
+                    if (!supabase) return;
+
+                    const { data, error } = await supabase
+                        .from('tracks')
+                        .select('*, track_modules(*)')
+                        .eq('id', editId)
+                        .single();
+
+                    if (data && !error) {
+                        setFormData({
+                            title: data.title || '',
+                            description: data.description || '',
+                            level: data.level || 'Intermediate',
+                            duration: data.duration_weeks ? `${data.duration_weeks} Weeks` : '4 Weeks',
+                            price: '0' // Defaulting as it's not in DB schema yet
+                        });
+
+                        if (data.track_modules && data.track_modules.length > 0) {
+                            const sortedModules = data.track_modules.sort((a: any, b: any) => a.module_order - b.module_order);
+                            setModules(sortedModules.map((m: any, idx: number) => ({
+                                id: m.id || `module-${idx}`,
+                                title: m.title,
+                                description: '',
+                                duration: m.duration || '1 Week',
+                                objectives: [],
+                                lessons: [] // Full recursive fetch would be needed here, keeping simple for now
+                            })));
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error fetching draft", err);
+                } finally {
+                    setFetchingDraft(false);
+                }
+            }
+
+            fetchDraft();
+        }
+    }, [location.search]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
         const moduleTitles = modules.map(m => m.title || 'Untitled Module');
 
-        const success = await createCourse({
-            title: formData.title,
-            description: formData.description,
-            level: formData.level,
-            duration: formData.duration,
-        }, moduleTitles, user?.id, actionStatus);
+        const success = await createCourse(
+            editingCourseId,
+            {
+                title: formData.title,
+                description: formData.description,
+                level: formData.level,
+                duration: formData.duration,
+            },
+            moduleTitles,
+            user?.id,
+            actionStatus
+        );
 
         setLoading(false);
 
@@ -53,11 +114,21 @@ export function CreateCoursePage() {
         }
     };
 
+    if (fetchingDraft) {
+        return (
+            <DashboardLayout>
+                <div className="flex items-center justify-center min-h-[50vh]">
+                    <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+            </DashboardLayout>
+        );
+    }
+
     return (
         <DashboardLayout>
             <div className="max-w-4xl mx-auto">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Create New Course</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">{editingCourseId ? 'Edit Course Draft' : 'Create New Course'}</h1>
                     <p className="text-gray-500 mt-2">Share your knowledge with the world. Create a structured learning path.</p>
                 </div>
 

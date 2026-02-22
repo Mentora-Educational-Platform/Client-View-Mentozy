@@ -296,13 +296,18 @@ export const getMentorCreatedCourses = async (mentorUserId: string): Promise<Tra
     }
 };
 
-export const createCourse = async (courseData: Partial<Track>, modules: string[], creatorId?: string, status: 'published' | 'draft' = 'published'): Promise<boolean> => {
+export const createCourse = async (
+    courseId: number | null,
+    courseData: Partial<Track>,
+    modules: string[],
+    creatorId?: string,
+    status: 'published' | 'draft' = 'published'
+): Promise<boolean> => {
     try {
         const supabase = getSupabase();
         if (!supabase) return false;
 
-        // 1. Insert Track into tracks table
-        const insertPayload: any = {
+        const payload: any = {
             title: courseData.title,
             level: courseData.level || 'All Levels',
             description: courseData.description,
@@ -311,48 +316,76 @@ export const createCourse = async (courseData: Partial<Track>, modules: string[]
         };
 
         if (creatorId) {
-            insertPayload.creator_id = creatorId;
-            insertPayload.status = status;
+            payload.creator_id = creatorId;
+            payload.status = status;
         }
 
-        const { data: trackRecords, error: trackError } = await supabase
-            .from('tracks')
-            .insert([insertPayload])
-            .select('id');
+        let trackId = courseId;
 
-        if (trackError) {
-            console.error("Error creating track full details:", trackError);
-            console.error("Payload was:", insertPayload);
-            toast.error(`Database Error: ${trackError.message || 'Unknown error'} `);
+        if (trackId) {
+            // Update existing Track
+            const { error: updateError } = await supabase
+                .from('tracks')
+                .update(payload)
+                .eq('id', trackId);
+
+            if (updateError) {
+                console.error("Error updating track full details:", updateError);
+                toast.error(`Database Error: ${updateError.message || 'Unknown error'}`);
+                return false;
+            }
+
+            // Delete existing modules to replace them cleanly
+            await supabase.from('track_modules').delete().eq('track_id', trackId);
+
+        } else {
+            // Insert new Track
+            const { data: trackRecords, error: trackError } = await supabase
+                .from('tracks')
+                .insert([payload])
+                .select('id');
+
+            if (trackError) {
+                console.error("Error creating track full details:", trackError);
+                console.error("Payload was:", payload);
+                toast.error(`Database Error: ${trackError.message || 'Unknown error'}`);
+                return false;
+            }
+
+            if (!trackRecords || trackRecords.length === 0) {
+                console.warn("Track creation returned no data.");
+                return false;
+            }
+
+            trackId = trackRecords[0].id as number;
+        }
+
+        if (!trackId) {
+            console.error("Failed to retrieve or determine track ID after creation/update.");
             return false;
         }
 
-        if (!trackRecords || trackRecords.length === 0) {
-            console.error("Failed to retrieve created track ID");
-            return false;
-        }
-
-        const newTrackId = trackRecords[0].id;
-
-        // 2. Insert Track Modules into track_modules table
+        // Insert Modules into track_modules table
         if (modules && modules.length > 0) {
             const moduleInserts = modules.map((mTitle, index) => ({
-                track_id: newTrackId,
+                track_id: trackId,
                 title: mTitle,
                 module_order: index + 1
             }));
 
-            const { error: modulesError } = await supabase
+            const { error: moduleError } = await supabase
                 .from('track_modules')
                 .insert(moduleInserts);
 
-            if (modulesError) {
-                console.error("Error creating track modules:", modulesError);
-                // Return true still as the main track was created, but module save failed partially
+            if (moduleError) {
+                console.error("Error creating modules:", moduleError);
+                toast.error(`Database Error: ${moduleError.message || 'Unknown error'}`);
+                return false;
             }
         }
 
         return true;
+
     } catch (e) {
         console.error("Unexpected error in createCourse:", e);
         return false;
