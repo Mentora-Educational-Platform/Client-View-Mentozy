@@ -54,7 +54,7 @@ export function MentorCoursesPage() {
                         <p className="text-gray-500 mt-2 text-lg">Manage your published tracks and unfinished drafts.</p>
                     </div>
                     <button
-                        onClick={() => navigate('/create-course')}
+                        onClick={() => navigate('/mentor-create-course')}
                         className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30 flex items-center gap-2"
                     >
                         <Plus className="w-5 h-5" />
@@ -94,7 +94,7 @@ export function MentorCoursesPage() {
                         </p>
                         {activeTab === 'published' && (
                             <button
-                                onClick={() => navigate('/create-course')}
+                                onClick={() => navigate('/mentor-create-course')}
                                 className="mt-6 text-blue-600 font-bold hover:underline"
                             >
                                 Start Creating Now →
@@ -137,7 +137,7 @@ export function MentorCoursesPage() {
                                             {course.modules?.length || 0} Modules
                                         </div>
                                         <button
-                                            onClick={() => navigate(`/create-course?edit=${course.id}`)}
+                                            onClick={() => navigate(`/mentor-create-course?edit=${course.id}`)}
                                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                             title="Edit Course"
                                         >
