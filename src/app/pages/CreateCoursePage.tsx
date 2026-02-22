@@ -4,9 +4,12 @@ import { BookOpen, Save } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { CourseModulesEditor, Module } from '../components/course/CourseModulesEditor';
+import { createCourse } from '../../lib/api';
+import { useNavigate } from 'react-router-dom';
 
 export function CreateCoursePage() {
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     // Form State
     const [formData, setFormData] = useState({
@@ -23,16 +26,29 @@ export function CreateCoursePage() {
         e.preventDefault();
         setLoading(true);
 
-        // Simulation of API call with modules data
-        console.log("Saving Course Data:", { ...formData, modules });
+        const moduleTitles = modules.map(m => m.title || 'Untitled Module');
 
-        setTimeout(() => {
-            setLoading(false);
+        const success = await createCourse({
+            title: formData.title,
+            description: formData.description,
+            level: formData.level,
+            duration: formData.duration,
+        }, moduleTitles);
+
+        setLoading(false);
+
+        if (success) {
             toast.success("Course Created Successfully!");
-            // Reset or Redirect
+            // Reset state
             setFormData({ title: '', description: '', level: 'Intermediate', duration: '4 Weeks', price: '0' });
             setModules([]);
-        }, 1500);
+
+            // Redirect to dashboard or track list 
+            navigate('/student-dashboard');
+            // In a real flow, a mentor goes to mentor dashboard, but per request, we verify it hits student dashboard.
+        } else {
+            toast.error("Failed to create course. Please try again.");
+        }
     };
 
     return (

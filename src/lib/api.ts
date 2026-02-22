@@ -1,4 +1,4 @@
- import { getSupabase } from './supabase';
+import { getSupabase } from './supabase';
 
 // Database Types (matching Schema)
 interface DBProfile {
@@ -250,6 +250,60 @@ export const getTracks = async (): Promise<Track[]> => {
     } catch (e) {
         console.error("Unexpected error fetching tracks:", e);
         return [];
+    }
+};
+
+export const createCourse = async (courseData: Partial<Track>, modules: string[]): Promise<boolean> => {
+    try {
+        const supabase = getSupabase();
+        if (!supabase) return false;
+
+        // 1. Insert Track into tracks table
+        const { data: trackRecords, error: trackError } = await supabase
+            .from('tracks')
+            .insert([{
+                title: courseData.title,
+                level: courseData.level || 'All Levels',
+                description: courseData.description,
+                duration_weeks: parseInt((courseData.duration || '4').split(' ')[0]) || 4,
+                image_url: courseData.image_url
+            }])
+            .select('id');
+
+        if (trackError) {
+            console.error("Error creating track:", trackError);
+            return false;
+        }
+
+        if (!trackRecords || trackRecords.length === 0) {
+            console.error("Failed to retrieve created track ID");
+            return false;
+        }
+
+        const newTrackId = trackRecords[0].id;
+
+        // 2. Insert Track Modules into track_modules table
+        if (modules && modules.length > 0) {
+            const moduleInserts = modules.map((mTitle, index) => ({
+                track_id: newTrackId,
+                title: mTitle,
+                module_order: index + 1
+            }));
+
+            const { error: modulesError } = await supabase
+                .from('track_modules')
+                .insert(moduleInserts);
+
+            if (modulesError) {
+                console.error("Error creating track modules:", modulesError);
+                // Return true still as the main track was created, but module save failed partially
+            }
+        }
+
+        return true;
+    } catch (e) {
+        console.error("Unexpected error in createCourse:", e);
+        return false;
     }
 };
 
