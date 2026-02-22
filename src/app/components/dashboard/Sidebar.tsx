@@ -42,6 +42,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
     const mentorItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/mentor-dashboard' },
+        { icon: BookOpen, label: 'My Courses', path: '/mentor-courses' },
         { icon: PlusCircle, label: 'Create Course', path: '/mentor-create-course' },
         { icon: Calendar, label: 'Calendar', path: '/mentor-calendar' },
         { icon: MessageSquare, label: 'Messages', path: '/mentor-messages' },

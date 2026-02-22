@@ -6,10 +6,13 @@ import { toast } from 'sonner';
 import { CourseModulesEditor, Module } from '../components/course/CourseModulesEditor';
 import { createCourse } from '../../lib/api';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 export function CreateCoursePage() {
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const [actionStatus, setActionStatus] = useState<'published' | 'draft'>('published');
 
     // Form State
     const [formData, setFormData] = useState({
@@ -33,21 +36,20 @@ export function CreateCoursePage() {
             description: formData.description,
             level: formData.level,
             duration: formData.duration,
-        }, moduleTitles);
+        }, moduleTitles, user?.id, actionStatus);
 
         setLoading(false);
 
         if (success) {
-            toast.success("Course Created Successfully!");
+            toast.success(actionStatus === 'draft' ? "Course Saved as Draft!" : "Course Published Successfully!");
             // Reset state
             setFormData({ title: '', description: '', level: 'Intermediate', duration: '4 Weeks', price: '0' });
             setModules([]);
 
-            // Redirect to dashboard or track list 
-            navigate('/student-dashboard');
-            // In a real flow, a mentor goes to mentor dashboard, but per request, we verify it hits student dashboard.
+            // Redirect to mentor courses
+            navigate('/mentor-courses');
         } else {
-            toast.error("Failed to create course. Please try again.");
+            toast.error("Failed to save course. Please try again.");
         }
     };
 
@@ -157,17 +159,30 @@ export function CreateCoursePage() {
 
                         {/* Actions */}
                         <div className="pt-6 flex justify-end gap-3">
-                            <button type="button" className="px-6 py-3 font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition-colors">
+                            <button
+                                type="button"
+                                onClick={() => navigate('/mentor-dashboard')}
+                                className="px-6 py-3 font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition-colors"
+                            >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
+                                onClick={() => setActionStatus('draft')}
+                                disabled={loading}
+                                className="px-6 py-3 bg-white border-2 border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors active:scale-95 flex items-center gap-2"
+                            >
+                                Save as Draft
+                            </button>
+                            <button
+                                type="submit"
+                                onClick={() => setActionStatus('published')}
                                 disabled={loading}
                                 className="px-8 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-amber-600 transition-colors shadow-lg active:scale-95 flex items-center gap-2"
                             >
-                                {loading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                                {loading && actionStatus === 'published' && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                                 <Save className="w-4 h-4" />
-                                Create Course
+                                Publish Course
                             </button>
                         </div>
 

@@ -64,6 +64,7 @@ const MentorAnalyticsPage = lazy(() => import('./pages/MentorAnalyticsPage').the
 const MentorAchievementsPage = lazy(() => import('./pages/MentorAchievementsPage').then(module => ({ default: module.MentorAchievementsPage })));
 const MentorProfilePage = lazy(() => import('./pages/MentorProfilePage').then(module => ({ default: module.MentorProfilePage })));
 const MentorCalendarPage = lazy(() => import('./pages/MentorCalendarPage').then(module => ({ default: module.MentorCalendarPage })));
+const MentorCoursesPage = lazy(() => import('./pages/MentorCoursesPage').then(module => ({ default: module.MentorCoursesPage })));
 const CreateCoursePage = lazy(() => import('./pages/CreateCoursePage').then(module => ({ default: module.CreateCoursePage })));
 
 // Layout Component
@@ -227,6 +228,11 @@ function App() {
         <Route path="/mentor-achievements" element={
           <Suspense fallback={<PageLoader />}>
             <MentorAchievementsPage />
+          </Suspense>
+        } />
+        <Route path="/mentor-courses" element={
+          <Suspense fallback={<PageLoader />}>
+            <MentorCoursesPage />
           </Suspense>
         } />
         <Route path="/mentors-for-computer-science" element={

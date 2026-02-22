@@ -1,4 +1,5 @@
 import { getSupabase } from './supabase';
+import { toast } from 'sonner';
 
 // Database Types (matching Schema)
 interface DBProfile {
@@ -72,6 +73,8 @@ export interface Track {
     description: string;
     modules: string[]; // Mapped from track_modules titles
     image_url?: string;
+    status?: 'published' | 'draft';
+    creator_id?: string;
 }
 
 export interface Profile {
@@ -142,10 +145,10 @@ export const getMentors = async (): Promise<Mentor[]> => {
         const { data, error } = await supabase
             .from('mentors')
             .select(`
-                *,
-                profiles (full_name, avatar_url),
-                mentor_expertise (skill)
-            `);
+    *,
+    profiles(full_name, avatar_url),
+    mentor_expertise(skill)
+        `);
 
         if (error) {
             console.warn("Error fetching mentors from Supabase:", error.message);
@@ -219,9 +222,9 @@ export const getTracks = async (): Promise<Track[]> => {
         const { data, error } = await supabase
             .from('tracks')
             .select(`
-                *,
-                track_modules (title, module_order)
-            `)
+    *,
+    track_modules(title, module_order)
+        `)
             .order('module_order', { foreignTable: 'track_modules', ascending: true });
 
         if (error) {
@@ -253,25 +256,74 @@ export const getTracks = async (): Promise<Track[]> => {
     }
 };
 
-export const createCourse = async (courseData: Partial<Track>, modules: string[]): Promise<boolean> => {
+export const getMentorCreatedCourses = async (mentorUserId: string): Promise<Track[]> => {
+    try {
+        const supabase = getSupabase();
+        if (!supabase) return [];
+
+        const { data, error } = await supabase
+            .from('tracks')
+            .select(`
+    *,
+    track_modules(title, module_order)
+        `)
+            .eq('creator_id', mentorUserId)
+            .order('id', { ascending: false });
+
+        if (error) {
+            console.warn("Error fetching mentor courses from Supabase (may be missing creator_id column):", error.message);
+            return []; // Fail gracefully if column missing
+        }
+
+        if (!data || data.length === 0) return [];
+
+        return (data as any[]).map((item) => ({
+            id: item.id,
+            title: item.title,
+            level: item.level || 'All Levels',
+            duration: item.duration_weeks ? `${item.duration_weeks} Weeks` : 'Self-paced',
+            projects: 0,
+            description: item.description || '',
+            modules: item.track_modules?.sort((a: any, b: any) => a.module_order - b.module_order).map((m: any) => m.title) || [],
+            image_url: item.image_url || undefined,
+            status: item.status || 'published',
+            creator_id: item.creator_id
+        }));
+
+    } catch (e) {
+        console.error("Unexpected error in getMentorCreatedCourses:", e);
+        return [];
+    }
+};
+
+export const createCourse = async (courseData: Partial<Track>, modules: string[], creatorId?: string, status: 'published' | 'draft' = 'published'): Promise<boolean> => {
     try {
         const supabase = getSupabase();
         if (!supabase) return false;
 
         // 1. Insert Track into tracks table
+        const insertPayload: any = {
+            title: courseData.title,
+            level: courseData.level || 'All Levels',
+            description: courseData.description,
+            duration_weeks: parseInt((courseData.duration || '4').split(' ')[0]) || 4,
+            image_url: courseData.image_url
+        };
+
+        if (creatorId) {
+            insertPayload.creator_id = creatorId;
+            insertPayload.status = status;
+        }
+
         const { data: trackRecords, error: trackError } = await supabase
             .from('tracks')
-            .insert([{
-                title: courseData.title,
-                level: courseData.level || 'All Levels',
-                description: courseData.description,
-                duration_weeks: parseInt((courseData.duration || '4').split(' ')[0]) || 4,
-                image_url: courseData.image_url
-            }])
+            .insert([insertPayload])
             .select('id');
 
         if (trackError) {
-            console.error("Error creating track:", trackError);
+            console.error("Error creating track full details:", trackError);
+            console.error("Payload was:", insertPayload);
+            toast.error(`Database Error: ${trackError.message || 'Unknown error'} `);
             return false;
         }
 
@@ -420,14 +472,14 @@ export const getStudentBookings = async (userId: string): Promise<Booking[]> => 
         const { data, error } = await supabase
             .from('bookings')
             .select(`
-                *,
-                mentors (
+    *,
+    mentors(
                     *,
-                    profiles (full_name, avatar_url),
-                    mentor_expertise (skill)
-                ),
-                mentor_availability (start_time)
-            `)
+        profiles(full_name, avatar_url),
+        mentor_expertise(skill)
+    ),
+    mentor_availability(start_time)
+        `)
             .eq('student_id', userId);
 
         if (error) {
@@ -484,7 +536,7 @@ export const createBooking = async (userId: string, mentorId: number, scheduledA
 
         // SIMULATION: Log the extra details since the RPC might not support them yet
         if (duration || note) {
-            console.log(`[Mock] Booking Details - Duration: ${duration}, Note: ${note}`);
+            console.log(`[Mock] Booking Details - Duration: ${duration}, Note: ${note} `);
         }
 
         if (error) {
@@ -517,9 +569,9 @@ export const getMentorBookings = async (userId: string): Promise<Booking[]> => {
         const { data: bookingsData, error: bookingsError } = await supabase
             .from('bookings')
             .select(`
-                *, 
-                profiles!student_id (*),
-                mentor_availability (start_time)
+    *,
+    profiles!student_id(*),
+        mentor_availability(start_time)
             `)
             .eq('mentor_id', mentorData.id);
 
@@ -651,7 +703,7 @@ export const getMentorAvailability = async (mentorId: number, date: Date): Promi
         const isAvailable = Math.random() > 0.3;
 
         slots.push({
-            id: `${mentorId}-${slotStart.toISOString()}`,
+            id: `${mentorId} -${slotStart.toISOString()} `,
             startTime: slotStart.toISOString(),
             endTime: slotEnd.toISOString(),
             available: isAvailable
@@ -680,7 +732,7 @@ export const getMessages = async (userId1: string, userId2: string): Promise<Mes
         const { data, error } = await supabase
             .from('messages')
             .select('*')
-            .or(`and(sender_id.eq.${userId1},receiver_id.eq.${userId2}),and(sender_id.eq.${userId2},receiver_id.eq.${userId1})`)
+            .or(`and(sender_id.eq.${userId1}, receiver_id.eq.${userId2}), and(sender_id.eq.${userId2}, receiver_id.eq.${userId1})`)
             .order('created_at', { ascending: true });
 
         if (error) {
