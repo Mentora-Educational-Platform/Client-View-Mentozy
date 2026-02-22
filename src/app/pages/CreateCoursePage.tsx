@@ -1,8 +1,9 @@
 
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
-import { BookOpen, Plus, Save } from 'lucide-react';
+import { BookOpen, Save } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { CourseModulesEditor, Module } from '../components/course/CourseModulesEditor';
 
 export function CreateCoursePage() {
     const [loading, setLoading] = useState(false);
@@ -16,16 +17,21 @@ export function CreateCoursePage() {
         price: '0'
     });
 
+    const [modules, setModules] = useState<Module[]>([]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
-        // Simulation of API call
+        // Simulation of API call with modules data
+        console.log("Saving Course Data:", { ...formData, modules });
+
         setTimeout(() => {
             setLoading(false);
             toast.success("Course Created Successfully!");
             // Reset or Redirect
             setFormData({ title: '', description: '', level: 'Intermediate', duration: '4 Weeks', price: '0' });
+            setModules([]);
         }, 1500);
     };
 
@@ -110,14 +116,8 @@ export function CreateCoursePage() {
                             </h3>
 
                             <div className="space-y-4 mb-4">
-                                <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 border-dashed text-center text-gray-400">
-                                    <p className="text-sm">Modules configurator coming soon...</p>
-                                </div>
+                                <CourseModulesEditor modules={modules} onChange={setModules} />
                             </div>
-
-                            <button type="button" className="text-sm font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1">
-                                <Plus className="w-4 h-4" /> Add Module
-                            </button>
                         </div>
 
                         {/* Actions */}
