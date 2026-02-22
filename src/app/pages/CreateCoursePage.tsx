@@ -97,11 +97,30 @@ export function CreateCoursePage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2">Price ($)</label>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-sm font-bold text-gray-700">Price ($)</label>
+                                    <label className="flex items-center cursor-pointer gap-2">
+                                        <span className="text-sm font-bold text-gray-500">Make it Free</span>
+                                        <div className="relative">
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only"
+                                                checked={formData.price === '0'}
+                                                onChange={(e) => {
+                                                    setFormData({ ...formData, price: e.target.checked ? '0' : '' })
+                                                }}
+                                            />
+                                            <div className={`block w-10 h-6 rounded-full transition-colors ${formData.price === '0' ? 'bg-amber-500' : 'bg-gray-200'}`}></div>
+                                            <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formData.price === '0' ? 'transform translate-x-4' : ''}`}></div>
+                                        </div>
+                                    </label>
+                                </div>
                                 <input
                                     type="number"
                                     placeholder="0"
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                                    min="0"
+                                    disabled={formData.price === '0'}
+                                    className={`w-full px-4 py-3 border border-gray-100 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all ${formData.price === '0' ? 'bg-gray-100 opacity-50 cursor-not-allowed' : 'bg-gray-50'}`}
                                     value={formData.price}
                                     onChange={e => setFormData({ ...formData, price: e.target.value })}
                                 />
