@@ -1,13 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
-import { getCourseDataForStudent } from '../../lib/api';
+import { getCourseDataForStudent, updateEnrollmentProgress } from '../../lib/api';
 import { LayoutList, PlayCircle, FileText, HelpCircle, CheckCircle2, ChevronLeft, ChevronRight, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '../../context/AuthContext';
 
 export function CourseViewerPage() {
     const { courseId } = useParams<{ courseId: string }>();
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const [loading, setLoading] = useState(true);
     const [course, setCourse] = useState<any>(null);
@@ -98,13 +100,6 @@ export function CourseViewerPage() {
         return completable;
     };
 
-    // Auto-complete lesson when conditions are met
-    useEffect(() => {
-        if (activeLessonIdentifier && isLessonCompletable() && !completedLessons.includes(activeLessonIdentifier)) {
-            setCompletedLessons(prev => [...prev, activeLessonIdentifier]);
-        }
-    }, [activeLessonIdentifier, readPdfs, quizAnswers, completedLessons]);
-
     // Check if entire course is completed
     const allLessonIds = useMemo(() => {
         if (!course?.track_modules || !Array.isArray(course.track_modules)) return [];
@@ -119,6 +114,21 @@ export function CourseViewerPage() {
             return lessons.map((l: any) => l.id?.toString() || l.title);
         });
     }, [course]);
+
+    // Auto-complete lesson when conditions are met
+    useEffect(() => {
+        if (activeLessonIdentifier && isLessonCompletable() && !completedLessons.includes(activeLessonIdentifier)) {
+            setCompletedLessons(prev => {
+                const newCompleted = [...prev, activeLessonIdentifier];
+                // Record progress in database
+                if (allLessonIds.length > 0 && user && courseId) {
+                    const progress = (newCompleted.length / allLessonIds.length) * 100;
+                    updateEnrollmentProgress(user.id, parseInt(courseId), progress);
+                }
+                return newCompleted;
+            });
+        }
+    }, [activeLessonIdentifier, readPdfs, quizAnswers, completedLessons, allLessonIds, user, courseId]);
 
     const isCourseCompleted = allLessonIds.length > 0 && allLessonIds.every((id: string) => completedLessons.includes(id));
 

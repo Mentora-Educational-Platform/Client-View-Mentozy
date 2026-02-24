@@ -529,6 +529,25 @@ export const enrollInTrack = async (userId: string, trackId: number): Promise<bo
     }
 };
 
+export const updateEnrollmentProgress = async (userId: string, trackId: number, progress: number): Promise<boolean> => {
+    try {
+        const supabase = getSupabase();
+        if (!supabase) return false;
+
+        const { error } = await supabase
+            .from('enrollments')
+            .update({ progress: Math.min(100, Math.max(0, Math.round(progress))) })
+            .eq('user_id', userId)
+            .eq('track_id', trackId);
+
+        if (error) throw error;
+        return true;
+    } catch (e) {
+        console.error("Error updating enrollment progress:", e);
+        return false;
+    }
+};
+
 export const getStudentBookings = async (userId: string): Promise<Booking[]> => {
     try {
         const supabase = getSupabase();
