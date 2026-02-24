@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { getCourseDataForStudent } from '../../lib/api';
-import { LayoutList, PlayCircle, FileText, HelpCircle, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutList, PlayCircle, FileText, HelpCircle, CheckCircle2, ChevronLeft, ChevronRight, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function CourseViewerPage() {
@@ -14,6 +14,8 @@ export function CourseViewerPage() {
     const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
     const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
     const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
+    const [readPdfs, setReadPdfs] = useState<Record<string, boolean>>({});
+    const [completedLessons, setCompletedLessons] = useState<string[]>([]);
 
     const handleQuizSelect = (quizId: string, selectedValue: string) => {
         if (!quizAnswers[quizId]) {
@@ -32,10 +34,11 @@ export function CourseViewerPage() {
                 // Set default active items if available
                 if (data.track_modules && data.track_modules.length > 0) {
                     const firstModule = data.track_modules[0];
-                    setActiveModuleId(firstModule.id);
+                    setActiveModuleId(firstModule.id || firstModule.content?.id);
 
-                    if (firstModule.content && firstModule.content.lessons && firstModule.content.lessons.length > 0) {
-                        setActiveLessonId(firstModule.content.lessons[0].id);
+                    const firstLessons = (firstModule.lessons?.length ? firstModule.lessons : firstModule.content?.lessons) || [];
+                    if (firstLessons.length > 0) {
+                        setActiveLessonId(firstLessons[0].id?.toString());
                     }
                 }
             } else {
@@ -82,10 +85,13 @@ export function CourseViewerPage() {
     let activeLesson = null;
 
     if (course.track_modules && activeModuleId) {
-        activeModule = course.track_modules.find((m: any) => m.id === activeModuleId || m.content?.id === activeModuleId);
+        activeModule = course.track_modules.find((m: any) => m.id?.toString() === activeModuleId || m.content?.id?.toString() === activeModuleId);
 
-        if (activeModule && activeModule.content?.lessons && activeLessonId) {
-            activeLesson = activeModule.content.lessons.find((l: any) => l.id === activeLessonId);
+        if (activeModule) {
+            const lessons = (activeModule.lessons?.length ? activeModule.lessons : activeModule.content?.lessons) || [];
+            if (activeLessonId) {
+                activeLesson = lessons.find((l: any) => l.id?.toString() === activeLessonId);
+            }
         }
     }
 
@@ -98,6 +104,52 @@ export function CourseViewerPage() {
         return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
     };
 
+    const activeLessonIdentifier = activeLesson?.id?.toString() || activeLesson?.title;
+
+    // Check for pdf read and quiz completeness for the active lesson
+    const isLessonCompletable = () => {
+        if (!activeLesson) return false;
+        let completable = true;
+
+        // Check PDF
+        const pdfUrl = activeLesson.worksheetUrl || activeLesson.pdf_url;
+        const isPdf = pdfUrl && pdfUrl.toLowerCase().includes('.pdf');
+        if (isPdf && !readPdfs[activeLessonIdentifier]) {
+            completable = false;
+        }
+
+        // Check Quizzes
+        const quizzes = activeLesson.quiz || activeLesson.quizzes || [];
+        if (quizzes.length > 0) {
+            const allCorrect = quizzes.every((quiz: any, idx: number) => {
+                const answer = quiz.answer || quiz.correctAnswer;
+                const selected = quizAnswers[quiz.id || idx];
+                return selected === answer;
+            });
+            if (!allCorrect) completable = false;
+        }
+
+        return completable;
+    };
+
+    // Auto-complete lesson when conditions are met
+    useEffect(() => {
+        if (activeLessonIdentifier && isLessonCompletable() && !completedLessons.includes(activeLessonIdentifier)) {
+            setCompletedLessons(prev => [...prev, activeLessonIdentifier]);
+        }
+    }, [activeLessonIdentifier, readPdfs, quizAnswers, completedLessons]);
+
+    // Check if entire course is completed
+    const allLessonIds = useMemo(() => {
+        if (!course?.track_modules) return [];
+        return course.track_modules.flatMap((m: any) => {
+            const lessons = (m.lessons?.length ? m.lessons : m.content?.lessons) || [];
+            return lessons.map((l: any) => l.id?.toString() || l.title);
+        });
+    }, [course]);
+
+    const isCourseCompleted = allLessonIds.length > 0 && allLessonIds.every((id: string) => completedLessons.includes(id));
+
     return (
         <DashboardLayout>
             {/* Header */}
@@ -108,10 +160,16 @@ export function CourseViewerPage() {
                 >
                     <ChevronLeft className="w-6 h-6" />
                 </button>
-                <div>
+                <div className="flex-1">
                     <h1 className="text-2xl font-bold text-gray-900">{course.title}</h1>
                     <p className="text-sm text-gray-500">{course.level}</p>
                 </div>
+                {isCourseCompleted && (
+                    <div className="hidden sm:flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-xl border border-green-200 shadow-sm animate-in fade-in zoom-in duration-300">
+                        <Trophy className="w-5 h-5 text-green-600" />
+                        <span className="font-bold text-sm">Course Completed!</span>
+                    </div>
+                )}
             </div>
 
             <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-180px)] min-h-[600px]">
@@ -173,128 +231,156 @@ export function CourseViewerPage() {
                                                 ></iframe>
                                             </div>
                                         )}
+
+                                        <div className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-xl shadow-sm mt-4 transition-all hover:bg-gray-50">
+                                            <div className="relative flex items-start">
+                                                <div className="flex h-6 items-center">
+                                                    <input
+                                                        id={`read-doc-${activeLessonIdentifier}`}
+                                                        name={`read-doc-${activeLessonIdentifier}`}
+                                                        type="checkbox"
+                                                        checked={!!readPdfs[activeLessonIdentifier]}
+                                                        onChange={(e) => setReadPdfs(prev => ({ ...prev, [activeLessonIdentifier]: e.target.checked }))}
+                                                        className="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 cursor-pointer transition-all"
+                                                    />
+                                                </div>
+                                                <div className="ml-3 text-sm leading-6">
+                                                    <label htmlFor={`read-doc-${activeLessonIdentifier}`} className="font-medium text-gray-900 cursor-pointer select-none">
+                                                        I have read and understood this document
+                                                    </label>
+                                                    <p className="text-gray-500 text-xs mt-0.5">Required to complete this lesson.</p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 );
                             })()}
 
                             {/* Quizzes */}
-                            {activeLesson.quizzes && activeLesson.quizzes.length > 0 && (
-                                <div className="mt-8 space-y-6">
-                                    <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                        <HelpCircle className="w-6 h-6 text-amber-500" />
-                                        Knowledge Check
-                                    </h3>
+                            {(() => {
+                                const quizzesToRender = activeLesson.quiz || activeLesson.quizzes || [];
+                                if (quizzesToRender.length === 0) return null;
 
-                                    {activeLesson.quizzes.map((quiz: any, idx: number) => {
-                                        const isAnswered = !!quizAnswers[quiz.id];
-                                        const selectedValue = quizAnswers[quiz.id];
-                                        const isCorrect = isAnswered && selectedValue === quiz.correctAnswer;
+                                return (
+                                    <div className="mt-8 space-y-6">
+                                        <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                            <HelpCircle className="w-6 h-6 text-amber-500" />
+                                            Knowledge Check
+                                        </h3>
 
-                                        return (
-                                            <div key={quiz.id} className="bg-white border text-left border-gray-200 rounded-2xl p-6 shadow-sm">
-                                                <div className="flex gap-3 mb-4">
-                                                    <div className="w-8 h-8 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center font-bold flex-shrink-0">
-                                                        {idx + 1}
+                                        {quizzesToRender.map((quiz: any, idx: number) => {
+                                            const quizAnswer = quiz.answer || quiz.correctAnswer;
+                                            const quizType = quiz.type?.toLowerCase() || 'mcq'; // fallback to mcq
+                                            const isAnswered = !!quizAnswers[quiz.id || idx];
+                                            const selectedValue = quizAnswers[quiz.id || idx];
+                                            const isCorrect = isAnswered && selectedValue === quizAnswer;
+
+                                            return (
+                                                <div key={quiz.id || idx} className="bg-white border text-left border-gray-200 rounded-2xl p-6 shadow-sm">
+                                                    <div className="flex gap-3 mb-4">
+                                                        <div className="w-8 h-8 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                                                            {idx + 1}
+                                                        </div>
+                                                        <p className="font-medium text-gray-900 text-lg mt-0.5">{quiz.question}</p>
                                                     </div>
-                                                    <p className="font-medium text-gray-900 text-lg mt-0.5">{quiz.question}</p>
-                                                </div>
 
-                                                {/* Interactive MCQ */}
-                                                {quiz.type?.toLowerCase() === 'mcq' && quiz.options && (
-                                                    <div className="space-y-3 pl-11">
-                                                        {quiz.options.map((opt: any, i: number) => {
-                                                            const optValue = typeof opt === 'string' ? opt : opt.id;
-                                                            const optLabel = typeof opt === 'string' ? opt : opt.text;
-                                                            const isThisSelected = selectedValue === optValue;
-                                                            const isThisCorrectOption = optValue === quiz.correctAnswer;
+                                                    {/* Interactive MCQ */}
+                                                    {quizType === 'mcq' && quiz.options && (
+                                                        <div className="space-y-3 pl-11">
+                                                            {quiz.options.map((opt: any, i: number) => {
+                                                                const optValue = typeof opt === 'string' ? opt : opt.id;
+                                                                const optLabel = typeof opt === 'string' ? opt : opt.text;
+                                                                const isThisSelected = selectedValue === optValue;
+                                                                const isThisCorrectOption = optValue === quizAnswer;
 
-                                                            let btnClass = "border-gray-100 hover:border-gray-200";
-                                                            if (isAnswered) {
-                                                                if (isThisCorrectOption) {
-                                                                    btnClass = "border-green-500 bg-green-50";
-                                                                } else if (isThisSelected) {
-                                                                    btnClass = "border-red-500 bg-red-50";
+                                                                let btnClass = "border-gray-100 hover:border-gray-200";
+                                                                if (isAnswered) {
+                                                                    if (isThisCorrectOption) {
+                                                                        btnClass = "border-green-500 bg-green-50";
+                                                                    } else if (isThisSelected) {
+                                                                        btnClass = "border-red-500 bg-red-50";
+                                                                    }
                                                                 }
-                                                            }
 
-                                                            return (
-                                                                <div
-                                                                    key={i}
-                                                                    onClick={() => handleQuizSelect(quiz.id, optValue)}
-                                                                    className={`p-4 rounded-xl border-2 transition-all select-none 
+                                                                return (
+                                                                    <div
+                                                                        key={i}
+                                                                        onClick={() => handleQuizSelect(quiz.id || idx, optValue)}
+                                                                        className={`p-4 rounded-xl border-2 transition-all select-none 
                                                                     ${isAnswered ? 'cursor-default' : 'cursor-pointer'} ${btnClass}
                                                                 `}
-                                                                >
-                                                                    <div className="flex items-center justify-between">
-                                                                        <span className={isThisCorrectOption && isAnswered ? 'text-green-800 font-medium' : 'text-gray-700'}>
-                                                                            {optLabel}
-                                                                        </span>
-                                                                        {isThisCorrectOption && isAnswered && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+                                                                    >
+                                                                        <div className="flex items-center justify-between">
+                                                                            <span className={isThisCorrectOption && isAnswered ? 'text-green-800 font-medium' : 'text-gray-700'}>
+                                                                                {optLabel}
+                                                                            </span>
+                                                                            {isThisCorrectOption && isAnswered && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                )}
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
 
-                                                {/* Interactive True/False */}
-                                                {quiz.type?.toLowerCase() === 'true/false' || quiz.type?.toLowerCase() === 'tf' ? (
-                                                    <div className="flex gap-4 pl-11">
-                                                        {['True', 'False'].map(opt => {
-                                                            const isThisSelected = selectedValue === opt;
-                                                            const isThisCorrectOption = opt.toLowerCase() === quiz.correctAnswer?.toLowerCase();
+                                                    {/* Interactive True/False */}
+                                                    {(quizType === 'true/false' || quizType === 'tf') && (
+                                                        <div className="flex gap-4 pl-11">
+                                                            {['True', 'False'].map(opt => {
+                                                                const isThisSelected = selectedValue === opt;
+                                                                const isThisCorrectOption = opt.toLowerCase() === quizAnswer?.toLowerCase();
 
-                                                            let btnClass = "border-gray-100 text-gray-500 hover:border-gray-200";
-                                                            if (isAnswered) {
-                                                                if (isThisCorrectOption) {
-                                                                    btnClass = "border-green-500 bg-green-50 text-green-700 font-bold";
-                                                                } else if (isThisSelected) {
-                                                                    btnClass = "border-red-500 bg-red-50 text-red-700 font-bold";
+                                                                let btnClass = "border-gray-100 text-gray-500 hover:border-gray-200";
+                                                                if (isAnswered) {
+                                                                    if (isThisCorrectOption) {
+                                                                        btnClass = "border-green-500 bg-green-50 text-green-700 font-bold";
+                                                                    } else if (isThisSelected) {
+                                                                        btnClass = "border-red-500 bg-red-50 text-red-700 font-bold";
+                                                                    }
                                                                 }
-                                                            }
 
-                                                            return (
-                                                                <div
-                                                                    key={opt}
-                                                                    onClick={() => handleQuizSelect(quiz.id, opt)}
-                                                                    className={`flex-1 p-4 rounded-xl border-2 text-center transition-all
+                                                                return (
+                                                                    <div
+                                                                        key={opt}
+                                                                        onClick={() => handleQuizSelect(quiz.id || idx, opt)}
+                                                                        className={`flex-1 p-4 rounded-xl border-2 text-center transition-all
                                                                     ${isAnswered ? 'cursor-default' : 'cursor-pointer'} ${btnClass}
                                                                 `}
-                                                                >
-                                                                    {opt}
-                                                                    {isThisCorrectOption && isAnswered && ' ✓'}
+                                                                    >
+                                                                        {opt}
+                                                                        {isThisCorrectOption && isAnswered && ' ✓'}
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Feedback & Explanation */}
+                                                    {isAnswered && (
+                                                        <div className="mt-4 pl-11 animate-in fade-in slide-in-from-top-2">
+                                                            {!isCorrect ? (
+                                                                <div className="text-red-500 font-bold mb-3 text-sm">
+                                                                    {quiz.customMessage || "och! that hurts, try again 😙"}
                                                                 </div>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                ) : null}
+                                                            ) : (
+                                                                <div className="text-green-600 font-bold mb-3 text-sm flex items-center gap-1">
+                                                                    <CheckCircle2 className="w-4 h-4" /> That's correct!
+                                                                </div>
+                                                            )}
 
-                                                {/* Feedback & Explanation */}
-                                                {isAnswered && (
-                                                    <div className="mt-4 pl-11 animate-in fade-in slide-in-from-top-2">
-                                                        {!isCorrect ? (
-                                                            <div className="text-red-500 font-bold mb-3 text-sm">
-                                                                {quiz.customMessage || "och! that hurts, try again 😙"}
-                                                            </div>
-                                                        ) : (
-                                                            <div className="text-green-600 font-bold mb-3 text-sm flex items-center gap-1">
-                                                                <CheckCircle2 className="w-4 h-4" /> That's correct!
-                                                            </div>
-                                                        )}
-
-                                                        {quiz.explanation && (
-                                                            <div className="text-sm bg-gray-50 border border-gray-100 p-4 rounded-xl text-gray-600">
-                                                                <span className="font-bold text-gray-900 block mb-1">Explanation:</span>
-                                                                {quiz.explanation}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )
-                                    })}
-                                </div>
-                            )}
+                                                            {quiz.explanation && (
+                                                                <div className="text-sm bg-gray-50 border border-gray-100 p-4 rounded-xl text-gray-600">
+                                                                    <span className="font-bold text-gray-900 block mb-1">Explanation:</span>
+                                                                    {quiz.explanation}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                );
+                            })()}
 
                         </div>
                     ) : (
@@ -315,9 +401,10 @@ export function CourseViewerPage() {
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
                         {course.track_modules && course.track_modules.length > 0 ? (
                             course.track_modules.map((module: any, mIdx: number) => {
-                                const modId = module.id || module.content?.id;
+                                const modId = module.id?.toString() || module.content?.id?.toString();
                                 const isActiveModule = activeModuleId === modId;
-                                const hasDeepContent = module.content && module.content.lessons && module.content.lessons.length > 0;
+                                const moduleLessons = (module.lessons?.length ? module.lessons : module.content?.lessons) || [];
+                                const hasLessons = moduleLessons.length > 0;
 
                                 return (
                                     <div key={modId || mIdx} className="bg-white border text-left border-gray-200 rounded-2xl overflow-hidden transition-all">
@@ -345,9 +432,9 @@ export function CourseViewerPage() {
                                         {/* Lessons List */}
                                         {isActiveModule && (
                                             <div className="bg-gray-50 border-t border-gray-100 py-2">
-                                                {hasDeepContent ? (
-                                                    module.content.lessons.map((lesson: any, lIdx: number) => {
-                                                        const isLessonActive = activeLessonId === lesson.id;
+                                                {hasLessons ? (
+                                                    moduleLessons.map((lesson: any, lIdx: number) => {
+                                                        const isLessonActive = activeLessonId === lesson.id?.toString();
                                                         return (
                                                             <button
                                                                 key={lesson.id || lIdx}
