@@ -59,14 +59,22 @@ export function CreateCoursePage() {
 
                         if (data.track_modules && data.track_modules.length > 0) {
                             const sortedModules = data.track_modules.sort((a: any, b: any) => a.module_order - b.module_order);
-                            setModules(sortedModules.map((m: any, idx: number) => ({
-                                id: m.id || `module-${idx}`,
-                                title: m.title,
-                                description: '',
-                                duration: m.duration || '1 Week',
-                                objectives: [],
-                                lessons: [] // Full recursive fetch would be needed here, keeping simple for now
-                            })));
+                            setModules(sortedModules.map((m: any, idx: number) => {
+                                if (m.content) {
+                                    return {
+                                        ...m.content,
+                                        id: m.id || m.content.id || `module-${idx}`
+                                    };
+                                }
+                                return {
+                                    id: m.id || `module-${idx}`,
+                                    title: m.title,
+                                    description: '',
+                                    duration: m.duration || '1 Week',
+                                    objectives: [],
+                                    lessons: []
+                                };
+                            }));
                         }
                     }
                 } catch (err) {
@@ -84,8 +92,6 @@ export function CreateCoursePage() {
         e.preventDefault();
         setLoading(true);
 
-        const moduleTitles = modules.map(m => m.title || 'Untitled Module');
-
         const success = await createCourse(
             editingCourseId,
             {
@@ -94,7 +100,7 @@ export function CreateCoursePage() {
                 level: formData.level,
                 duration: formData.duration,
             },
-            moduleTitles,
+            modules, // Pass full modules deep object!
             user?.id,
             actionStatus
         );

@@ -299,7 +299,7 @@ export const getMentorCreatedCourses = async (mentorUserId: string): Promise<Tra
 export const createCourse = async (
     courseId: number | null,
     courseData: Partial<Track>,
-    modules: string[],
+    modules: any[],
     creatorId?: string,
     status: 'published' | 'draft' = 'published'
 ): Promise<boolean> => {
@@ -367,10 +367,11 @@ export const createCourse = async (
 
         // Insert Modules into track_modules table
         if (modules && modules.length > 0) {
-            const moduleInserts = modules.map((mTitle, index) => ({
+            const moduleInserts = modules.map((mod, index) => ({
                 track_id: trackId,
-                title: mTitle,
-                module_order: index + 1
+                title: mod.title || 'Untitled Module',
+                module_order: index + 1,
+                content: mod // Save the entire deep lesson object here natively!
             }));
 
             const { error: moduleError } = await supabase
