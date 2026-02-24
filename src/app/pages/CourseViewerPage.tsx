@@ -88,9 +88,15 @@ export function CourseViewerPage() {
         activeModule = course.track_modules.find((m: any) => m.id?.toString() === activeModuleId || m.content?.id?.toString() === activeModuleId);
 
         if (activeModule) {
-            const lessons = (activeModule.lessons?.length ? activeModule.lessons : activeModule.content?.lessons) || [];
+            let possibleLessons = [];
+            if (activeModule.lessons && Array.isArray(activeModule.lessons) && activeModule.lessons.length > 0) {
+                possibleLessons = activeModule.lessons;
+            } else if (activeModule.content?.lessons && Array.isArray(activeModule.content.lessons)) {
+                possibleLessons = activeModule.content.lessons;
+            }
+
             if (activeLessonId) {
-                activeLesson = lessons.find((l: any) => l.id?.toString() === activeLessonId);
+                activeLesson = possibleLessons.find((l: any) => l.id?.toString() === activeLessonId);
             }
         }
     }
@@ -113,14 +119,14 @@ export function CourseViewerPage() {
 
         // Check PDF
         const pdfUrl = activeLesson.worksheetUrl || activeLesson.pdf_url;
-        const isPdf = pdfUrl && pdfUrl.toLowerCase().includes('.pdf');
+        const isPdf = typeof pdfUrl === 'string' && pdfUrl.toLowerCase().includes('.pdf');
         if (isPdf && !readPdfs[activeLessonIdentifier]) {
             completable = false;
         }
 
         // Check Quizzes
         const quizzes = activeLesson.quiz || activeLesson.quizzes || [];
-        if (quizzes.length > 0) {
+        if (Array.isArray(quizzes) && quizzes.length > 0) {
             const allCorrect = quizzes.every((quiz: any, idx: number) => {
                 const answer = quiz.answer || quiz.correctAnswer;
                 const selected = quizAnswers[quiz.id || idx];
@@ -141,9 +147,15 @@ export function CourseViewerPage() {
 
     // Check if entire course is completed
     const allLessonIds = useMemo(() => {
-        if (!course?.track_modules) return [];
+        if (!course?.track_modules || !Array.isArray(course.track_modules)) return [];
+
         return course.track_modules.flatMap((m: any) => {
-            const lessons = (m.lessons?.length ? m.lessons : m.content?.lessons) || [];
+            let lessons: any[] = [];
+            if (m.lessons && Array.isArray(m.lessons)) {
+                lessons = m.lessons;
+            } else if (m.content?.lessons && Array.isArray(m.content.lessons)) {
+                lessons = m.content.lessons;
+            }
             return lessons.map((l: any) => l.id?.toString() || l.title);
         });
     }, [course]);
@@ -259,7 +271,7 @@ export function CourseViewerPage() {
                             {/* Quizzes */}
                             {(() => {
                                 const quizzesToRender = activeLesson.quiz || activeLesson.quizzes || [];
-                                if (quizzesToRender.length === 0) return null;
+                                if (!Array.isArray(quizzesToRender) || quizzesToRender.length === 0) return null;
 
                                 return (
                                     <div className="mt-8 space-y-6">
@@ -285,7 +297,7 @@ export function CourseViewerPage() {
                                                     </div>
 
                                                     {/* Interactive MCQ */}
-                                                    {quizType === 'mcq' && quiz.options && (
+                                                    {quizType === 'mcq' && Array.isArray(quiz.options) && (
                                                         <div className="space-y-3 pl-11">
                                                             {quiz.options.map((opt: any, i: number) => {
                                                                 const optValue = typeof opt === 'string' ? opt : opt.id;
@@ -403,7 +415,13 @@ export function CourseViewerPage() {
                             course.track_modules.map((module: any, mIdx: number) => {
                                 const modId = module.id?.toString() || module.content?.id?.toString();
                                 const isActiveModule = activeModuleId === modId;
-                                const moduleLessons = (module.lessons?.length ? module.lessons : module.content?.lessons) || [];
+
+                                let moduleLessons: any[] = [];
+                                if (module.lessons && Array.isArray(module.lessons)) {
+                                    moduleLessons = module.lessons;
+                                } else if (module.content?.lessons && Array.isArray(module.content.lessons)) {
+                                    moduleLessons = module.content.lessons;
+                                }
                                 const hasLessons = moduleLessons.length > 0;
 
                                 return (
