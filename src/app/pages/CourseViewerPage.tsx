@@ -13,6 +13,13 @@ export function CourseViewerPage() {
     const [course, setCourse] = useState<any>(null);
     const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
     const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+    const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
+
+    const handleQuizSelect = (quizId: string, selectedValue: string) => {
+        if (!quizAnswers[quizId]) {
+            setQuizAnswers(prev => ({ ...prev, [quizId]: selectedValue }));
+        }
+    };
 
     useEffect(() => {
         async function fetchCourse() {
@@ -132,27 +139,43 @@ export function CourseViewerPage() {
                             )}
 
                             {/* Worksheet / PDF */}
-                            {activeLesson.worksheetUrl && (
-                                <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                                            <FileText className="w-6 h-6" />
+                            {(activeLesson.worksheetUrl || activeLesson.pdf_url) && (() => {
+                                const pdfUrl = activeLesson.worksheetUrl || activeLesson.pdf_url;
+                                const isPdf = pdfUrl.toLowerCase().includes('.pdf');
+                                return (
+                                    <div className="space-y-4">
+                                        <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                                    <FileText className="w-6 h-6" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold text-indigo-900 mb-1">Lesson Worksheet</h3>
+                                                    <p className="text-sm text-indigo-700">{activeLesson.worksheetName || 'Download attached materials for this lesson'}</p>
+                                                </div>
+                                            </div>
+                                            <a
+                                                href={pdfUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 whitespace-nowrap"
+                                            >
+                                                Open Fullscreen
+                                            </a>
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-indigo-900 mb-1">Lesson Worksheet</h3>
-                                            <p className="text-sm text-indigo-700">{activeLesson.worksheetName || 'Download attached materials for this lesson'}</p>
-                                        </div>
+
+                                        {isPdf && (
+                                            <div className="w-full bg-gray-100 rounded-2xl overflow-hidden shadow-inner border border-gray-200" style={{ height: '600px' }}>
+                                                <iframe
+                                                    src={pdfUrl}
+                                                    title="PDF Document"
+                                                    className="w-full h-full border-0"
+                                                ></iframe>
+                                            </div>
+                                        )}
                                     </div>
-                                    <a
-                                        href={activeLesson.worksheetUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-200"
-                                    >
-                                        Open Worksheet
-                                    </a>
-                                </div>
-                            )}
+                                );
+                            })()}
 
                             {/* Quizzes */}
                             {activeLesson.quizzes && activeLesson.quizzes.length > 0 && (
@@ -162,49 +185,114 @@ export function CourseViewerPage() {
                                         Knowledge Check
                                     </h3>
 
-                                    {activeLesson.quizzes.map((quiz: any, idx: number) => (
-                                        <div key={quiz.id} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-                                            <div className="flex gap-3 mb-4">
-                                                <div className="w-8 h-8 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center font-bold flex-shrink-0">
-                                                    {idx + 1}
-                                                </div>
-                                                <p className="font-medium text-gray-900 text-lg mt-0.5">{quiz.question}</p>
-                                            </div>
+                                    {activeLesson.quizzes.map((quiz: any, idx: number) => {
+                                        const isAnswered = !!quizAnswers[quiz.id];
+                                        const selectedValue = quizAnswers[quiz.id];
+                                        const isCorrect = isAnswered && selectedValue === quiz.correctAnswer;
 
-                                            {/* We don't build full scoring logic here yet, just displaying the choices for learning */}
-                                            {quiz.type === 'mcq' && quiz.options && (
-                                                <div className="space-y-3 pl-11">
-                                                    {quiz.options.map((opt: string, i: number) => (
-                                                        <div key={i} className={`p-4 rounded-xl border-2 transition-all cursor-pointer select-none 
-                                                            ${opt === quiz.correctAnswer ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-gray-200'}
-                                                        `}>
-                                                            <div className="flex items-center justify-between">
-                                                                <span className={opt === quiz.correctAnswer ? 'text-green-800 font-medium' : 'text-gray-700'}>{opt}</span>
-                                                                {opt === quiz.correctAnswer && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+                                        return (
+                                            <div key={quiz.id} className="bg-white border text-left border-gray-200 rounded-2xl p-6 shadow-sm">
+                                                <div className="flex gap-3 mb-4">
+                                                    <div className="w-8 h-8 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                                                        {idx + 1}
+                                                    </div>
+                                                    <p className="font-medium text-gray-900 text-lg mt-0.5">{quiz.question}</p>
+                                                </div>
+
+                                                {/* Interactive MCQ */}
+                                                {quiz.type?.toLowerCase() === 'mcq' && quiz.options && (
+                                                    <div className="space-y-3 pl-11">
+                                                        {quiz.options.map((opt: any, i: number) => {
+                                                            const optValue = typeof opt === 'string' ? opt : opt.id;
+                                                            const optLabel = typeof opt === 'string' ? opt : opt.text;
+                                                            const isThisSelected = selectedValue === optValue;
+                                                            const isThisCorrectOption = optValue === quiz.correctAnswer;
+
+                                                            let btnClass = "border-gray-100 hover:border-gray-200";
+                                                            if (isAnswered) {
+                                                                if (isThisCorrectOption) {
+                                                                    btnClass = "border-green-500 bg-green-50";
+                                                                } else if (isThisSelected) {
+                                                                    btnClass = "border-red-500 bg-red-50";
+                                                                }
+                                                            }
+
+                                                            return (
+                                                                <div
+                                                                    key={i}
+                                                                    onClick={() => handleQuizSelect(quiz.id, optValue)}
+                                                                    className={`p-4 rounded-xl border-2 transition-all select-none 
+                                                                    ${isAnswered ? 'cursor-default' : 'cursor-pointer'} ${btnClass}
+                                                                `}
+                                                                >
+                                                                    <div className="flex items-center justify-between">
+                                                                        <span className={isThisCorrectOption && isAnswered ? 'text-green-800 font-medium' : 'text-gray-700'}>
+                                                                            {optLabel}
+                                                                        </span>
+                                                                        {isThisCorrectOption && isAnswered && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+
+                                                {/* Interactive True/False */}
+                                                {quiz.type?.toLowerCase() === 'true/false' || quiz.type?.toLowerCase() === 'tf' ? (
+                                                    <div className="flex gap-4 pl-11">
+                                                        {['True', 'False'].map(opt => {
+                                                            const isThisSelected = selectedValue === opt;
+                                                            const isThisCorrectOption = opt.toLowerCase() === quiz.correctAnswer?.toLowerCase();
+
+                                                            let btnClass = "border-gray-100 text-gray-500 hover:border-gray-200";
+                                                            if (isAnswered) {
+                                                                if (isThisCorrectOption) {
+                                                                    btnClass = "border-green-500 bg-green-50 text-green-700 font-bold";
+                                                                } else if (isThisSelected) {
+                                                                    btnClass = "border-red-500 bg-red-50 text-red-700 font-bold";
+                                                                }
+                                                            }
+
+                                                            return (
+                                                                <div
+                                                                    key={opt}
+                                                                    onClick={() => handleQuizSelect(quiz.id, opt)}
+                                                                    className={`flex-1 p-4 rounded-xl border-2 text-center transition-all
+                                                                    ${isAnswered ? 'cursor-default' : 'cursor-pointer'} ${btnClass}
+                                                                `}
+                                                                >
+                                                                    {opt}
+                                                                    {isThisCorrectOption && isAnswered && ' ✓'}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                ) : null}
+
+                                                {/* Feedback & Explanation */}
+                                                {isAnswered && (
+                                                    <div className="mt-4 pl-11 animate-in fade-in slide-in-from-top-2">
+                                                        {!isCorrect ? (
+                                                            <div className="text-red-500 font-bold mb-3 text-sm">
+                                                                {quiz.customMessage || "och! that hurts, try again 😙"}
                                                             </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
+                                                        ) : (
+                                                            <div className="text-green-600 font-bold mb-3 text-sm flex items-center gap-1">
+                                                                <CheckCircle2 className="w-4 h-4" /> That's correct!
+                                                            </div>
+                                                        )}
 
-                                            {quiz.type === 'tf' && (
-                                                <div className="flex gap-4 pl-11">
-                                                    {['True', 'False'].map(opt => (
-                                                        <div key={opt} className={`flex-1 p-4 rounded-xl border-2 text-center font-bold
-                                                            ${opt.toLowerCase() === quiz.correctAnswer.toLowerCase() ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-100 text-gray-500'}
-                                                       `}>
-                                                            {opt} {opt.toLowerCase() === quiz.correctAnswer.toLowerCase() && '✓'}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            <div className="mt-4 pl-11 text-sm bg-gray-50 border border-gray-100 p-4 rounded-xl text-gray-600">
-                                                <span className="font-bold text-gray-900 block mb-1">Explanation:</span>
-                                                {quiz.explanation}
+                                                        {quiz.explanation && (
+                                                            <div className="text-sm bg-gray-50 border border-gray-100 p-4 rounded-xl text-gray-600">
+                                                                <span className="font-bold text-gray-900 block mb-1">Explanation:</span>
+                                                                {quiz.explanation}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
-                                        </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
                             )}
 

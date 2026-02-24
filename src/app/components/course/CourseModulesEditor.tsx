@@ -358,17 +358,13 @@ export function CourseModulesEditor({ modules, onChange }: CourseModulesEditorPr
                                                     ) : (
                                                         <div className="relative">
                                                             <input
-                                                                type="file"
-                                                                accept=".pdf,.doc,.docx"
-                                                                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 border border-gray-200 rounded-lg"
-                                                                onChange={(e) => {
-                                                                    const file = e.target.files?.[0];
-                                                                    if (file) {
-                                                                        const url = URL.createObjectURL(file);
-                                                                        updateLesson(module.id, lesson.id, { worksheetName: file.name, worksheetUrl: url });
-                                                                    }
-                                                                }}
+                                                                type="url"
+                                                                placeholder="Paste public PDF link here (e.g. from Google Drive or Supabase)"
+                                                                className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 text-sm bg-gray-50"
+                                                                value={lesson.worksheetUrl || ''}
+                                                                onChange={(e) => updateLesson(module.id, lesson.id, { worksheetUrl: e.target.value, worksheetName: 'Lesson Document' })}
                                                             />
+                                                            <p className="text-xs text-gray-500 mt-1">Make sure the link is publicly accessible to students.</p>
                                                         </div>
                                                     )}
                                                 </div>
