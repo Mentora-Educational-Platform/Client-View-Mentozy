@@ -49,42 +49,11 @@ export function CourseViewerPage() {
         fetchCourse();
     }, [courseId]);
 
-    if (loading) {
-        return (
-            <DashboardLayout>
-                <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-                    <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-gray-500 font-medium animate-pulse">Loading course content...</p>
-                </div>
-            </DashboardLayout>
-        );
-    }
-
-    if (!course) {
-        return (
-            <DashboardLayout>
-                <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center">
-                    <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-2">
-                        <HelpCircle className="w-8 h-8" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-900">Course Not Found</h2>
-                    <p className="text-gray-500 max-w-md">We couldn't load this course. It might have been removed or you don't have access.</p>
-                    <button
-                        onClick={() => navigate('/tracks')}
-                        className="mt-4 px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition"
-                    >
-                        Back to Browsing
-                    </button>
-                </div>
-            </DashboardLayout>
-        );
-    }
-
     // Find current active content data
     let activeModule = null;
     let activeLesson = null;
 
-    if (course.track_modules && activeModuleId) {
+    if (course?.track_modules && activeModuleId) {
         activeModule = course.track_modules.find((m: any) => m.id?.toString() === activeModuleId || m.content?.id?.toString() === activeModuleId);
 
         if (activeModule) {
@@ -100,15 +69,6 @@ export function CourseViewerPage() {
             }
         }
     }
-
-    // Helper to get embeddable YouTube URL
-    const getEmbedUrl = (url: string) => {
-        if (!url) return '';
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-        const match = url.match(regExp);
-        const videoId = (match && match[2].length === 11) ? match[2] : null;
-        return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
-    };
 
     const activeLessonIdentifier = activeLesson?.id?.toString() || activeLesson?.title;
 
@@ -161,6 +121,46 @@ export function CourseViewerPage() {
     }, [course]);
 
     const isCourseCompleted = allLessonIds.length > 0 && allLessonIds.every((id: string) => completedLessons.includes(id));
+
+    if (loading) {
+        return (
+            <DashboardLayout>
+                <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+                    <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-gray-500 font-medium animate-pulse">Loading course content...</p>
+                </div>
+            </DashboardLayout>
+        );
+    }
+
+    if (!course) {
+        return (
+            <DashboardLayout>
+                <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center">
+                    <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-2">
+                        <HelpCircle className="w-8 h-8" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900">Course Not Found</h2>
+                    <p className="text-gray-500 max-w-md">We couldn't load this course. It might have been removed or you don't have access.</p>
+                    <button
+                        onClick={() => navigate('/tracks')}
+                        className="mt-4 px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition"
+                    >
+                        Back to Browsing
+                    </button>
+                </div>
+            </DashboardLayout>
+        );
+    }
+
+    // Helper to get embeddable YouTube URL
+    const getEmbedUrl = (url: string) => {
+        if (!url) return '';
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        const videoId = (match && match[2].length === 11) ? match[2] : null;
+        return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
+    };
 
     return (
         <DashboardLayout>
