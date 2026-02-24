@@ -481,6 +481,37 @@ export const getStudentEnrollments = async (userId: string): Promise<Enrollment[
     }
 };
 
+export const getCourseDataForStudent = async (trackId: number): Promise<any> => {
+    try {
+        const supabase = getSupabase();
+        if (!supabase) return null;
+
+        const { data, error } = await supabase
+            .from('tracks')
+            .select(`
+                *,
+                track_modules(*)
+            `)
+            .eq('id', trackId)
+            .single();
+
+        if (error) {
+            console.error("Error fetching course data:", error);
+            return null;
+        }
+
+        // Sort modules by order
+        if (data.track_modules) {
+            data.track_modules.sort((a: any, b: any) => a.module_order - b.module_order);
+        }
+
+        return data;
+    } catch (e) {
+        console.error("Unexpected error in getCourseDataForStudent:", e);
+        return null;
+    }
+};
+
 export const enrollInTrack = async (userId: string, trackId: number): Promise<boolean> => {
     try {
         const supabase = getSupabase();

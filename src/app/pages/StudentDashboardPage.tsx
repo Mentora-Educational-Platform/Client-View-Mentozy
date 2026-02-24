@@ -203,7 +203,7 @@ export function StudentDashboardPage() {
                                                 <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                                                     <div className="h-full bg-indigo-500 rounded-full transition-all duration-1000" style={{ width: `${enrollment.progress}%` }}></div>
                                                 </div>
-                                                <Link to={`/tracks`} className="block w-full text-center py-3 bg-indigo-600 text-white rounded-2xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">
+                                                <Link to={`/learn/${enrollment.track_id}`} className="block w-full text-center py-3 bg-indigo-600 text-white rounded-2xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">
                                                     Continue Learning
                                                 </Link>
                                             </div>

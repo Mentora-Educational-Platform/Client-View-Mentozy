@@ -66,6 +66,7 @@ const MentorProfilePage = lazy(() => import('./pages/MentorProfilePage').then(mo
 const MentorCalendarPage = lazy(() => import('./pages/MentorCalendarPage').then(module => ({ default: module.MentorCalendarPage })));
 const MentorCoursesPage = lazy(() => import('./pages/MentorCoursesPage').then(module => ({ default: module.MentorCoursesPage })));
 const CreateCoursePage = lazy(() => import('./pages/CreateCoursePage').then(module => ({ default: module.CreateCoursePage })));
+const CourseViewerPage = lazy(() => import('./pages/CourseViewerPage').then(module => ({ default: module.CourseViewerPage })));
 
 // Layout Component
 const Layout = () => {
@@ -314,6 +315,11 @@ function App() {
         <Route path="/mentor-create-course" element={
           <Suspense fallback={<PageLoader />}>
             <CreateCoursePage />
+          </Suspense>
+        } />
+        <Route path="/learn/:courseId" element={
+          <Suspense fallback={<PageLoader />}>
+            <CourseViewerPage />
           </Suspense>
         } />
 
