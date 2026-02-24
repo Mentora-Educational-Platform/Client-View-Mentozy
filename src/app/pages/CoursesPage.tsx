@@ -63,8 +63,8 @@ export function CoursesPage() {
                                     key={f}
                                     onClick={() => setFilter(f)}
                                     className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all capitalize ${filter === f
-                                            ? 'bg-amber-100 text-amber-900'
-                                            : 'text-gray-500 hover:text-gray-900'
+                                        ? 'bg-amber-100 text-amber-900'
+                                        : 'text-gray-500 hover:text-gray-900'
                                         }`}
                                 >
                                     {f}
@@ -92,8 +92,8 @@ export function CoursesPage() {
                                 {/* Status Chip */}
                                 <div className="absolute top-6 right-6">
                                     <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${enrollment.status === 'completed'
-                                            ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                                            : 'bg-indigo-50 text-indigo-600 border-indigo-100'
+                                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                                        : 'bg-indigo-50 text-indigo-600 border-indigo-100'
                                         }`}>
                                         {enrollment.status}
                                     </span>
@@ -134,7 +134,7 @@ export function CoursesPage() {
                                         ></div>
                                     </div>
                                     <Link
-                                        to={`/tracks`}
+                                        to={`/learn/${enrollment.track_id}`}
                                         className="flex items-center justify-center gap-2 w-full py-3.5 bg-gray-900 text-white rounded-2xl text-sm font-bold hover:bg-indigo-600 transition-all shadow-lg shadow-gray-200"
                                     >
                                         <PlayCircle className="w-4 h-4" />
