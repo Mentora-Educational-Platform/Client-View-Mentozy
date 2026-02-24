@@ -490,10 +490,7 @@ export const getCourseDataForStudent = async (trackId: number): Promise<any> => 
             .from('tracks')
             .select(`
                 *,
-                track_modules (
-                    *,
-                    lessons (*)
-                )
+                track_modules(*)
             `)
             .eq('id', trackId)
             .single();
