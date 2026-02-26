@@ -221,7 +221,6 @@ export function CourseViewerPage() {
                             {/* Worksheet / PDF */}
                             {(activeLesson.worksheetUrl || activeLesson.pdf_url) && (() => {
                                 const pdfUrl = activeLesson.worksheetUrl || activeLesson.pdf_url;
-                                const isPdf = pdfUrl.toLowerCase().includes('.pdf');
                                 return (
                                     <div className="space-y-4">
                                         <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -238,21 +237,12 @@ export function CourseViewerPage() {
                                                 href={pdfUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
+                                                download={activeLesson.worksheetName || 'Document'}
                                                 className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 whitespace-nowrap"
                                             >
-                                                Open Fullscreen
+                                                Download Document
                                             </a>
                                         </div>
-
-                                        {isPdf && (
-                                            <div className="w-full bg-gray-100 rounded-2xl overflow-hidden shadow-inner border border-gray-200" style={{ height: '600px' }}>
-                                                <iframe
-                                                    src={pdfUrl}
-                                                    title="PDF Document"
-                                                    className="w-full h-full border-0"
-                                                ></iframe>
-                                            </div>
-                                        )}
 
                                         <div className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-xl shadow-sm mt-4 transition-all hover:bg-gray-50">
                                             <div className="relative flex items-start">

@@ -1,4 +1,7 @@
-import { Plus, Trash2, GripVertical, Video, HelpCircle, CheckCircle } from 'lucide-react';
+import React from 'react';
+import { Plus, Trash2, GripVertical, FileText, Video, HelpCircle, Loader2, UploadCloud, CheckCircle } from 'lucide-react';
+import { uploadDocument } from '../../../lib/api';
+import { toast } from 'sonner';
 
 export type QuizType = 'MCQ' | 'True/False' | 'Fill in the blank';
 
@@ -44,6 +47,42 @@ interface CourseModulesEditorProps {
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
 export function CourseModulesEditor({ modules, onChange }: CourseModulesEditorProps) {
+
+    const [uploadingFiles, setUploadingFiles] = React.useState<Record<string, boolean>>({});
+
+    const handleFileUpload = async (moduleId: string, lessonId: string, file: File) => {
+        if (!file) return;
+
+        // Ensure it's a PDF or accessible doc
+        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        if (!allowedTypes.includes(file.type)) {
+            toast.error("Please upload a PDF or Word document.");
+            return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+            toast.error("File size must be under 10MB.");
+            return;
+        }
+
+        const uploadKey = `${moduleId}-${lessonId}`;
+        setUploadingFiles(prev => ({ ...prev, [uploadKey]: true }));
+
+        const { url, error } = await uploadDocument(file);
+
+        setUploadingFiles(prev => ({ ...prev, [uploadKey]: false }));
+
+        if (error || !url) {
+            toast.error(error?.message || "Failed to upload file. Please try again.");
+            return;
+        }
+
+        updateLesson(moduleId, lessonId, {
+            worksheetName: file.name,
+            worksheetUrl: url
+        });
+        toast.success("Document uploaded successfully!");
+    };
 
     const addModule = () => {
         onChange([
@@ -342,7 +381,8 @@ export function CourseModulesEditor({ modules, onChange }: CourseModulesEditorPr
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className="text-sm font-bold text-amber-600 hover:text-amber-800 hover:underline flex-1 truncate"
-                                                                title="View Document"
+                                                                title="Download Document"
+                                                                download
                                                             >
                                                                 📄 {lesson.worksheetName}
                                                             </a>
@@ -356,15 +396,53 @@ export function CourseModulesEditor({ modules, onChange }: CourseModulesEditorPr
                                                             </button>
                                                         </div>
                                                     ) : (
-                                                        <div className="relative">
-                                                            <input
-                                                                type="url"
-                                                                placeholder="Paste public PDF link here (e.g. from Google Drive or Supabase)"
-                                                                className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 text-sm bg-gray-50"
-                                                                value={lesson.worksheetUrl || ''}
-                                                                onChange={(e) => updateLesson(module.id, lesson.id, { worksheetUrl: e.target.value, worksheetName: 'Lesson Document' })}
-                                                            />
-                                                            <p className="text-xs text-gray-500 mt-1">Make sure the link is publicly accessible to students.</p>
+                                                        <div className="space-y-3">
+                                                            <div className="relative">
+                                                                <input
+                                                                    type="url"
+                                                                    placeholder="Paste public PDF link here (e.g. from Google Drive or Supabase)"
+                                                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 text-sm bg-gray-50"
+                                                                    value={lesson.worksheetUrl || ''}
+                                                                    onChange={(e) => updateLesson(module.id, lesson.id, { worksheetUrl: e.target.value, worksheetName: 'Lesson Document' })}
+                                                                />
+                                                                <p className="text-xs text-gray-500 mt-1">Make sure the link is publicly accessible to students.</p>
+                                                            </div>
+
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="h-px bg-gray-200 flex-1"></div>
+                                                                <span className="text-xs font-medium text-gray-400">OR</span>
+                                                                <div className="h-px bg-gray-200 flex-1"></div>
+                                                            </div>
+
+                                                            <div className="relative">
+                                                                <input
+                                                                    type="file"
+                                                                    id={`file-${lesson.id}`}
+                                                                    className="hidden"
+                                                                    accept=".pdf,.doc,.docx"
+                                                                    onChange={(e) => {
+                                                                        const file = e.target.files?.[0];
+                                                                        if (file) handleFileUpload(module.id, lesson.id, file);
+                                                                    }}
+                                                                    disabled={uploadingFiles[`${module.id}-${lesson.id}`]}
+                                                                />
+                                                                <label
+                                                                    htmlFor={`file-${lesson.id}`}
+                                                                    className={`w-full flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm font-medium ${uploadingFiles[`${module.id}-${lesson.id}`] ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-600 hover:bg-gray-50 hover:border-amber-500 hover:text-amber-600 cursor-pointer transition-colors'}`}
+                                                                >
+                                                                    {uploadingFiles[`${module.id}-${lesson.id}`] ? (
+                                                                        <>
+                                                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                                                            Uploading...
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <UploadCloud className="w-4 h-4" />
+                                                                            Click to Upload PDF/Doc (Max 10MB)
+                                                                        </>
+                                                                    )}
+                                                                </label>
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>

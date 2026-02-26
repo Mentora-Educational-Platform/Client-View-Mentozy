@@ -634,6 +634,35 @@ export const createBooking = async (userId: string, mentorId: number, scheduledA
     }
 };
 
+export const uploadDocument = async (file: File): Promise<{ url: string | null; error: Error | null }> => {
+    try {
+        const supabase = getSupabase();
+        if (!supabase) return { url: null, error: new Error("Supabase client not initialized") };
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+        const filePath = `worksheets/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from('course_documents')
+            .upload(filePath, file);
+
+        if (uploadError) {
+            console.error("Supabase Storage upload error:", uploadError);
+            return { url: null, error: uploadError };
+        }
+
+        const { data } = supabase.storage
+            .from('course_documents')
+            .getPublicUrl(filePath);
+
+        return { url: data.publicUrl, error: null };
+    } catch (e) {
+        console.error("Unexpected error in uploadDocument:", e);
+        return { url: null, error: e instanceof Error ? e : new Error(String(e)) };
+    }
+};
+
 export const getMentorBookings = async (userId: string): Promise<Booking[]> => {
     try {
         const supabase = getSupabase();
