@@ -88,6 +88,19 @@ export function LibraryPage() {
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
+    const [likedResources, setLikedResources] = useState<Set<string>>(new Set());
+
+    // Load liked posts from local storage on mount
+    useEffect(() => {
+        const stored = localStorage.getItem('mentozy_liked_resources');
+        if (stored) {
+            try {
+                setLikedResources(new Set(JSON.parse(stored)));
+            } catch (e) {
+                // Ignore parse errors
+            }
+        }
+    }, []);
 
     // Preview Modal State
     const [previewResource, setPreviewResource] = useState<LibraryResource | null>(null);
@@ -216,10 +229,22 @@ export function LibraryPage() {
 
     const handleLike = async (resource: LibraryResource) => {
         if (!supabase) return;
+
+        // Prevent duplicate likes from the same browser connection
+        if (likedResources.has(resource.id)) {
+            toast.info("You've already liked this resource!");
+            return;
+        }
+
         try {
             const currentLikes = resource.likes || 0;
             // Optimistic local update
             setResources(prev => prev.map(r => r.id === resource.id ? { ...r, likes: currentLikes + 1 } : r));
+
+            // Add to local state & storage to disable button immediately
+            const newLikedIds = new Set(likedResources).add(resource.id);
+            setLikedResources(newLikedIds);
+            localStorage.setItem('mentozy_liked_resources', JSON.stringify(Array.from(newLikedIds)));
 
             const { error } = await supabase
                 .from('library_resources')
@@ -230,6 +255,12 @@ export function LibraryPage() {
             console.error('Failed to like resource:', error);
             // Revert on failure
             setResources(prev => prev.map(r => r.id === resource.id ? { ...r, likes: resource.likes } : r));
+
+            // Remove from local tracked state if failure
+            const revertedLikedIds = new Set(likedResources);
+            revertedLikedIds.delete(resource.id);
+            setLikedResources(revertedLikedIds);
+            localStorage.setItem('mentozy_liked_resources', JSON.stringify(Array.from(revertedLikedIds)));
         }
     };
 
@@ -396,9 +427,13 @@ export function LibraryPage() {
                                                 <Download className="w-4 h-4" />
                                                 <span>{item.downloads}</span>
                                             </div>
-                                            <div className="flex items-center gap-1.5 cursor-pointer text-gray-400 hover:text-rose-500 transition-colors" title="Like" onClick={() => handleLike(item)}>
-                                                <Heart className={`w-4 h-4 ${item.likes ? 'text-rose-500 fill-rose-500/20' : ''}`} />
-                                                <span className={item.likes ? 'text-rose-500' : ''}>{item.likes || 0}</span>
+                                            <div
+                                                className={`flex items-center gap-1.5 transition-colors ${likedResources.has(item.id) ? 'cursor-default' : 'cursor-pointer hover:text-rose-500'}`}
+                                                title={likedResources.has(item.id) ? "Liked" : "Like"}
+                                                onClick={() => handleLike(item)}
+                                            >
+                                                <Heart className={`w-4 h-4 ${likedResources.has(item.id) ? 'text-rose-500 fill-rose-500' : ''}`} />
+                                                <span className={likedResources.has(item.id) ? 'text-rose-500' : ''}>{item.likes || 0}</span>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
