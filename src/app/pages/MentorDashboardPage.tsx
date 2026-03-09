@@ -63,7 +63,11 @@ export function MentorDashboardPage() {
                 if (userProfile) {
                     // Redirect if accessing wrong dashboard
                     if (userProfile.role === 'student') {
-                        navigate('/student-dashboard');
+                        navigate('/student-dashboard', { replace: true });
+                        return;
+                    }
+                    if (user?.user_metadata?.is_org) {
+                        navigate('/org-dashboard', { replace: true });
                         return;
                     }
                     setProfile(userProfile);

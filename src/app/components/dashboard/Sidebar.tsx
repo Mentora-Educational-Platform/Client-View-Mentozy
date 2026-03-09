@@ -1,8 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, BookOpen, Calendar, MessageSquare, PieChart, Award, LogOut, X, User, Users, PlusCircle, Settings } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Calendar, MessageSquare, PieChart, Award, LogOut, X, User, Users, PlusCircle, Settings, GraduationCap, CalendarDays, BookMarked } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { getUserProfile } from '../../../lib/api';
+import { getSupabase } from '../../../lib/supabase';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -13,6 +14,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     const location = useLocation();
     const { signOut, user } = useAuth();
     const [profileRole, setProfileRole] = useState<string | null>(null);
+    const [orgName, setOrgName] = useState('Mentozy');
 
     useEffect(() => {
         if (user?.id) {
@@ -21,6 +23,16 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     setProfileRole(profile.role);
                 }
             });
+
+            const fetchCompanyName = async () => {
+                const supabase = getSupabase();
+                if (!supabase) return;
+                const { data } = await supabase.from('mentors').select('company').eq('user_id', user.id).single();
+                if (data?.company) {
+                    setOrgName(data.company);
+                }
+            };
+            fetchCompanyName();
         }
     }, [user]);
 
@@ -52,10 +64,23 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         { icon: Settings, label: 'Settings', path: '/mentor-settings' },
     ];
 
-    const isMentorPath = location.pathname.startsWith('/mentor-');
-    const isMentor = role === 'mentor' || role === 'organization' || isMentorPath;
+    const orgItems = [
+        { icon: LayoutDashboard, label: 'Dashboard', path: '/org-dashboard' },
+        { icon: GraduationCap, label: 'Students', path: '/org-students' },
+        { icon: Calendar, label: 'Calendar', path: '/org-calendar' },
+        { icon: Users, label: 'Teachers', path: '/org-teachers' },
+        { icon: CalendarDays, label: 'Events', path: '/org-events' },
+        { icon: BookOpen, label: 'Courses', path: '/org-courses' },
+        { icon: BookMarked, label: 'Study Materials', path: '/org-materials' },
+        { icon: Settings, label: 'Settings', path: '/org-settings' },
+    ];
 
-    const navItems = isMentor ? mentorItems : studentItems;
+    const isMentorPath = location.pathname.startsWith('/mentor-');
+    const isOrgPath = location.pathname.startsWith('/org-');
+    const isOrg = user?.user_metadata?.is_org || isOrgPath;
+    const isMentor = (role === 'mentor' && !isOrg) || role === 'organization' || isMentorPath;
+
+    const navItems = isOrg ? orgItems : isMentor ? mentorItems : studentItems;
 
     return (
         <>
@@ -75,9 +100,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <div className="h-full flex flex-col">
                     {/* Header */}
                     <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
-                        <Link to="/" className="flex items-center gap-2 font-bold text-xl text-gray-900">
-                            Mentozy
-                            <div className="w-1.5 h-1.5 bg-amber-500 rounded-sm"></div>
+                        <Link to="/" className="flex items-center gap-2 font-bold text-xl text-gray-900 truncate">
+                            {orgName}
+                            <div className="w-1.5 h-1.5 bg-amber-500 rounded-sm flex-shrink-0"></div>
                         </Link>
                         <button onClick={onClose} className="md:hidden p-1 text-gray-500 hover:bg-gray-100 rounded-lg">
                             <X className="w-5 h-5" />

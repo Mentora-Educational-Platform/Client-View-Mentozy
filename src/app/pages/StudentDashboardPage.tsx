@@ -38,8 +38,12 @@ export function StudentDashboardPage() {
 
                 if (profileData) {
                     // Redirect if accessing wrong dashboard
+                    if (user?.user_metadata?.is_org) {
+                        navigate('/org-dashboard', { replace: true });
+                        return;
+                    }
                     if (profileData.role === 'mentor') {
-                        navigate('/mentor-dashboard');
+                        navigate('/mentor-dashboard', { replace: true });
                         return;
                     }
                     setProfile(profileData);

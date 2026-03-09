@@ -47,11 +47,12 @@ export function LoginPage() {
                 // Check User Role
                 const profile = await getUserProfile(data.user.id);
                 const role = profile?.role || data.user.user_metadata?.role;
+                const isOrg = data.user.user_metadata?.is_org;
 
-                console.log("LOGIN DEBUG: User Profile Loaded:", profile);
-                console.log("LOGIN DEBUG: Detected Role:", role);
-
-                if (role === 'mentor' || role === 'teacher') {
+                if (isOrg) {
+                    navigate('/org-dashboard');
+                    toast.success("Welcome back, Organisation!");
+                } else if (role === 'mentor' || role === 'teacher') {
                     navigate('/mentor-dashboard');
                     toast.success("Welcome back, Mentor!");
                 } else {

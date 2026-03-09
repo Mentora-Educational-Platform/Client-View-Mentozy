@@ -6,8 +6,13 @@ export function TeacherSuccessPage() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const status = searchParams.get('status') || 'active'; // active | pending
+    const type = searchParams.get('type'); // org | individual
 
     const isPending = status === 'pending';
+    const isOrg = type === 'org';
+
+    const dashPath = isOrg ? '/org-dashboard' : '/mentor-dashboard';
+    const profilePath = isOrg ? '/org-settings' : '/mentor-dashboard?tab=profile';
 
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 font-sans">
@@ -30,7 +35,7 @@ export function TeacherSuccessPage() {
                 <div className="space-y-3">
                     {!isPending && (
                         <button
-                            onClick={() => navigate('/mentor-dashboard')}
+                            onClick={() => navigate(dashPath)}
                             className="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold shadow-lg shadow-amber-500/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
                         >
                             Go to Dashboard <ArrowRight className="w-4 h-4" />
@@ -48,7 +53,7 @@ export function TeacherSuccessPage() {
 
                     {!isPending && (
                         <button
-                            onClick={() => navigate('/mentor-dashboard?tab=profile')}
+                            onClick={() => navigate(profilePath)}
                             className="w-full py-3.5 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
                         >
                             <User className="w-4 h-4" /> Complete Profile

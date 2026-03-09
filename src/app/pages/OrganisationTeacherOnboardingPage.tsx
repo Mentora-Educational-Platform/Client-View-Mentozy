@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Globe, MapPin, UploadCloud, Loader2 } from 'lucide-react';
 import { getSupabase } from '../../lib/supabase';
@@ -26,7 +26,43 @@ export function OrganisationTeacherOnboardingPage() {
         website: '',
         founderName: '',
         address: '',
+        logoUrl: '',
     });
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+
+    const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploadingLogo(true);
+        try {
+            const supabase = getSupabase();
+            if (!supabase) throw new Error("Supabase not initialized");
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `logos/${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(fileName, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(fileName);
+
+            updateData('logoUrl', data.publicUrl);
+            toast.success("Logo uploaded successfully");
+        } catch (error: any) {
+            console.error("Upload error:", error);
+            toast.error(error.message || "Failed to upload logo");
+        } finally {
+            setIsUploadingLogo(false);
+        }
+    };
 
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -49,10 +85,10 @@ export function OrganisationTeacherOnboardingPage() {
         // Branch A: Online Institute
         if (orgType === 'online') {
             if (step === 3) {
-                // Email Validation: .com, .in, .edu only
-                const emailRegex = /^[^\s@]+@[^\s@]+\.(com|in|edu)$/;
+                // Email Validation: .com, .in, .edu, .app only
+                const emailRegex = /^[^\s@]+@[^\s@]+\.(com|in|edu|app)$/;
                 if (!formData.officialEmail || !emailRegex.test(formData.officialEmail)) {
-                    newErrors.officialEmail = "Enter a valid official email (.com, .in, .edu)";
+                    newErrors.officialEmail = "Enter a valid official email (.com, .in, .edu, .app)";
                 }
                 if (!formData.password || formData.password.length < 6) {
                     newErrors.password = "Password must be at least 6 characters";
@@ -102,24 +138,33 @@ export function OrganisationTeacherOnboardingPage() {
             const supabase = getSupabase();
             if (!supabase) throw new Error("Supabase not initialized");
 
+            // Clear existing session so new signup actually logs them in
+            await supabase.auth.signOut();
+
             // Signup Logic
             let { data: authData, error: authError } = await supabase.auth.signUp({
                 email: formData.officialEmail,
                 password: formData.password,
-                // Remove options to prevent trigger errors
                 options: {
                     data: {
                         full_name: formData.orgName,
-                        role: 'mentor'
+                        role: 'mentor',
+                        is_org: true
                     }
                 }
             });
 
             if (authError && authError.message.includes("already registered")) {
-                // For MVP, just fail or toast
-                throw new Error("Account already exists for this email.");
+                // Attempt login instead
+                const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                    email: formData.officialEmail,
+                    password: formData.password,
+                });
+                if (signInError) throw new Error("Account already exists for this email, but incorrect password provided.");
+                authData = signInData as any;
+            } else if (authError) {
+                throw authError;
             }
-            if (authError) throw authError;
             if (!authData.user) throw new Error("No user created");
 
             // Create Profile
@@ -127,6 +172,7 @@ export function OrganisationTeacherOnboardingPage() {
                 id: authData.user.id,
                 full_name: formData.orgName,
                 role: 'mentor',
+                avatar_url: formData.logoUrl,
             }, { onConflict: 'id' });
 
             // Create Mentor (Org) Record
@@ -143,13 +189,14 @@ export function OrganisationTeacherOnboardingPage() {
                     domain: formData.teachingDomain,
                     address: formData.address,
                     founder: formData.founderName,
-                    status: status // Storing status in JSON
+                    status: status, // Storing status in JSON
+                    logo: formData.logoUrl
                 }),
                 rating: 0,
             }, { onConflict: 'user_id' });
 
             // Redirect based on status
-            navigate(`/teacher-success?status=${status}`);
+            navigate(`/teacher-success?status=${status}&type=org`);
 
         } catch (error: any) {
             console.error(error);
@@ -191,9 +238,29 @@ export function OrganisationTeacherOnboardingPage() {
                                         />
                                         {errors.orgName && <p className="text-xs text-red-500">{errors.orgName}</p>}
                                     </div>
-                                    <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 flex flex-col items-center justify-center text-gray-400 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer">
-                                        <UploadCloud className="w-8 h-8 mb-2" />
-                                        <span className="text-sm font-medium">Upload Organisation Logo</span>
+                                    <div>
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            onChange={handleLogoUpload}
+                                            accept="image/*"
+                                            className="hidden"
+                                        />
+                                        <div
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="border-2 border-dashed border-gray-200 rounded-xl p-8 flex flex-col items-center justify-center text-gray-400 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer overflow-hidden relative min-h-[140px]"
+                                        >
+                                            {isUploadingLogo ? (
+                                                <Loader2 className="w-8 h-8 mb-2 animate-spin text-blue-500" />
+                                            ) : formData.logoUrl ? (
+                                                <img src={formData.logoUrl} alt="Logo" className="max-h-[100px] object-contain p-2" />
+                                            ) : (
+                                                <>
+                                                    <UploadCloud className="w-8 h-8 mb-2" />
+                                                    <span className="text-sm font-medium">Upload Organisation Logo</span>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>

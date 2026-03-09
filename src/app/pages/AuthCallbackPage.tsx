@@ -21,8 +21,11 @@ export function AuthCallbackPage() {
                 .single()
 
             const role = session.user.user_metadata?.role || profile?.role;
+            const isOrg = session.user.user_metadata?.is_org;
 
-            if (role === "mentor" || role === "teacher") {
+            if (isOrg) {
+                setTimeout(() => navigate("/org-dashboard"), 3000)
+            } else if (role === "mentor" || role === "teacher") {
                 setTimeout(() => navigate("/mentor-dashboard"), 3000)
             } else {
                 setTimeout(() => navigate("/student-dashboard"), 3000)

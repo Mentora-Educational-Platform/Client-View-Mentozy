@@ -75,12 +75,13 @@ export function IndividualOnboardingPage() {
             const supabase = getSupabase();
             if (!supabase) throw new Error("Supabase not initialized");
 
+            // Clear existing session so new signup actually logs them in
+            await supabase.auth.signOut();
+
             // 1. Sign Up User (or handle existing)
-            // Note: For this demo flow we assume new user. Ideally handle "User already exists" logic
             let { data: authData, error: authError } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
-                // Remove options to prevent trigger errors
                 options: {
                     data: {
                         full_name: formData.fullName,
@@ -89,11 +90,15 @@ export function IndividualOnboardingPage() {
                 }
             });
 
-            if (authError) {
-                if (authError.message.includes("already registered")) {
-                    // Auto-login fallback logic could go here if we had password field
-                    throw new Error("User already registered. Please login.");
-                }
+            if (authError && authError.message.includes("already registered")) {
+                // Attempt login instead
+                const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                    email: formData.email,
+                    password: formData.password,
+                });
+                if (signInError) throw new Error("User already registered. Please login with correct password.");
+                authData = signInData as any;
+            } else if (authError) {
                 throw authError;
             }
 

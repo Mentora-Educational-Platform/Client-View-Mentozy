@@ -40,6 +40,14 @@ const TeacherTypeSelectionPage = lazy(() => import('./pages/TeacherTypeSelection
 const IndividualOnboardingPage = lazy(() => import('./pages/IndividualOnboardingPage').then(module => ({ default: module.IndividualOnboardingPage })));
 const OrganisationTeacherOnboardingPage = lazy(() => import('./pages/OrganisationTeacherOnboardingPage').then(module => ({ default: module.OrganisationTeacherOnboardingPage })));
 const TeacherSuccessPage = lazy(() => import('./pages/TeacherSuccessPage').then(module => ({ default: module.TeacherSuccessPage })));
+const OrgDashboardPage = lazy(() => import('./pages/OrgDashboardPage').then(module => ({ default: module.OrgDashboardPage })));
+const OrgStudentsPage = lazy(() => import('./pages/OrgStudentsPage').then(module => ({ default: module.OrgStudentsPage })));
+const OrgCalendarPage = lazy(() => import('./pages/OrgCalendarPage').then(module => ({ default: module.OrgCalendarPage })));
+const OrgTeachersPage = lazy(() => import('./pages/OrgTeachersPage').then(module => ({ default: module.OrgTeachersPage })));
+const OrgEventsPage = lazy(() => import('./pages/OrgEventsPage').then(module => ({ default: module.OrgEventsPage })));
+const OrgCoursesPage = lazy(() => import('./pages/OrgCoursesPage').then(module => ({ default: module.OrgCoursesPage })));
+const OrgMaterialsPage = lazy(() => import('./pages/OrgMaterialsPage').then(module => ({ default: module.OrgMaterialsPage })));
+const OrgSettingsPage = lazy(() => import('./pages/OrgSettingsPage').then(module => ({ default: module.OrgSettingsPage })));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage').then(module => ({ default: module.AdminDashboardPage })));
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(module => ({ default: module.ProfilePage })));
 const PlansPage = lazy(() => import('./pages/PlansPage').then(module => ({ default: module.PlansPage })));
@@ -213,6 +221,46 @@ function App() {
         <Route path="/teacher-success" element={
           <Suspense fallback={<PageLoader />}>
             <TeacherSuccessPage />
+          </Suspense>
+        } />
+        <Route path="/org-dashboard" element={
+          <Suspense fallback={<PageLoader />}>
+            <OrgDashboardPage />
+          </Suspense>
+        } />
+        <Route path="/org-students" element={
+          <Suspense fallback={<PageLoader />}>
+            <OrgStudentsPage />
+          </Suspense>
+        } />
+        <Route path="/org-calendar" element={
+          <Suspense fallback={<PageLoader />}>
+            <OrgCalendarPage />
+          </Suspense>
+        } />
+        <Route path="/org-teachers" element={
+          <Suspense fallback={<PageLoader />}>
+            <OrgTeachersPage />
+          </Suspense>
+        } />
+        <Route path="/org-events" element={
+          <Suspense fallback={<PageLoader />}>
+            <OrgEventsPage />
+          </Suspense>
+        } />
+        <Route path="/org-courses" element={
+          <Suspense fallback={<PageLoader />}>
+            <OrgCoursesPage />
+          </Suspense>
+        } />
+        <Route path="/org-materials" element={
+          <Suspense fallback={<PageLoader />}>
+            <OrgMaterialsPage />
+          </Suspense>
+        } />
+        <Route path="/org-settings" element={
+          <Suspense fallback={<PageLoader />}>
+            <OrgSettingsPage />
           </Suspense>
         } />
         <Route path="/admin" element={
