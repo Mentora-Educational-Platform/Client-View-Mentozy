@@ -14,18 +14,15 @@ export function AuthCallbackPage() {
             if (!session) return
 
             // Fetch role from profiles table
-            const { data: profile, error } = await supabase
+            const { data: profile } = await supabase
                 .from("profiles")
                 .select("role")
                 .eq("id", session.user.id)
                 .single()
 
-            if (error || !profile) {
-                setTimeout(() => navigate("/"), 3000)
-                return
-            }
+            const role = session.user.user_metadata?.role || profile?.role;
 
-            if (profile.role === "mentor") {
+            if (role === "mentor" || role === "teacher") {
                 setTimeout(() => navigate("/mentor-dashboard"), 3000)
             } else {
                 setTimeout(() => navigate("/student-dashboard"), 3000)

@@ -69,7 +69,7 @@ export function MentorOnboardingPage() {
                     id: authData.user.id,
                     full_name: formData.fullName,
                     role: 'mentor'
-                });
+                }, { onConflict: 'id' });
 
             if (profileError) throw profileError;
 

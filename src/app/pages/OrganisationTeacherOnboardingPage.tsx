@@ -107,6 +107,12 @@ export function OrganisationTeacherOnboardingPage() {
                 email: formData.officialEmail,
                 password: formData.password,
                 // Remove options to prevent trigger errors
+                options: {
+                    data: {
+                        full_name: formData.orgName,
+                        role: 'mentor'
+                    }
+                }
             });
 
             if (authError && authError.message.includes("already registered")) {
@@ -121,7 +127,7 @@ export function OrganisationTeacherOnboardingPage() {
                 id: authData.user.id,
                 full_name: formData.orgName,
                 role: 'mentor',
-            });
+            }, { onConflict: 'id' });
 
             // Create Mentor (Org) Record
             // Logic: Store Org details in company/bio

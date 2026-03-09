@@ -81,6 +81,12 @@ export function IndividualOnboardingPage() {
                 email: formData.email,
                 password: formData.password,
                 // Remove options to prevent trigger errors
+                options: {
+                    data: {
+                        full_name: formData.fullName,
+                        role: 'mentor'
+                    }
+                }
             });
 
             if (authError) {
@@ -99,7 +105,7 @@ export function IndividualOnboardingPage() {
                 full_name: formData.fullName,
                 role: 'mentor',
                 phone: formData.phone
-            });
+            }, { onConflict: 'id' });
 
             // 3. Upsert Mentor Record
             const { data: mentorData, error: mentorError } = await supabase

@@ -91,6 +91,11 @@ export function StudentOnboardingPage() {
                 email: formData.email,
                 password: formData.password,
                 // Remove options to prevent trigger errors
+                options: {
+                    data: {
+                        role: 'student'
+                    }
+                }
             });
 
 
@@ -111,7 +116,7 @@ export function StudentOnboardingPage() {
                 phone: formData.phone,
                 interests: formData.interests,
                 role: 'student'
-            });
+            }, { onConflict: 'id' });
 
             if (profileError) {
                 console.error("Profile creation failed:", profileError);
