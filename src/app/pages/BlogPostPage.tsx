@@ -180,6 +180,30 @@ export function BlogPostPage() {
         );
     }
 
+    const handleShare = async () => {
+        const shareData = {
+            title: post.title,
+            text: `Read "${post.title}" on Mentozy Blog`,
+            url: window.location.href,
+        };
+
+        try {
+            if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                await navigator.share(shareData);
+            } else {
+                await navigator.clipboard.writeText(`Read "${post.title}" on Mentozy Blog:\n${window.location.href}`);
+                toast.success("Link copied to clipboard!");
+            }
+        } catch (err) {
+            console.error("Error sharing:", err);
+            // Fallback if user cancels or it fails
+            if (err instanceof Error && err.name !== 'AbortError') {
+                navigator.clipboard.writeText(window.location.href);
+                toast.success("Link copied to clipboard!");
+            }
+        }
+    };
+
     return (
         <div className="min-h-screen bg-white font-sans">
             {/* Minimalist Top Nav */}
@@ -200,10 +224,7 @@ export function BlogPostPage() {
                             <MessageCircle className="w-5 h-5" />
                             <span className="text-sm">{comments.length}</span>
                         </button>
-                        <button onClick={() => {
-                            navigator.clipboard.writeText(window.location.href);
-                            toast.success("Link copied to clipboard!");
-                        }} className="text-gray-500 hover:text-gray-900 transition-colors">
+                        <button onClick={handleShare} className="text-gray-500 hover:text-gray-900 transition-colors">
                             <Share className="w-5 h-5" />
                         </button>
                     </div>
