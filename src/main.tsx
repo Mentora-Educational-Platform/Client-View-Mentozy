@@ -9,7 +9,6 @@ Intercom({
   app_id: "qvu6wbfn"
 });
 
-
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <App />
