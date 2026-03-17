@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { LayoutDashboard, BookOpen, Calendar, MessageSquare, PieChart, Award, LogOut, X, User, Users, PlusCircle, Settings, GraduationCap, CalendarDays, BookMarked } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { getUserProfile } from '../../../lib/api';
-import { getSupabase } from '../../../lib/supabase';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -14,7 +13,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     const location = useLocation();
     const { signOut, user } = useAuth();
     const [profileRole, setProfileRole] = useState<string | null>(null);
-    const [orgName, setOrgName] = useState('Mentozy');
 
     useEffect(() => {
         if (user?.id) {
@@ -24,15 +22,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 }
             });
 
-            const fetchCompanyName = async () => {
-                const supabase = getSupabase();
-                if (!supabase) return;
-                const { data } = await supabase.from('mentors').select('company').eq('user_id', user.id).single();
-                if (data?.company) {
-                    setOrgName(data.company);
-                }
-            };
-            fetchCompanyName();
         }
     }, [user]);
 
@@ -101,7 +90,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     {/* Header */}
                     <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
                         <Link to="/" className="flex items-center gap-2 font-bold text-xl text-gray-900 truncate">
-                            {orgName}
+                            Mentozy
                             <div className="w-1.5 h-1.5 bg-amber-500 rounded-sm flex-shrink-0"></div>
                         </Link>
                         <button onClick={onClose} className="md:hidden p-1 text-gray-500 hover:bg-gray-100 rounded-lg">

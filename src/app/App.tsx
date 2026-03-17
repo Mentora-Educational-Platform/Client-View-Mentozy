@@ -2,6 +2,7 @@ import { Suspense, lazy, memo, useEffect } from 'react';
 import { Routes, Route, useLocation, Outlet } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
+import { StudentTools } from './components/StudentTools';
 import { Loader2 } from 'lucide-react';
 import { AuthProvider } from '../context/AuthContext';
 
@@ -388,6 +389,7 @@ function App() {
         {/* Catch-all Route */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      <StudentTools />
     </AuthProvider>
   );
 }
