@@ -32,7 +32,6 @@ export function OrgTeachersPage() {
         try {
             if (!supabase) throw new Error("Supabase client not initialized.");
             
-            // Call the invite-teacher Edge Function that utilizes Supabase Custom SMTP
             const { error } = await supabase.functions.invoke('invite-teacher', {
                 body: { 
                     email: newTeacher.email, 
@@ -41,7 +40,19 @@ export function OrgTeachersPage() {
                 }
             });
 
-            if (error) throw error;
+            // If the Edge function returned { error:="..." }, the edge function threw a 400 status.
+            if (error) {
+                // error.context usually contains the underlying Response object
+                let realError = error.message;
+                try {
+                    if (error.context && typeof error.context.json === 'function') {
+                         const errBody = await error.context.json();
+                         realError = errBody.error || errBody.message || realError;
+                    }
+                } catch(e) { /* ignore parse error */ }
+                
+                throw new Error(realError);
+            }
             
             toast.success(`Invitation email sent successfully to ${newTeacher.email}!`);
             setIsModalOpen(false);
