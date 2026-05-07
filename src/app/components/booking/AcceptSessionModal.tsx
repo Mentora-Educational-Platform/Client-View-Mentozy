@@ -1,45 +1,27 @@
 import { useState } from 'react';
-import { X, Link, Type, CreditCard, CheckCircle2, Loader2 } from 'lucide-react';
+import { X, Type, CheckCircle2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AcceptSessionModalProps {
     isOpen: boolean;
     onClose: () => void;
     studentName: string;
-    onConfirm: (meetingLink: string, note: string, paymentLink: string) => Promise<boolean>;
+    onConfirm: (note: string) => Promise<boolean>;
 }
 
 export function AcceptSessionModal({ isOpen, onClose, studentName, onConfirm }: AcceptSessionModalProps) {
-    const [meetingLink, setMeetingLink] = useState('');
     const [note, setNote] = useState('');
-    const [paymentLink, setPaymentLink] = useState('');
     const [loading, setLoading] = useState(false);
 
     if (!isOpen) return null;
 
     const handleSubmit = async () => {
-        // Validation
-        if (!meetingLink.trim()) {
-            toast.error("Please provide a meeting link (Google Meet, Zoom, etc.)");
-            return;
-        }
-
-        // URL validation for meeting link
-        try {
-            new URL(meetingLink);
-        } catch (_) {
-            toast.error("Please enter a valid Meeting URL");
-            return;
-        }
-
         setLoading(true);
         try {
-            const success = await onConfirm(meetingLink, note, paymentLink);
+            const success = await onConfirm(note);
             if (success) {
                 onClose();
-                setMeetingLink('');
                 setNote('');
-                setPaymentLink('');
             }
         } catch (error) {
             console.error("Error in modal submit:", error);
@@ -63,35 +45,6 @@ export function AcceptSessionModal({ isOpen, onClose, studentName, onConfirm }: 
                 </div>
 
                 <div className="p-6 space-y-6">
-                    {/* Meeting Link */}
-                    <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                            <Link className="h-4 w-4 text-emerald-600" /> Meeting Link <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="url"
-                            className="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 transition-all text-sm"
-                            placeholder="https://meet.google.com/..."
-                            value={meetingLink}
-                            onChange={(e) => setMeetingLink(e.target.value)}
-                        />
-                    </div>
-
-                    {/* Payment Link */}
-                    <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                            <CreditCard className="h-4 w-4 text-emerald-600" /> Payment Link / UPI ID
-                        </label>
-                        <input
-                            type="text"
-                            className="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 transition-all text-sm"
-                            placeholder="upi-id@okicici OR https://razorpay.me/..."
-                            value={paymentLink}
-                            onChange={(e) => setPaymentLink(e.target.value)}
-                        />
-                        <p className="mt-1.5 text-xs text-gray-500">Provide a UPI ID or payment link for the student.</p>
-                    </div>
-
                     {/* Note */}
                     <div>
                         <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">

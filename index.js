@@ -118,9 +118,9 @@ app.post('/api/payments/orders', async (req, res) => {
   try {
     const { amount, currency = 'INR', mentorLinkedAccountId, bookingId } = req.body;
 
-    if (!amount || !mentorLinkedAccountId) {
+    if (!amount) {
       return res.status(400).json({
-        error: 'amount and mentorLinkedAccountId are required',
+        error: 'amount is required',
       });
     }
 
@@ -128,18 +128,22 @@ app.post('/api/payments/orders', async (req, res) => {
     const mentorAmount = Math.round((totalAmount * MENTOR_SHARE_PERCENT) / 100);
     const platformAmount = totalAmount - mentorAmount;
 
-    const order = await razorpay.orders.create({
+    const orderPayload = {
       amount: totalAmount,
       currency,
       receipt: `booking_${bookingId || Date.now()}`,
       payment_capture: 1,
       notes: {
         bookingId: bookingId || '',
-        mentorLinkedAccountId,
+        mentorLinkedAccountId: mentorLinkedAccountId || '',
         mentorSharePercent: String(MENTOR_SHARE_PERCENT),
         platformCommissionPercent: String(PLATFORM_COMMISSION_PERCENT),
       },
-      transfers: [
+    };
+
+    // Add payout split only when a mentor linked account is available.
+    if (mentorLinkedAccountId) {
+      orderPayload.transfers = [
         {
           account: mentorLinkedAccountId,
           amount: mentorAmount,
@@ -150,8 +154,10 @@ app.post('/api/payments/orders', async (req, res) => {
           },
           on_hold: 0,
         },
-      ],
-    });
+      ];
+    }
+
+    const order = await razorpay.orders.create(orderPayload);
 
     return res.status(201).json({
       success: true,

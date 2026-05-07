@@ -154,23 +154,19 @@ export function MentorDashboardPage() {
         }
     };
 
-    const handleAcceptBooking = async (meetingLink: string, note: string, paymentLink: string) => {
+    const handleAcceptBooking = async (note: string) => {
         if (!bookingToAccept) return false;
         setProcessingId(bookingToAccept.id);
         console.log(`[Dashboard] Attempting to accept booking: ${bookingToAccept.id}`);
         try {
             const success = await acceptBooking(bookingToAccept.id, {
-                note,
-                meetingLink,
-                paymentLink
+                note
             });
             if (success) {
                 toast.success("Session accepted. Student can now pay and receive class details.");
                 setBookings(prev => prev.map(b => b.id === bookingToAccept.id ? {
                     ...b,
                     status: 'accepted',
-                    meeting_link: meetingLink,
-                    payment_link: paymentLink,
                     mentor_note: note
                 } : b));
                 setAcceptModalOpen(false);

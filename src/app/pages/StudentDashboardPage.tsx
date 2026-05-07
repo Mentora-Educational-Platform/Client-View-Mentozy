@@ -389,6 +389,11 @@ export function StudentDashboardPage() {
         setDetailsModalOpen(true);
     };
 
+    const handleBookingUpdated = (bookingId: string, updates: Partial<Booking>) => {
+        setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, ...updates } : b));
+        setSelectedBooking(prev => prev && prev.id === bookingId ? { ...prev, ...updates } : prev);
+    };
+
     // Organization mode: show isolated org dashboard
     if (mode === 'organization' && activeOrganization) {
         return (
@@ -758,6 +763,7 @@ export function StudentDashboardPage() {
                 isOpen={detailsModalOpen}
                 onClose={() => setDetailsModalOpen(false)}
                 booking={selectedBooking}
+                onBookingUpdated={handleBookingUpdated}
             />
 
             {/* To-Do Modal */}

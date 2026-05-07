@@ -93,6 +93,11 @@ export function CalendarPage() {
         }
     };
 
+    const handleBookingUpdated = (bookingId: string, updates: Partial<Booking>) => {
+        setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, ...updates } : b));
+        setSelectedBooking(prev => prev && prev.id === bookingId ? { ...prev, ...updates } : prev);
+    };
+
     return (
         <DashboardLayout>
             <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-8" onClick={() => { setSelectedDay(null); setPopoverPosition(null); setIsPopoverInputMode(false); }}>
@@ -296,6 +301,7 @@ export function CalendarPage() {
                 isOpen={detailsModalOpen}
                 onClose={() => setDetailsModalOpen(false)}
                 booking={selectedBooking}
+                onBookingUpdated={handleBookingUpdated}
             />
         </DashboardLayout >
     );
