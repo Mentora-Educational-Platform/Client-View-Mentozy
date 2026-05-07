@@ -6,6 +6,7 @@ import { StudentTools } from './components/StudentTools';
 import { Loader2 } from 'lucide-react';
 import { AuthProvider } from '../context/AuthContext';
 import { OrganizationModeProvider } from '../context/OrganizationModeContext';
+import { ThemeProvider } from '../context/ThemeContext';
 
 import { HomePage } from './pages/HomePage';
 import { Toaster } from 'sonner';
@@ -88,15 +89,29 @@ const CreateCoursePage = lazy(() => import('./pages/CreateCoursePage').then(modu
 const CourseViewerPage = lazy(() => import('./pages/CourseViewerPage').then(module => ({ default: module.CourseViewerPage })));
 const PaymentPage = lazy(() => import('./pages/PaymentPage').then(module => ({ default: module.PaymentPage })));
 
+import { motion, AnimatePresence } from 'motion/react';
+
 // Layout Component
 const Layout = () => {
+  const location = useLocation();
+  
   return (
-    <div className="min-h-screen bg-white font-sans text-gray-900">
+    <div className="min-h-screen bg-white dark:bg-slate-900 font-sans text-gray-900 dark:text-gray-100 transition-colors duration-300">
       <MemoizedHeader />
       <main>
-        <Suspense fallback={<PageLoader />}>
-          <Outlet />
-        </Suspense>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            <Suspense fallback={<PageLoader />}>
+              <Outlet />
+            </Suspense>
+          </motion.div>
+        </AnimatePresence>
       </main>
       <MemoizedFooter />
     </div>
@@ -119,11 +134,12 @@ function App() {
   }, [location]);
 
   return (
-    <AuthProvider>
-      <OrganizationModeProvider>
-        <Toaster position="top-center" richColors /> {/* Added Toaster component */}
+    <ThemeProvider>
+      <AuthProvider>
+        <OrganizationModeProvider>
+          <Toaster position="top-center" richColors /> {/* Added Toaster component */}
 
-        <Routes>
+          <Routes>
         {/* Public Pages with Layout */}
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
@@ -417,8 +433,9 @@ function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
         <StudentTools />
-      </OrganizationModeProvider>
-    </AuthProvider>
+        </OrganizationModeProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

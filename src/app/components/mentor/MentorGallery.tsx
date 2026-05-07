@@ -1,4 +1,4 @@
-import { Search, Filter, Linkedin, Loader2, Calendar, User, Building2, ShieldCheck, Bot, Sparkles, Stars } from 'lucide-react';
+import { Search, Filter, Linkedin, Loader2, Calendar, User, Building2, ShieldCheck, Bot, Sparkles, Stars, ArrowRight, CheckCircle2, Award } from 'lucide-react';
 import { useEffect, useState, useMemo } from 'react';
 import { getMentors, Mentor, createBooking, getUserProfile, Profile } from '../../../lib/api';
 import { useAuth } from '../../../context/AuthContext';
@@ -110,216 +110,230 @@ export function MentorGallery() {
     };
 
     return (
-        <div className="container mx-auto px-6 relative z-10">
-            {/* Header */}
+        <div className="container mx-auto px-6 relative z-10 pb-20">
+            {/* Ambient Background Glows */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-gradient-to-b from-amber-100/20 dark:from-amber-900/10 to-transparent blur-3xl -z-10 pointer-events-none" />
+
+            {/* Header Section */}
             <motion.div
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="max-w-4xl mx-auto text-center mb-16"
             >
-                <h1 className="text-5xl md:text-7xl font-black text-gray-900 mb-8 tracking-tighter leading-tight">
-                    Discovery <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-600 via-orange-500 to-amber-700">Top-Tier</span> Mentors
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-900/30 border border-amber-100 dark:border-amber-800 text-amber-700 dark:text-amber-400 text-[10px] font-bold uppercase tracking-widest mb-6">
+                    <Award className="w-3 h-3" /> The Top 1% of Global Talent
+                </div>
+                <h1 className="text-5xl md:text-7xl font-bold text-gray-900 dark:text-white mb-8 tracking-tight leading-[1.1]">
+                    Learn from the <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-600 via-orange-500 to-amber-700 dark:from-amber-400 dark:via-amber-200 dark:to-amber-500">Industry Giants</span>
                 </h1>
-                <p className="text-xl text-gray-500 leading-relaxed font-medium max-w-2xl mx-auto">
-                    Skip the guesswork. Learn directly from industry leaders who have already scaled the mountains you're climbing.
+                <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed max-w-2xl mx-auto font-medium">
+                    Skip years of trial and error. Connect with verified leaders from top tech firms, unicorns, and Fortune 500 companies.
                 </p>
             </motion.div>
 
+            {/* AI Recommendation Engine Widget */}
             {user && (
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.1 }}
-                    className="max-w-5xl mx-auto mb-10 p-6 rounded-[2rem] border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-amber-50 shadow-lg"
+                    className="max-w-5xl mx-auto mb-12 p-8 rounded-[2.5rem] border border-amber-100 dark:border-slate-800 bg-white/80 dark:bg-slate-800/50 backdrop-blur-xl shadow-2xl shadow-amber-500/5"
                 >
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <div>
-                            <p className="text-xs font-black uppercase tracking-[0.2em] text-violet-500 mb-2 flex items-center gap-2">
-                                <Bot className="w-4 h-4" /> Assistant Bot · AI Matching
-                            </p>
-                            <h3 className="text-xl font-black text-gray-900">Personalized mentor recommendations based on your onboarding goals</h3>
-                            <p className="text-sm text-gray-600 mt-1">
-                                We score mentors by expertise overlap, stated goals, and current availability so you can book faster.
-                            </p>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                        <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-amber-500 flex items-center justify-center text-white shadow-lg shadow-amber-500/20">
+                                <Bot className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Smart Match Engine</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">Personalized recommendations based on your unique career goals.</p>
+                            </div>
                         </div>
                         <button
                             onClick={() => setAiMatchMode(prev => !prev)}
-                            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${aiMatchMode ? 'bg-violet-600 text-white shadow-md' : 'bg-white text-violet-600 border border-violet-200'}`}
+                            className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold transition-all ${aiMatchMode ? 'bg-gray-900 dark:bg-amber-500 text-white dark:text-slate-900' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400'}`}
                         >
-                            {aiMatchMode ? 'AI Match Mode: ON' : 'AI Match Mode: OFF'}
+                            <Sparkles className="w-4 h-4" />
+                            {aiMatchMode ? 'Match Mode Active' : 'Enable Matching'}
                         </button>
                     </div>
 
-                    <div className="grid sm:grid-cols-3 gap-3 mt-5">
-                        {topAiMatches.map((mentor) => (
-                            <div key={`ai-${mentor.id}`} className="p-3 rounded-xl bg-white/90 border border-violet-100">
-                                <div className="flex items-center justify-between gap-2">
-                                    <p className="font-bold text-gray-900 truncate">{mentor.name}</p>
-                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-black bg-violet-100 text-violet-700">
-                                        <Sparkles className="w-3.5 h-3.5" /> {mentorScores[mentor.id]}%
-                                    </span>
-                                </div>
-                                <p className="text-xs text-gray-500 mt-1">{mentor.role} · {mentor.company}</p>
-                            </div>
-                        ))}
+                    <div className="grid md:grid-cols-3 gap-4">
+                        <AnimatePresence>
+                            {topAiMatches.map((mentor) => (
+                                <motion.div 
+                                    key={`ai-${mentor.id}`}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-4 rounded-2xl bg-amber-50/50 dark:bg-slate-900/50 border border-amber-100/50 dark:border-slate-700/50 group hover:border-amber-300 dark:hover:border-amber-500/50 transition-all cursor-pointer"
+                                    onClick={() => {
+                                        setSelectedMentor(mentor);
+                                        setProfileModalOpen(true);
+                                    }}
+                                >
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-8 h-8 rounded-lg ${mentor.image} flex items-center justify-center text-[10px] font-black text-white`}>
+                                                {mentor.initials}
+                                            </div>
+                                            <span className="font-bold text-gray-900 dark:text-white text-sm">{mentor.name}</span>
+                                        </div>
+                                        <span className="text-[10px] font-black px-2 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-full">
+                                            {mentorScores[mentor.id]}% Match
+                                        </span>
+                                    </div>
+                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider line-clamp-1">
+                                        {mentor.role} @ {mentor.company}
+                                    </p>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
                     </div>
                 </motion.div>
             )}
 
-            {/* Search & Filters */}
+            {/* Search & Action Bar */}
             <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="glass-morphism-heavy p-3 rounded-[2.5rem] border border-white/50 shadow-2xl shadow-gray-200/50 mb-20 flex flex-col md:flex-row gap-3 max-w-5xl mx-auto"
+                className="max-w-5xl mx-auto mb-16 flex flex-col md:flex-row gap-4"
             >
                 <div className="relative flex-grow group">
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-amber-500 transition-colors" />
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 group-focus-within:text-amber-500 transition-colors" />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search by name, company, or specialty..."
-                        className="w-full pl-14 pr-6 py-5 bg-white/50 border-none rounded-[2rem] focus:ring-2 focus:ring-amber-200 outline-none text-gray-800 placeholder:text-gray-400 font-bold transition-all"
+                        placeholder="Search for roles, skills, or companies..."
+                        className="w-full pl-14 pr-6 py-5 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-[2rem] shadow-xl shadow-gray-100/50 dark:shadow-none focus:ring-2 focus:ring-amber-500/20 outline-none text-gray-800 dark:text-gray-100 placeholder:text-gray-400 font-bold transition-all"
                     />
                 </div>
                 <button
-                    onClick={() => toast.info("Deep filtering features coming in the next update!")}
-                    className="flex items-center justify-center gap-3 px-10 py-5 bg-gray-900 text-white rounded-[2rem] font-black hover:bg-amber-600 hover:scale-[1.02] transition-all shadow-lg active:scale-95 group"
+                    onClick={() => toast.info("Filter sidebar coming soon!")}
+                    className="flex items-center justify-center gap-3 px-8 py-5 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 text-gray-700 dark:text-gray-200 rounded-[2rem] font-bold hover:border-amber-500 dark:hover:border-amber-500 transition-all shadow-xl shadow-gray-100/50 dark:shadow-none"
                 >
-                    <Filter className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
-                    <span>Deep Filters</span>
+                    <Filter className="w-5 h-5" />
+                    <span>Filters</span>
                 </button>
             </motion.div>
 
-            {/* Loading State */}
+            {/* Mentor Grid */}
             {loading ? (
-                <div className="flex flex-col items-center justify-center py-40 space-y-6">
-                    <div className="relative">
-                        <Loader2 className="w-16 h-16 text-amber-600 animate-spin" />
-                        <div className="absolute inset-0 bg-amber-500/10 blur-xl rounded-full" />
+                <div className="flex flex-col items-center justify-center py-32">
+                    <Loader2 className="w-12 h-12 text-amber-500 animate-spin mb-4" />
+                    <p className="text-gray-400 font-bold">Assembling your expert panel...</p>
+                </div>
+            ) : filteredMentors.length === 0 ? (
+                <div className="text-center py-20">
+                    <div className="w-20 h-20 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Search className="w-8 h-8 text-gray-300" />
                     </div>
-                    <p className="text-gray-400 font-bold text-lg animate-pulse tracking-tight">Curating the best for you...</p>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">No mentors found</h3>
+                    <p className="text-gray-500 dark:text-gray-400">Try adjusting your search or match mode.</p>
                 </div>
             ) : (
-                /* Mentors Grid */
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <AnimatePresence mode="popLayout">
                         {filteredMentors.map((mentor, index) => (
                             <motion.div
                                 key={mentor.id}
                                 layout
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
-                                transition={{ delay: index * 0.1, type: 'spring', stiffness: 100 }}
-                                className="group relative"
+                                transition={{ delay: index * 0.05 }}
+                                whileHover={{ y: -10 }}
+                                className="group h-full"
                             >
-                                {/* Card Main Body */}
-                                <div className="bg-white/70 backdrop-blur-xl rounded-[3rem] p-10 border border-white border-t-white shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_80px_rgba(251,191,36,0.15)] transition-all duration-700 flex flex-col h-full relative z-10 overflow-hidden">
-                                    {/* Glowing Accent */}
-                                    <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-amber-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className="relative bg-white dark:bg-slate-800 rounded-[2.5rem] p-8 border border-gray-100 dark:border-slate-700 shadow-xl shadow-gray-200/50 dark:shadow-none group-hover:border-amber-300 dark:group-hover:border-amber-500/50 transition-all duration-500 flex flex-col h-full overflow-hidden">
+                                    
+                                    {/* Top Accents */}
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                                    <div className="flex flex-col items-center text-center mb-8 pt-4">
-                                        <div className="relative mb-6">
-                                            <div className={`w-32 h-32 rounded-[2.5rem] flex items-center justify-center text-4xl font-black shadow-2xl relative z-10 transition-transform duration-700 group-hover:rotate-6 group-hover:scale-110 ${mentor.image}`}>
+                                    {/* Header: Avatar & Info */}
+                                    <div className="flex items-start justify-between mb-8">
+                                        <div className="relative">
+                                            <div className={`w-20 h-20 rounded-2xl ${mentor.image} flex items-center justify-center text-2xl font-black text-white shadow-xl transform group-hover:rotate-6 transition-transform duration-500`}>
                                                 {mentor.initials}
                                             </div>
-                                            <div className="absolute -inset-4 bg-amber-400/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            <div className="absolute bottom-1 right-1 bg-white p-2 rounded-2xl shadow-lg border border-gray-100 z-20">
-                                                <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                                            <div className="absolute -bottom-2 -right-2 bg-white dark:bg-slate-900 p-1.5 rounded-lg shadow-md border border-gray-100 dark:border-slate-800">
+                                                <ShieldCheck className="w-4 h-4 text-emerald-500" />
                                             </div>
                                         </div>
-
-                                        <h3 className="text-2xl font-black text-gray-900 group-hover:text-amber-600 transition-colors mb-2 tracking-tighter">
-                                            {mentor.name}
-                                        </h3>
-
-                                        {user && aiMatchMode && (
-                                            <div className="mb-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-50 text-violet-700 text-[10px] font-black uppercase tracking-[0.16em]">
-                                                <Stars className="w-3.5 h-3.5" /> AI Match {mentorScores[mentor.id]}%
-                                            </div>
-                                        )}
-
-                                        <div className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gray-50 rounded-full border border-gray-100 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-2">
-                                            {mentor.type ? <Building2 className="w-3.5 h-3.5 text-amber-500" /> : <User className="w-3.5 h-3.5 text-amber-500" />}
-                                            {mentor.role}
+                                        <div className="flex flex-col items-end">
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-2 ${mentor.status === 'unavailable' ? 'bg-gray-100 dark:bg-slate-700 text-gray-400' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'}`}>
+                                                {mentor.status === 'unavailable' ? 'Away' : 'Active Now'}
+                                            </span>
+                                            {aiMatchMode && user && (
+                                                <div className="flex items-center gap-1 text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest">
+                                                    <Stars className="w-3 h-3" /> {mentorScores[mentor.id]}% Match
+                                                </div>
+                                            )}
                                         </div>
-
-                                        {/* Status Badge */}
-                                        <div className={`text-[10px] uppercase font-black tracking-widest px-3 py-1 rounded-full mb-3 ${mentor.status === 'unavailable' ? 'bg-gray-100 text-gray-400' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
-                                            {mentor.status === 'unavailable' ? 'Offline' : 'Available Now'}
-                                        </div>
-
-                                        {mentor.company && mentor.company !== 'Mentozy' && (
-                                            <p className="text-sm font-bold text-gray-400 flex items-center gap-1">
-                                                at <span className="text-gray-900">{mentor.company}</span>
-                                            </p>
-                                        )}
                                     </div>
 
-                                    <div className="space-y-6 flex-grow flex flex-col justify-between">
-                                        <p className="text-gray-500 text-sm leading-relaxed text-center font-medium line-clamp-3 italic">
-                                            "{mentor.bio || `Specializing in ${mentor.expertise[0] || 'Modern Technologies'} and industry leadership.`}"
+                                    {/* Body: Name & Role */}
+                                    <div className="mb-6">
+                                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                                            {mentor.name}
+                                        </h3>
+                                        <p className="text-sm font-bold text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                            {mentor.role} <span className="w-1 h-1 bg-gray-300 dark:bg-slate-600 rounded-full" /> {mentor.company}
                                         </p>
+                                    </div>
 
-                                        <div className="flex flex-wrap justify-center gap-2">
+                                    {/* Bio / Expertise */}
+                                    <div className="flex-grow">
+                                        <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6 line-clamp-3 font-medium italic">
+                                            "{mentor.bio || `Helping students master ${mentor.expertise[0]} and accelerate their career growth.`}"
+                                        </p>
+                                        <div className="flex flex-wrap gap-2 mb-8">
                                             {mentor.expertise.slice(0, 3).map((skill, i) => (
-                                                <span key={i} className="px-5 py-2 bg-white rounded-2xl text-[10px] font-black text-gray-600 uppercase tracking-tighter border border-gray-100 shadow-sm transition-all hover:bg-amber-500 hover:text-white hover:border-amber-500 cursor-default">
+                                                <span key={i} className="px-3 py-1.5 bg-gray-50 dark:bg-slate-900 text-[10px] font-bold text-gray-600 dark:text-gray-400 rounded-xl border border-gray-100 dark:border-slate-700">
                                                     {skill}
                                                 </span>
                                             ))}
-                                        </div>
-
-                                        <div className="flex items-center justify-between py-6 px-4 bg-gray-50/50 rounded-3xl border border-gray-100/50">
-                                            <div className="text-center">
-                                                <p className="text-[10px] uppercase font-black text-gray-400 tracking-widest mb-1">Experience</p>
-                                                <p className="text-base font-black text-gray-900">{mentor.years_experience || 5}+ <span className="text-xs text-gray-400 font-medium whitespace-nowrap">yrs</span></p>
-                                            </div>
-                                            <div className="w-px h-8 bg-gray-200" />
-                                            <div className="text-center">
-                                                <p className="text-[10px] uppercase font-black text-gray-400 tracking-widest mb-1">Fee</p>
-                                                <p className="text-base font-black text-amber-600">${mentor.hourly_rate || 150}<span className="text-[10px] text-gray-400">/hr</span></p>
-                                            </div>
+                                            {mentor.expertise.length > 3 && (
+                                                <span className="px-3 py-1.5 bg-gray-50 dark:bg-slate-900 text-[10px] font-bold text-gray-400 rounded-xl">
+                                                    +{mentor.expertise.length - 3} more
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
 
-                                    <div className="mt-8 flex gap-3">
+                                    {/* Footer Stats */}
+                                    <div className="grid grid-cols-2 gap-4 pt-6 border-t border-gray-50 dark:border-slate-700 mb-8">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1">Experience</span>
+                                            <span className="text-lg font-bold text-gray-900 dark:text-white">{mentor.years_experience || 5}+ <span className="text-sm font-medium text-gray-400">Yrs</span></span>
+                                        </div>
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1">Session Fee</span>
+                                            <span className="text-lg font-bold text-amber-600 dark:text-amber-500">${mentor.hourly_rate || 150} <span className="text-sm font-medium text-gray-400">/Hr</span></span>
+                                        </div>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex gap-3">
                                         <button
                                             onClick={() => {
                                                 setSelectedMentor(mentor);
                                                 setProfileModalOpen(true);
                                             }}
-                                            className="flex-1 py-4 bg-white border-2 border-gray-100 text-gray-700 text-sm font-bold rounded-2xl hover:border-gray-900 hover:text-gray-900 transition-all flex items-center justify-center gap-2"
+                                            className="flex-1 py-4 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-300 text-sm font-bold rounded-2xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
                                         >
-                                            <User className="w-4 h-4" /> View Profile
+                                            <User className="w-4 h-4" /> Profile
                                         </button>
-                                    </div>
-
-                                    <div className="mt-3 flex gap-3">
                                         <button
                                             onClick={() => handleBookClick(mentor)}
                                             disabled={mentor.status === 'unavailable'}
-                                            className={`flex-1 py-5 text-white text-sm font-black rounded-[2rem] shadow-xl lg:shadow-none transition-all flex items-center justify-center gap-3 relative overflow-hidden group/btn ${mentor.status === 'unavailable'
-                                                ? 'bg-gray-400 cursor-not-allowed opacity-70'
-                                                : 'bg-gray-900 hover:bg-amber-600 hover:shadow-amber-200/50 active:scale-95'
-                                                }`}
+                                            className={`flex-[2] py-4 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all animate-glow-amber ${mentor.status === 'unavailable' 
+                                                ? 'bg-gray-200 dark:bg-slate-700 text-gray-400 cursor-not-allowed' 
+                                                : 'bg-gray-900 dark:bg-amber-500 text-white dark:text-slate-900 hover:scale-[1.02]'}`}
                                         >
-                                            {mentor.status === 'unavailable' ? (
-                                                <span className="relative z-10 uppercase tracking-wide">Unavailable</span>
-                                            ) : (
-                                                <>
-                                                    <Calendar className="w-5 h-5 relative z-10" />
-                                                    <span className="relative z-10">Instant Booking</span>
-                                                    <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-orange-500 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500" />
-                                                </>
-                                            )}
-                                        </button>
-                                        <button
-                                            onClick={() => toast.info("Mentor's LinkedIn profile is private.")}
-                                            className="p-5 bg-white border border-gray-100 rounded-[2rem] text-gray-400 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-100 transition-all shadow-sm"
-                                        >
-                                            <Linkedin className="w-5 h-5 fill-current" />
+                                            <Calendar className="w-4 h-4" /> 
+                                            {mentor.status === 'unavailable' ? 'Offline' : 'Book Session'}
                                         </button>
                                     </div>
                                 </div>
@@ -330,7 +344,7 @@ export function MentorGallery() {
             )}
 
             <BookingModal
-                isOpen={!!selectedMentor && !profileModalOpen} // Ensure only one modal active if overlapping, though better to separate state
+                isOpen={!!selectedMentor && !profileModalOpen}
                 onClose={() => setSelectedMentor(null)}
                 mentorName={selectedMentor?.name || ''}
                 userPlan="Free"
@@ -341,16 +355,11 @@ export function MentorGallery() {
                 isOpen={profileModalOpen}
                 onClose={() => {
                     setProfileModalOpen(false);
-                    // Don't clear selectedMentor here if we want to preseve it for booking transition? 
-                    // Actually usually 'selectedMentor' is shared.
-                    // If we close profile, we just close.
                     if (!selectedMentor) setSelectedMentor(null);
                 }}
                 mentor={selectedMentor}
                 onBook={(m) => {
                     setProfileModalOpen(false);
-                    // selectedMentor is already set. 
-                    // Just triggering booking flow.
                     handleBookClick(m);
                 }}
             />

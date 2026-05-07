@@ -4,6 +4,7 @@ import { lazy } from 'react';
 
 // Lazy load heavy page components
 const FeaturesSection = lazy(() => import('../components/FeaturesSection').then(module => ({ default: module.FeaturesSection })));
+const KrishnaiteSection = lazy(() => import('../components/KrishnaiteSection').then(module => ({ default: module.KrishnaiteSection })));
 const HowItWorks = lazy(() => import('../components/HowItWorks').then(module => ({ default: module.HowItWorks })));
 const MentorshipFormats = lazy(() => import('../components/MentorshipFormats').then(module => ({ default: module.MentorshipFormats })));
 const LearningTracks = lazy(() => import('../components/LearningTracks').then(module => ({ default: module.LearningTracks })));
@@ -20,6 +21,7 @@ export function HomePage() {
         <>
             <div id="home"><HeroSection /></div>
             <div id="features"><FeaturesSection /></div>
+            <div id="krishnaite"><KrishnaiteSection /></div>
             <div id="how-it-works"><HowItWorks /></div>
             <WhatWeDoDifferently />
             <WhoItsFor />
