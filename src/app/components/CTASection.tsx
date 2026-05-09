@@ -1,34 +1,34 @@
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 
 export function CTASection() {
   return (
-    <section className="py-24 bg-white dark:bg-slate-900 relative overflow-hidden transition-colors duration-300">
-      <div className="container mx-auto px-6 relative z-10">
+    <section className="py-32 bg-[#fcfcfc] dark:bg-slate-950 relative overflow-hidden transition-colors duration-700">
+      <div className="container mx-auto px-8 relative z-10">
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="relative bg-amber-50 dark:bg-slate-800 rounded-3xl overflow-hidden px-6 py-20 md:px-20 md:py-24 text-center border border-amber-100 dark:border-slate-700 shadow-xl shadow-amber-100/50 dark:shadow-none"
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="relative bg-white dark:bg-slate-900 rounded-[4rem] overflow-hidden px-10 py-24 md:px-24 md:py-32 text-center border border-gray-100 dark:border-slate-800 shadow-[0_40px_100px_rgba(0,0,0,0.03)] dark:shadow-none"
         >
 
-          {/* Background Gradients */}
-          <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-amber-200/40 dark:bg-amber-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 animate-blob" />
-            <div className="absolute bottom-0 left-0 w-72 h-72 bg-white/60 dark:bg-slate-900/40 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2 animate-blob animation-delay-2000" />
+          {/* Premium Ambient Backgrounds */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-[120px] animate-blob" />
+            <div className="absolute bottom-[-20%] left-[-10%] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[100px] animate-blob animation-delay-2000" />
           </div>
 
-          <div className="relative z-10 max-w-3xl mx-auto">
+          <div className="relative z-10 max-w-4xl mx-auto">
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-slate-900 border border-amber-200 dark:border-slate-700 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-8 shadow-sm"
+              className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 text-amber-600 dark:text-amber-400 text-[11px] font-black uppercase tracking-[0.3em] mb-12 shadow-sm"
             >
-              Start your journey
+              <Sparkles className="w-3.5 h-3.5" /> Start your journey
             </motion.div>
 
             <motion.h2 
@@ -36,9 +36,9 @@ export function CTASection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
-              className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight leading-tight"
+              className="text-5xl md:text-7xl font-medium text-gray-900 dark:text-white mb-10 tracking-tight leading-[1.05]"
             >
-              Book Verified Mentors
+              Ready to meet your <span className="italic font-serif text-amber-500">mentor?</span>
             </motion.h2>
 
             <motion.p 
@@ -46,36 +46,36 @@ export function CTASection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.4 }}
-              className="text-lg text-gray-600 dark:text-gray-400 mb-10 leading-relaxed max-w-2xl mx-auto"
+              className="text-xl md:text-2xl text-gray-400 dark:text-gray-500 mb-16 leading-relaxed max-w-2xl mx-auto font-light tracking-tight"
             >
-              Join 50,000+ learners who are mastering new skills, getting hired, and advancing their careers with Mentozy.
+              Join a growing community of builders who are mastering new skills and advancing their careers with real, human-led guidance.
             </motion.p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-8 mb-16">
               <Link
                 to="/signup"
-                className="w-full sm:w-auto px-8 py-4 bg-amber-600 dark:bg-amber-500 text-white dark:text-slate-900 rounded-xl font-bold text-lg hover:bg-amber-700 dark:hover:bg-amber-400 transition-all hover:scale-105 shadow-lg shadow-amber-600/25 dark:shadow-none flex items-center justify-center gap-2 animate-glow-amber"
+                className="w-full sm:w-auto px-16 py-7 bg-amber-500 text-slate-950 rounded-[2rem] font-bold text-lg hover:bg-amber-400 transition-all hover:scale-[1.03] active:scale-95 shadow-[0_20px_50px_rgba(245,158,11,0.25)] flex items-center justify-center gap-4 animate-glow-amber"
               >
-                Get Started for Free <ArrowRight className="w-5 h-5" />
+                Join for Free <ArrowRight className="w-6 h-6" />
               </Link>
               <Link
                 to="/tracks"
-                className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-slate-700 rounded-xl font-bold text-lg hover:border-amber-200 dark:hover:border-amber-500 hover:text-amber-700 dark:hover:text-amber-400 hover:bg-amber-50/50 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-2 shadow-sm"
+                className="w-full sm:w-auto px-16 py-7 bg-white dark:bg-slate-800 text-gray-900 dark:text-white border border-gray-100 dark:border-slate-700 rounded-[2rem] font-bold text-lg hover:bg-gray-50 dark:hover:bg-slate-750 transition-all flex items-center justify-center gap-4 backdrop-blur-xl"
               >
-                View Learning Tracks
+                Explore Tracks
               </Link>
             </div>
 
-            {/* Trust Badges */}
-            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm text-gray-500 dark:text-gray-400 font-medium">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-500" /> No credit card required
+            {/* Trust Badges - Softer Typography */}
+            <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 text-sm text-gray-400 dark:text-gray-600 font-bold uppercase tracking-[0.1em]">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500/50" /> No credit card
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-500" /> 7-day free trial
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500/50" /> Expert Verified
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-500" /> Cancel anytime
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500/50" /> Cancel anytime
               </div>
             </div>
 
@@ -84,4 +84,4 @@ export function CTASection() {
       </div>
     </section>
   );
-}
+}

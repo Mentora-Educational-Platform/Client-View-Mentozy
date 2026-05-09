@@ -64,6 +64,7 @@ const CommunityForumsPage = lazy(() => import('./pages/CommunityForumsPage').the
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
 const CertificationsPage = lazy(() => import('./pages/CertificationsPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then(module => ({ default: module.SettingsPage })));
+const CommunityProjectsPage = lazy(() => import('./pages/CommunityProjectsPage').then(module => ({ default: module.CommunityProjectsPage })));
 const KeywordLandingPage = lazy(() => import('./pages/KeywordLandingPage').then(module => ({ default: module.KeywordLandingPage })));
 
 export type Page = 'home' | 'careers' | 'mentors' | 'tracks' | 'about' | 'library' | 'contact' | 'login' | 'signup' | 'student-auth' | 'student-onboarding' | 'student-dashboard';
@@ -146,6 +147,7 @@ function App() {
           <Route path="/plans" element={<PlansPage />} />
           <Route path="/careers" element={<CareerPage />} />
           <Route path="/mentors" element={<MentorsPage />} />
+          <Route path="/projects" element={<CommunityProjectsPage />} />
 
           {/* Auth/Dashboard pages moved to standalone routes below */}
           <Route path="/tracks" element={<TracksPage />} />
