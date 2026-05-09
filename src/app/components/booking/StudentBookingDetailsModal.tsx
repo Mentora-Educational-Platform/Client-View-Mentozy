@@ -18,6 +18,7 @@ declare global {
 }
 
 const FALLBACK_SESSION_PRICE_INR = 500;
+const FALLBACK_RAZORPAY_KEY = 'rzp_test_SbsDY1EgH8rPZb';
 
 export function StudentBookingDetailsModal({ isOpen, onClose, booking, onBookingUpdated }: StudentBookingDetailsModalProps) {
     const [paying, setPaying] = useState(false);
@@ -54,8 +55,10 @@ export function StudentBookingDetailsModal({ isOpen, onClose, booking, onBooking
                 throw new Error(payload?.error || 'Failed to create payment order.');
             }
 
+            const checkoutKey = payload?.checkout?.key || FALLBACK_RAZORPAY_KEY;
+
             const rzp = new window.Razorpay({
-                key: payload?.checkout?.key,
+                key: checkoutKey,
                 name: 'Mentozy',
                 description: `Mentorship session with ${mentorName}`,
                 order_id: payload.order.id,
