@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Rocket, Code2, Heart, Users, ExternalLink, Github, ArrowRight, Sparkles, Zap, Smartphone, Globe, Brain, Plus } from 'lucide-react';
+import { Rocket, Code2, Heart, Users, ExternalLink, Github, ArrowRight, Sparkles, Zap, Smartphone, Globe, Brain, Plus, Music, Headphones } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function CommunityProjectsPage() {
@@ -34,64 +34,45 @@ export function CommunityProjectsPage() {
           </p>
         </motion.div>
 
-        {/* Clean, Professional Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-7xl mx-auto mb-32">
+        {/* Clean, Professional Grid - Centered single project */}
+        <div className="flex justify-center max-w-7xl mx-auto mb-32">
           
-          {/* Main Action: Submit Project */}
+          {/* Featured Project: Melody Mentor */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ y: -12 }}
-            className="group relative bg-white/50 dark:bg-slate-900/50 backdrop-blur-3xl rounded-[3.5rem] p-12 border border-gray-100 dark:border-slate-800 flex flex-col items-center justify-center text-center min-h-[500px] transition-all duration-700 shadow-[0_20px_50px_rgba(0,0,0,0.02)] dark:shadow-none"
+            className="group relative bg-white/60 dark:bg-slate-900/60 backdrop-blur-3xl rounded-[3.5rem] p-12 border border-amber-100/50 dark:border-amber-500/20 flex flex-col h-full min-h-[500px] w-full max-w-xl transition-all duration-700 shadow-[0_30px_60px_rgba(245,158,11,0.05)] dark:shadow-none"
           >
-            <div className="w-24 h-24 bg-amber-500 rounded-[2.5rem] flex items-center justify-center text-white mb-10 shadow-2xl shadow-amber-500/20 group-hover:scale-110 transition-transform duration-500">
-              <Plus className="w-12 h-12" />
+            <div className="w-20 h-20 bg-amber-500 rounded-[2rem] flex items-center justify-center text-white mb-10 shadow-xl shadow-amber-500/20 group-hover:scale-110 transition-transform duration-500">
+              <Music className="w-10 h-10" />
             </div>
-            <h3 className="text-3xl font-semibold text-gray-900 dark:text-white mb-6">Submit Project</h3>
-            <p className="text-gray-400 dark:text-gray-500 font-medium px-6 leading-relaxed">
-              Have a tool that solves a daily problem? Our mentors are ready to help you scale it.
-            </p>
             
-            <div className="mt-12 flex items-center gap-2 text-amber-600 dark:text-amber-500 font-bold text-sm uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">
-              Join Discord <ArrowRight className="w-4 h-4" />
+            <div className="flex-grow">
+               <div className="flex items-center gap-2 mb-4">
+                  <span className="px-3 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-[10px] font-black uppercase tracking-widest rounded-lg">LIVE BETA</span>
+                  <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest rounded-lg">Entertainment</span>
+               </div>
+               <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">Melody Mentor</h3>
+               <p className="text-gray-500 dark:text-gray-400 font-medium leading-relaxed mb-8">
+                 Stay tuned to Mentozy for unlimited music without ad-break and completely free, grab your cell and connect headphones and listen before we add pricing!
+               </p>
             </div>
 
-            {/* Subtle Gradient Ring on Hover */}
-            <div className="absolute inset-0 rounded-[3.5rem] border border-amber-500/0 group-hover:border-amber-500/20 transition-all duration-700 pointer-events-none" />
-          </motion.div>
+            <div className="pt-8 border-t border-gray-50 dark:border-slate-800/50">
+               <a 
+                 href="https://melodymentor.mentozy.app/#" 
+                 target="_blank" 
+                 rel="noopener noreferrer"
+                 className="w-full py-5 bg-gray-900 dark:bg-amber-500 text-white dark:text-slate-950 font-black rounded-2xl flex items-center justify-center gap-3 group/btn transition-all hover:bg-amber-600 dark:hover:bg-amber-400 shadow-xl shadow-gray-900/10 dark:shadow-amber-500/10"
+               >
+                 Launch Melody <Headphones className="w-5 h-5 group-hover/btn:rotate-12 transition-transform" />
+               </a>
+            </div>
 
-          {/* Placeholder: Ecosystem Expansion */}
-          {[1, 2].map((i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * i }}
-              className="bg-white/30 dark:bg-slate-900/30 backdrop-blur-xl rounded-[3.5rem] p-12 border border-white/50 dark:border-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.01)] dark:shadow-none flex flex-col h-full min-h-[500px] relative overflow-hidden group"
-            >
-              <div className="w-16 h-16 bg-gray-50 dark:bg-slate-800 rounded-2xl mb-10" />
-              <div className="h-9 bg-gray-50 dark:bg-slate-800 rounded-xl w-3/4 mb-8" />
-              <div className="space-y-4 flex-grow">
-                <div className="h-4 bg-gray-50 dark:bg-slate-800 rounded-lg w-full" />
-                <div className="h-4 bg-gray-50 dark:bg-slate-800 rounded-lg w-5/6" />
-                <div className="h-4 bg-gray-50 dark:bg-slate-800 rounded-lg w-4/6" />
-              </div>
-              <div className="mt-auto pt-10 border-t border-gray-50 dark:border-slate-800/50 flex items-center justify-between">
-                <div className="flex flex-col gap-1">
-                   <span className="text-[10px] font-bold text-gray-300 dark:text-gray-600 uppercase tracking-widest">Status</span>
-                   <span className="text-sm font-semibold text-gray-200 dark:text-gray-700 italic">Project Pending...</span>
-                </div>
-                <div className="w-10 h-10 bg-gray-50 dark:bg-slate-800 rounded-xl" />
-              </div>
-              
-              {/* Soft "Coming Soon" Badge */}
-              <div className="absolute top-8 right-8">
-                 <div className="px-4 py-1.5 bg-gray-100/50 dark:bg-slate-800/50 backdrop-blur-md rounded-full border border-white/20">
-                    <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em]">Curation</span>
-                 </div>
-              </div>
-            </motion.div>
-          ))}
+            {/* Glowing Accent */}
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+          </motion.div>
         </div>
 
         {/* Professional CTA Section */}
@@ -120,13 +101,13 @@ export function CommunityProjectsPage() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
               <Link 
-                to="/signup" 
+                to="/contact" 
                 className="w-full sm:w-auto px-16 py-7 bg-amber-500 text-slate-950 text-lg font-bold rounded-[2rem] hover:bg-amber-400 hover:scale-[1.03] active:scale-95 transition-all shadow-[0_20px_60px_rgba(245,158,11,0.3)] flex items-center justify-center gap-4 group animate-glow-amber"
               >
                 Launch with Us <Rocket className="w-6 h-6 group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" />
               </Link>
               <a 
-                href="https://discord.gg/mentozy" 
+                href="https://discord.gg/ruztUQ3B" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto px-16 py-7 bg-white/5 text-white text-lg font-bold rounded-[2rem] hover:bg-white/10 transition-all border border-white/10 flex items-center justify-center gap-4 backdrop-blur-xl"
