@@ -12,13 +12,15 @@ const PLATFORM_COMMISSION_PERCENT = Number(process.env.PLATFORM_COMMISSION_PERCE
 const MENTOR_SHARE_PERCENT = 100 - PLATFORM_COMMISSION_PERCENT;
 
 if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-  throw new Error('Missing required env vars: RAZORPAY_KEY_ID and/or RAZORPAY_KEY_SECRET');
+  console.warn('⚠️ Warning: Missing required env vars: RAZORPAY_KEY_ID and/or RAZORPAY_KEY_SECRET. Razorpay payouts will not function.');
 }
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+const razorpay = (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET)
+  ? new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    })
+  : null;
 
 const toPaise = (amountInRupees) => Math.round(Number(amountInRupees) * 100);
 
@@ -251,6 +253,51 @@ app.post('/api/payments/transfers/direct', async (req, res) => {
       success: false,
       error: error?.error?.description || 'Failed to create direct transfer',
     });
+  }
+});
+
+app.post('/api/contact', async (req, res) => {
+  try {
+    const { firstName, lastName, email, message } = req.body;
+
+    if (!firstName || !email || !message) {
+      return res.status(400).json({ error: 'firstName, email, and message are required' });
+    }
+
+    const resendApiKey = process.env.RESEND_API_KEY || 're_DD881ExK_KTtrprwhcwhykwt6Zn2fdTxd';
+
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${resendApiKey}`
+      },
+      body: JSON.stringify({
+        from: 'Mentozy Contact Form <onboarding@resend.dev>',
+        to: 'hello@mentozy.app',
+        reply_to: email,
+        subject: `New Contact Request from ${firstName} ${lastName || ''}`,
+        html: `
+          <h2>New Contact Request</h2>
+          <p><strong>Name:</strong> ${firstName} ${lastName || ''}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Message:</strong></p>
+          <p>${message.replace(/\n/g, '<br>')}</p>
+        `
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('Resend API error:', data);
+      return res.status(response.status).json({ error: data.message || 'Failed to send email via Resend' });
+    }
+
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    console.error('Server error sending email:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 

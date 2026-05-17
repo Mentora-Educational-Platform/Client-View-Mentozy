@@ -1,4 +1,4 @@
-import { ArrowRight, Sun, Moon, Sparkles } from "lucide-react";
+import { ArrowRight, Sun, Moon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { useTheme } from "../../context/ThemeContext";
@@ -32,7 +32,7 @@ export function HeroSection() {
                 className="flex items-center gap-5"
               >
                 <div className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 text-amber-600 dark:text-amber-400 text-[11px] font-bold uppercase tracking-[0.3em] shadow-sm">
-                  <Sparkles className="w-3.5 h-3.5" /> Next Gen Learning
+                  Next Gen Learning
                 </div>
               </motion.div>
 

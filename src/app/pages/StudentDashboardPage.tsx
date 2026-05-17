@@ -6,7 +6,7 @@ import {
     Flame, Trophy, GraduationCap, Target, Sparkles,
     Sun, Moon, Plus, CheckSquare, FileText, Palette,
     Pause, Music, SlidersHorizontal, Calendar as CalendarIcon,
-    MoreVertical, RotateCcw, Play, Settings, ChevronLeft, Trash2, Code, Link2, Github
+    MoreVertical, RotateCcw, Play, Settings, ChevronLeft, Trash2, Code, Link2, Github, Copy
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useOrganizationMode } from '../../context/OrganizationModeContext';
@@ -17,6 +17,23 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Calendar } from '../../components/ui/calendar';
 import { StudentBookingDetailsModal } from '../components/booking/StudentBookingDetailsModal';
 import { toast } from 'sonner';
+
+const getUniqueCode = (userId?: string) => {
+    if (!userId) return "MZ000000000VK";
+    let hash = 0;
+    for (let i = 0; i < userId.length; i++) {
+        const char = userId.charCodeAt(i);
+        hash = (hash << 5) - hash + char;
+        hash = hash & hash;
+    }
+    let seed = Math.abs(hash);
+    let digits = "";
+    for (let i = 0; i < 9; i++) {
+        seed = (seed * 1664525 + 1013904223) % 4294967296;
+        digits += Math.floor((seed / 4294967296) * 10).toString();
+    }
+    return `MZ${digits}VK`;
+};
 
 export function StudentDashboardPage() {
     const { user } = useAuth();
@@ -669,7 +686,20 @@ export function StudentDashboardPage() {
                               )}
                          </div>
                          <h3 className="text-[1.35rem] font-extrabold text-gray-900 leading-tight mb-1 text-center">{firstName} {profile?.full_name?.split(' ')[1] || 'Funny'}</h3>
-                         <p className="text-[13px] font-bold text-gray-500 tracking-wide mb-6">Free Plan</p>
+                         <div className="flex flex-col items-center gap-1.5 mb-6">
+                             <p className="text-[13px] font-bold text-gray-500 tracking-wide">Free Plan</p>
+                             <div 
+                                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50/80 dark:bg-slate-900/80 border border-indigo-100/50 dark:border-slate-800/50 text-[11px] font-mono font-bold text-indigo-600 dark:text-indigo-400 select-all shadow-sm group/code cursor-pointer hover:bg-indigo-100/50 transition-colors" 
+                                 title="Click to copy unique ID" 
+                                 onClick={() => {
+                                     navigator.clipboard.writeText(getUniqueCode(user?.id));
+                                     toast.success("Unique ID copied to clipboard!");
+                                 }}
+                             >
+                                 <span>{getUniqueCode(user?.id)}</span>
+                                 <Copy className="w-3.5 h-3.5 opacity-60 group-hover/code:opacity-100 transition-opacity" />
+                             </div>
+                         </div>
                          <button className="w-full py-3 rounded-full border-2 border-[#d0bcf9] text-[#8e54f5] font-extrabold text-sm bg-transparent hover:bg-white hover:border-[#a882f0] hover:shadow-md transition-all">
                              Edit Profile
                          </button>
