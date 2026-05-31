@@ -1,8 +1,10 @@
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { Search, Plus, Star, Copy, Share2, MoreVertical } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export function OrgCoursesPage() {
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [courses] = useState<any[]>([]);
 
@@ -20,7 +22,10 @@ export function OrgCoursesPage() {
                         <h1 className="text-2xl font-bold text-gray-900">Course Management</h1>
                         <p className="text-gray-500">Oversee all courses, curriculums, and track enrollments.</p>
                     </div>
-                    <button className="flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200">
+                    <button 
+                        onClick={() => navigate('/org-create-course')}
+                        className="flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-colors shadow-sm shadow-indigo-200"
+                    >
                         <Plus className="w-5 h-5" />
                         Create Course
                     </button>

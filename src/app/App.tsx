@@ -51,6 +51,7 @@ const OrgCalendarPage = lazy(() => import('./pages/OrgCalendarPage').then(module
 const OrgTeachersPage = lazy(() => import('./pages/OrgTeachersPage').then(module => ({ default: module.OrgTeachersPage })));
 const OrgEventsPage = lazy(() => import('./pages/OrgEventsPage').then(module => ({ default: module.OrgEventsPage })));
 const OrgCoursesPage = lazy(() => import('./pages/OrgCoursesPage').then(module => ({ default: module.OrgCoursesPage })));
+const OrgCreateCoursePage = lazy(() => import('./pages/OrgCreateCoursePage').then(module => ({ default: module.OrgCreateCoursePage })));
 const OrgMaterialsPage = lazy(() => import('./pages/OrgMaterialsPage').then(module => ({ default: module.OrgMaterialsPage })));
 const OrgSettingsPage = lazy(() => import('./pages/OrgSettingsPage').then(module => ({ default: module.OrgSettingsPage })));
 const OrgAnnouncementsPage = lazy(() => import('./pages/OrgAnnouncementsPage').then(module => ({ default: module.OrgAnnouncementsPage })));
@@ -88,6 +89,7 @@ const MentorCalendarPage = lazy(() => import('./pages/MentorCalendarPage').then(
 const MentorCoursesPage = lazy(() => import('./pages/MentorCoursesPage').then(module => ({ default: module.MentorCoursesPage })));
 const CreateCoursePage = lazy(() => import('./pages/CreateCoursePage').then(module => ({ default: module.CreateCoursePage })));
 const CourseViewerPage = lazy(() => import('./pages/CourseViewerPage').then(module => ({ default: module.CourseViewerPage })));
+const LiveSessionPage = lazy(() => import('./pages/LiveSessionPage').then(module => ({ default: module.LiveSessionPage })));
 const PaymentPage = lazy(() => import('./pages/PaymentPage').then(module => ({ default: module.PaymentPage })));
 
 import { motion, AnimatePresence } from 'motion/react';
@@ -291,6 +293,11 @@ function App() {
             <OrgCoursesPage />
           </Suspense>
         } />
+        <Route path="/org-create-course" element={
+          <Suspense fallback={<PageLoader />}>
+            <OrgCreateCoursePage />
+          </Suspense>
+        } />
         <Route path="/org-materials" element={
           <Suspense fallback={<PageLoader />}>
             <OrgMaterialsPage />
@@ -421,6 +428,11 @@ function App() {
         <Route path="/learn/:courseId" element={
           <Suspense fallback={<PageLoader />}>
             <CourseViewerPage />
+          </Suspense>
+        } />
+        <Route path="/live/:roomId" element={
+          <Suspense fallback={<PageLoader />}>
+            <LiveSessionPage />
           </Suspense>
         } />
 

@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import {
     Clock, Bell, Plus,
     MoreVertical, ChevronLeft, ChevronRight,
-    User, StickyNote
+    User, StickyNote, Video
 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { getStudentBookings, Booking } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
@@ -17,10 +18,33 @@ interface Reminder {
 
 export function CalendarPage() {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDay, setSelectedDay] = useState<number | null>(null);
     const [popoverPosition, setPopoverPosition] = useState<{ x: number, y: number } | null>(null);
     const [isPopoverInputMode, setIsPopoverInputMode] = useState(false);
+    
+    // Live WebRTC Sessions
+    const [liveSessions] = useState([
+        {
+            id: 'live-1',
+            topic: 'Advanced Asynchronous Javascript & Event Loop',
+            instructor: 'Dr. Sarah Jenkins',
+            time: 'Starts in 10 minutes',
+            roomId: 'mentozy-live-async-pipeline',
+            duration: '1 Hour',
+            isActive: true
+        },
+        {
+            id: 'live-2',
+            topic: 'Custom WebRTC Architectures & Media Streams',
+            instructor: 'Prof. Marcus Brody',
+            time: 'Tomorrow, 10:00 AM',
+            roomId: 'mentozy-live-webrtc-blueprint',
+            duration: '1.5 Hours',
+            isActive: false
+        }
+    ]);
     const [popoverInputText, setPopoverInputText] = useState('');
     const [reminders, setReminders] = useState<Reminder[]>([
         { id: '1', text: 'Prepare questions for session', completed: false },
@@ -198,9 +222,60 @@ export function CalendarPage() {
                         </div>
                     </div>
 
+                    {/* Upcoming Live Classes & Sessions */}
+                    <div className="space-y-6 mb-8">
+                        <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Upcoming Live Classes & Sessions
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {liveSessions.map((session) => (
+                                <div
+                                    key={session.id}
+                                    className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group flex flex-col justify-between min-h-[220px]"
+                                >
+                                    <div>
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600">
+                                                <Video className="w-5 h-5" />
+                                            </div>
+                                            {session.isActive ? (
+                                                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100 flex items-center gap-1 animate-pulse">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                                                    Active Now
+                                                </span>
+                                            ) : (
+                                                <span className="text-[10px] font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100">
+                                                    Scheduled
+                                                </span>
+                                            )}
+                                        </div>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 block">
+                                            {session.time} • {session.duration}
+                                        </span>
+                                        <h3 className="text-base font-extrabold text-gray-900 mb-1 leading-snug line-clamp-2 text-left">
+                                            {session.topic}
+                                        </h3>
+                                        <p className="text-xs text-slate-500 font-semibold mb-4 text-left">
+                                            Taught by {session.instructor}
+                                        </p>
+                                    </div>
+                                    
+                                    <button 
+                                        onClick={() => navigate(`/live/${session.roomId}`)}
+                                        className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5 ${session.isActive ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/10 hover:-translate-y-0.5' : 'bg-slate-800 text-slate-200 hover:bg-slate-700 shadow-slate-800/10'}`}
+                                    >
+                                        <Video className="w-4 h-4" />
+                                        {session.isActive ? 'Join Live WebRTC Session' : 'Pre-Register / Wait'}
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
                     {/* Upcoming Items List */}
                     <div className="space-y-6">
-                        <h2 className="text-xl font-bold text-gray-900">Your Schedule</h2>
+                        <h2 className="text-xl font-bold text-gray-900 text-left">Your Schedule</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {bookings.length > 0 ? bookings.map((booking) => (
                                 <div

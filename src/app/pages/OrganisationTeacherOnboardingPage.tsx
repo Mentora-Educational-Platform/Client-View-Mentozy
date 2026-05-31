@@ -85,10 +85,10 @@ export function OrganisationTeacherOnboardingPage() {
         // Branch A: Online Institute
         if (orgType === 'online') {
             if (step === 3) {
-                // Email Validation: .com, .in, .edu, .app only
-                const emailRegex = /^[^\s@]+@[^\s@]+\.(com|in|edu|app)$/;
+                // Email Validation: .com, .in, .edu, .app, .dev, .live only
+                const emailRegex = /^[^\s@]+@[^\s@]+\.(com|in|edu|app|dev|live)$/;
                 if (!formData.officialEmail || !emailRegex.test(formData.officialEmail)) {
-                    newErrors.officialEmail = "Enter a valid official email (.com, .in, .edu, .app)";
+                    newErrors.officialEmail = "Enter a valid official email (.com, .in, .edu, .app, .dev, .live)";
                 }
                 if (!formData.password || formData.password.length < 6) {
                     newErrors.password = "Password must be at least 6 characters";
