@@ -142,7 +142,7 @@ export function OrgDashboardPage() {
         // Random meeting parameters
         const randId = Math.floor(1000000000 + Math.random() * 9000000000).toString().replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
         const randPasscode = `MZ-LIVE-${Math.floor(1000 + Math.random() * 9000)}`;
-        const joinLink = `${window.location.origin}/live/${randId.replace(/\s/g, '')}`;
+        const joinLink = `https://mentozy.app/live/${randId.replace(/\s/g, '')}`;
 
         const newSession = {
             id: `live-${Date.now()}`,
