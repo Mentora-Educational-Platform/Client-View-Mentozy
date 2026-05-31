@@ -14,9 +14,7 @@ import {
   Hand, 
   PenTool, 
   Eraser, 
-  Check, 
   Shield, 
-  Maximize2,
   Tv
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -30,6 +28,7 @@ interface ChatMessage {
   text: string;
   timestamp: string;
   isHost?: boolean;
+  senderId?: string;
 }
 
 export function LiveSessionPage() {
@@ -63,11 +62,21 @@ export function LiveSessionPage() {
   const localStreamRef = useRef<MediaStream | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
 
+  // WebRTC P2P Streaming States
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [isRemoteVideoActive, setIsRemoteVideoActive] = useState(false);
+  const [presenceUsers, setPresenceUsers] = useState<any[]>([]);
+  const [channelSubscribed, setChannelSubscribed] = useState(false);
+
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const webrtcChannelRef = useRef<any>(null);
+
   // Whiteboard Canvas Refs
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
   const [drawColor, setDrawColor] = useState('#6366f1'); // Indigo
-  const [brushSize, setBrushSize] = useState(4);
+  const brushSize = 4;
 
   // Live Chat state
   const [chatMessage, setChatMessage] = useState('');
@@ -155,7 +164,8 @@ export function LiveSessionPage() {
               avatar: msg.sender_avatar_initials,
               text: msg.text,
               timestamp: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              isHost: msg.sender_id === data.org_id
+              isHost: msg.sender_id === data.org_id,
+              senderId: msg.sender_id
             }));
             setChatList(loadedChats);
           } else {
@@ -182,11 +192,12 @@ export function LiveSessionPage() {
   // Subscribe to real-time chat database inserts
   useEffect(() => {
     if (!roomId || !supabase || !user) return;
+    const client = supabase;
 
     let subscription: any;
 
     async function setupRealtimeChat() {
-      const { data: session } = await supabase
+      const { data: session } = await client
         .from('live_sessions')
         .select('id, org_id')
         .eq('room_id', roomId)
@@ -194,7 +205,7 @@ export function LiveSessionPage() {
 
       if (!session) return;
 
-      subscription = supabase
+      subscription = client
         .channel(`chat-channel-${roomId}`)
         .on('postgres_changes', {
           event: 'INSERT',
@@ -211,7 +222,8 @@ export function LiveSessionPage() {
               avatar: newMsg.sender_avatar_initials,
               text: newMsg.text,
               timestamp: new Date(newMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              isHost: newMsg.sender_id === session.org_id
+              isHost: newMsg.sender_id === session.org_id,
+              senderId: newMsg.sender_id
             }];
           });
         })
@@ -222,10 +234,241 @@ export function LiveSessionPage() {
 
     return () => {
       if (subscription) {
-        supabase.removeChannel(subscription);
+        client.removeChannel(subscription);
       }
     };
   }, [roomId, user]);
+
+  // Create and configure RTCPeerConnection
+  const getOrCreatePeerConnection = (channel: any) => {
+    if (pcRef.current) return pcRef.current;
+
+    const pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+      ]
+    }) as any;
+
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => {
+        pc.addTrack(track, localStreamRef.current!);
+      });
+    }
+
+    pc.onicecandidate = (event: any) => {
+      if (event.candidate) {
+        channel.send({
+          type: 'broadcast',
+          event: 'webrtc-signal',
+          payload: { candidate: event.candidate, sender: user?.id }
+        });
+      }
+    };
+
+    pc.ontrack = (event: any) => {
+      console.log("WebRTC: Received remote track!", event.streams[0]);
+      setRemoteStream(event.streams[0]);
+      setIsRemoteVideoActive(true);
+    };
+
+    pc.onconnectionstatechange = () => {
+      console.log("WebRTC Connection State changed:", pc.connectionState);
+      if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+        setIsRemoteVideoActive(false);
+      }
+    };
+
+    pcRef.current = pc;
+    return pc;
+  };
+
+  // WebRTC signaling and Presence subscription
+  useEffect(() => {
+    if (!roomId || !supabase || !user || !hasJoined) return;
+    const client = supabase;
+
+    let channel: any;
+
+    async function initializeSignaling() {
+      channel = client.channel(`webrtc-room-${roomId}`);
+
+      channel
+        .on('presence', { event: 'sync' }, () => {
+          const newState = channel.presenceState();
+          const onlineList: any[] = [];
+          Object.values(newState).forEach((presences: any) => {
+            presences.forEach((presence: any) => {
+              onlineList.push(presence);
+            });
+          });
+          setPresenceUsers(onlineList);
+        })
+        .on('presence', { event: 'join' }, (event: any) => {
+          const { newPresences } = event;
+          console.log("Presence: User joined", newPresences);
+          const pc = getOrCreatePeerConnection(channel);
+          if (user?.id === sessionOwnerId) {
+            console.log("WebRTC: Initiating offer as Host");
+            pc.createOffer()
+              .then((offer: any) => pc.setLocalDescription(offer))
+              .then(() => {
+                channel.send({
+                  type: 'broadcast',
+                  event: 'webrtc-signal',
+                  payload: { offer: pc.localDescription, sender: user?.id }
+                });
+              });
+          }
+        })
+        .on('presence', { event: 'leave' }, (event: any) => {
+          const { leftPresences } = event;
+          console.log("Presence: User left", leftPresences);
+          if (leftPresences.some((p: any) => p.id !== user?.id)) {
+            setIsRemoteVideoActive(false);
+            setRemoteStream(null);
+            if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+            if (pcRef.current) {
+              pcRef.current.close();
+              pcRef.current = null;
+            }
+          }
+        });
+
+      channel.on('broadcast', { event: 'webrtc-signal' }, async ({ payload }: any) => {
+        if (payload.sender === user?.id) return;
+
+        try {
+          if (payload.join && user?.id === sessionOwnerId) {
+            console.log("WebRTC: Received join reminder from Student, initiating offer");
+            const pc = getOrCreatePeerConnection(channel);
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            channel.send({
+              type: 'broadcast',
+              event: 'webrtc-signal',
+              payload: { offer: pc.localDescription, sender: user?.id }
+            });
+          } else if (payload.offer) {
+            console.log("WebRTC: Received Offer", payload.offer);
+            const pc = getOrCreatePeerConnection(channel);
+            await pc.setRemoteDescription(new RTCSessionDescription(payload.offer));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            
+            channel.send({
+              type: 'broadcast',
+              event: 'webrtc-signal',
+              payload: { answer: pc.localDescription, sender: user?.id }
+            });
+
+            // Flush ICE candidates
+            if (pc.iceQueue) {
+              for (const cand of pc.iceQueue) {
+                await pc.addIceCandidate(new RTCIceCandidate(cand));
+              }
+              pc.iceQueue = [];
+            }
+          } else if (payload.answer) {
+            console.log("WebRTC: Received Answer", payload.answer);
+            const pc = getOrCreatePeerConnection(channel);
+            await pc.setRemoteDescription(new RTCSessionDescription(payload.answer));
+
+            // Flush ICE candidates
+            if (pc.iceQueue) {
+              for (const cand of pc.iceQueue) {
+                await pc.addIceCandidate(new RTCIceCandidate(cand));
+              }
+              pc.iceQueue = [];
+            }
+          } else if (payload.candidate) {
+            console.log("WebRTC: Received ICE Candidate", payload.candidate);
+            const pc = getOrCreatePeerConnection(channel);
+            if (pc.remoteDescription && pc.remoteDescription.type) {
+              await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
+            } else {
+              if (!pc.iceQueue) pc.iceQueue = [];
+              pc.iceQueue.push(payload.candidate);
+            }
+          }
+        } catch (err) {
+          console.error("Signaling signal application error:", err);
+        }
+      });
+
+      channel.subscribe(async (status: string) => {
+        if (status === 'SUBSCRIBED') {
+          setChannelSubscribed(true);
+          
+          if (user?.id !== sessionOwnerId) {
+            console.log("WebRTC: Sending join signaling reminder as Student");
+            channel.send({
+              type: 'broadcast',
+              event: 'webrtc-signal',
+              payload: { join: true, sender: user?.id }
+            });
+          }
+        }
+      });
+
+      webrtcChannelRef.current = channel;
+    }
+
+    initializeSignaling();
+
+    return () => {
+      setChannelSubscribed(false);
+      if (channel) {
+        channel.unsubscribe();
+      }
+      if (pcRef.current) {
+        pcRef.current.close();
+        pcRef.current = null;
+      }
+    };
+  }, [roomId, user, hasJoined, sessionOwnerId]);
+
+  // Dynamic presence tracking of mic, camera, role, and details
+  useEffect(() => {
+    if (!webrtcChannelRef.current || !channelSubscribed || !hasJoined || !user) return;
+
+    const userMeta = {
+      id: user.id,
+      name: user.user_metadata?.full_name || 'Participant',
+      avatar: (user.user_metadata?.full_name || 'P').split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase(),
+      role: user.id === sessionOwnerId ? 'Host' : 'Student',
+      onlineAt: new Date().toISOString(),
+      isMicOn,
+      isCameraOn
+    };
+    
+    webrtcChannelRef.current.track(userMeta).catch((err: any) => {
+      console.error("Failed to track presence metadata:", err);
+    });
+  }, [isMicOn, isCameraOn, channelSubscribed, hasJoined, user, sessionOwnerId]);
+
+  // Safe ref assignment for local camera stream to avoid React mounting races (Lobby vs Classroom)
+  useEffect(() => {
+    if (localStreamRef.current && localVideoRef.current) {
+      console.log("WebRTC: Binding localStream to localVideoRef");
+      localVideoRef.current.srcObject = localStreamRef.current;
+      localVideoRef.current.play().catch(err => {
+        console.warn("WebRTC local video play failed or was interrupted:", err);
+      });
+    }
+  }, [hasJoined, inSession, isCameraOn]);
+
+  // Safe ref assignment for remote WebRTC stream to avoid React mounting races
+  useEffect(() => {
+    const activeRemoteUser = presenceUsers.find(p => p.id !== user?.id);
+    if (remoteStream && remoteVideoRef.current && activeRemoteUser) {
+      console.log("WebRTC: Binding remoteStream to remoteVideoRef");
+      remoteVideoRef.current.srcObject = remoteStream;
+      remoteVideoRef.current.play().catch(err => {
+        console.warn("WebRTC remote video play failed or was interrupted:", err);
+      });
+    }
+  }, [remoteStream, presenceUsers, user]);
 
   // Request media device streams
   useEffect(() => {
@@ -248,6 +491,8 @@ export function LiveSessionPage() {
     } catch (err) {
       console.error(err);
       toast.error('Camera or Microphone access blocked. Displaying digital avatar instead.');
+      setIsMicOn(false);
+      setIsCameraOn(false);
       setInSession(true); // Graceful preview fallback
     }
   };
@@ -410,10 +655,22 @@ export function LiveSessionPage() {
     toast.success('Whiteboard cleared');
   };
 
-  const firstStudent = participantsList.find(p => p.role === 'Student');
+  const activeRemoteUser = presenceUsers.find(p => p.id !== user?.id);
   const isCurrentUserHost = user?.id === sessionOwnerId;
   const myName = user?.user_metadata?.full_name || (isCurrentUserHost ? 'Host' : 'Student');
   const myInitials = myName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase();
+
+  // Dynamically map the roster to show who is online vs offline in real time based on Supabase Presence!
+  const dynamicRoster = participantsList.map(member => {
+    const isOnline = presenceUsers.some(p => p.id === member.id);
+    const presenceInfo = presenceUsers.find(p => p.id === member.id);
+    return {
+      ...member,
+      active: member.id === user?.id || isOnline, // Show active if current user or online in channel
+      isMicOn: member.id === user?.id ? isMicOn : (presenceInfo ? presenceInfo.isMicOn : true),
+      isCameraOn: member.id === user?.id ? isCameraOn : (presenceInfo ? presenceInfo.isCameraOn : true)
+    };
+  });
 
   if (!hasJoined) {
     return (
@@ -471,6 +728,7 @@ export function LiveSessionPage() {
             <div className="space-y-2">
               <h2 className="text-3xl font-extrabold text-white tracking-tight leading-tight">Ready to join?</h2>
               <p className="text-sm text-slate-400 font-medium">Topic: <span className="text-indigo-400 font-bold">{meetingTopic}</span></p>
+              {meetingDesc && <p className="text-xs text-slate-500 italic mt-1">{meetingDesc}</p>}
             </div>
 
             <div className="pt-2">
@@ -624,25 +882,45 @@ export function LiveSessionPage() {
               </div>
             )}
 
-            {/* FLOATING SUB-GRID: Student Overlay (Simulated Peer Feeds) */}
-            {firstStudent && (
-              <div className="absolute top-4 right-4 w-48 aspect-video rounded-2xl overflow-hidden bg-slate-950/80 border border-white/10 shadow-2xl z-30 pointer-events-auto">
+            {/* FLOATING SUB-GRID: Student Overlay (Real WebRTC Peer Feeds) */}
+            {/* FLOATING SUB-GRID: Student Overlay (Real WebRTC Peer Feeds) */}
+            {activeRemoteUser && (
+              <div className="absolute top-4 right-4 w-48 aspect-video rounded-2xl overflow-hidden bg-slate-950/80 border border-white/10 shadow-2xl z-30 pointer-events-auto animate-in zoom-in-95 duration-300">
                 <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 relative">
                   
-                  {/* Dynamic live avatar waves */}
-                  <div className="w-10 h-10 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/25 flex items-center justify-center text-xs font-bold shadow-md shadow-purple-600/10">
-                    {firstStudent.avatar}
-                  </div>
-                  <span className="text-[9px] font-bold text-slate-300 mt-2">{firstStudent.name}</span>
-                  
-                  {/* Micro speaking wave badge */}
-                  <div className="absolute bottom-2 left-2 bg-slate-950/80 px-2 py-0.5 rounded border border-white/5 flex items-center gap-1">
-                    <div className="flex gap-0.5">
-                      <div className="w-0.5 h-2 bg-emerald-500 animate-pulse"></div>
-                      <div className="w-0.5 h-3 bg-emerald-500 animate-pulse"></div>
-                      <div className="w-0.5 h-1.5 bg-emerald-500 animate-pulse"></div>
+                  {/* Remote P2P Video Stream */}
+                  <video 
+                    ref={remoteVideoRef} 
+                    autoPlay 
+                    playsInline 
+                    className={`w-full h-full object-cover z-10 ${isRemoteVideoActive && activeRemoteUser.isCameraOn !== false ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`} 
+                  />
+
+                  {/* Fallback avatar if remote camera is paused or inactive */}
+                  {(!isRemoteVideoActive || activeRemoteUser.isCameraOn === false) && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 z-20 space-y-2 animate-in fade-in duration-300">
+                      <div className="w-10 h-10 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/25 flex items-center justify-center text-xs font-bold shadow-md shadow-purple-600/10 animate-pulse">
+                        {activeRemoteUser.avatar}
+                      </div>
+                      <span className="text-[9px] font-bold text-slate-300">{activeRemoteUser.name}</span>
+                      <p className="text-[8px] text-slate-500">Camera is paused</p>
                     </div>
-                    <span className="text-[8px] text-emerald-400 font-extrabold uppercase">Live</span>
+                  )}
+
+                  {/* Micro speaking wave badge / Mute status */}
+                  <div className="absolute bottom-2 left-2 bg-slate-950/80 px-2 py-0.5 rounded border border-white/5 flex items-center gap-1.5 z-30">
+                    {activeRemoteUser.isMicOn === false ? (
+                      <MicOff className="w-2.5 h-2.5 text-rose-400" />
+                    ) : (
+                      <div className="flex gap-0.5">
+                        <div className="w-0.5 h-2 bg-emerald-500 animate-pulse"></div>
+                        <div className="w-0.5 h-3 bg-emerald-500 animate-pulse"></div>
+                        <div className="w-0.5 h-1.5 bg-emerald-500 animate-pulse"></div>
+                      </div>
+                    )}
+                    <span className="text-[8px] text-emerald-400 font-extrabold uppercase">
+                      {activeRemoteUser.isMicOn === false ? 'Muted' : 'Live'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -725,7 +1003,7 @@ export function LiveSessionPage() {
             </div>
             
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {participantsList.map(member => (
+              {dynamicRoster.map(member => (
                 <div key={member.id} className="flex items-center justify-between p-3 bg-slate-950/40 rounded-xl border border-slate-850">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-slate-800 text-slate-300 border border-slate-700 flex items-center justify-center font-bold text-xs">
