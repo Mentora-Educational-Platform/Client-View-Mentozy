@@ -43,6 +43,7 @@ export function LiveSessionPage() {
   // Dynamic Room Metadata
   const [meetingTopic, setMeetingTopic] = useState('Mentozy Live Session');
   const [meetingDesc, setMeetingDesc] = useState('');
+  const [sessionOwnerId, setSessionOwnerId] = useState<string | null>(null);
 
   // Media Stream States
   const [inSession, setInSession] = useState(false);
@@ -99,6 +100,7 @@ export function LiveSessionPage() {
         }
 
         if (data) {
+          setSessionOwnerId(data.org_id);
           if (data.topic) setMeetingTopic(data.topic);
           if (data.description) setMeetingDesc(data.description);
 
@@ -260,15 +262,15 @@ export function LiveSessionPage() {
     setInSession(false);
   };
 
-  // Toggle audio/video tracks
+  // Toggle audio/video tracks (works even when physical media permission is blocked)
   const toggleTrack = (kind: 'audio' | 'video') => {
     const stream = localStreamRef.current;
-    if (!stream) return;
-
-    const tracks = kind === 'audio' ? stream.getAudioTracks() : stream.getVideoTracks();
-    tracks.forEach(track => {
-      track.enabled = !track.enabled;
-    });
+    if (stream) {
+      const tracks = kind === 'audio' ? stream.getAudioTracks() : stream.getVideoTracks();
+      tracks.forEach(track => {
+        track.enabled = !track.enabled;
+      });
+    }
 
     if (kind === 'audio') setIsMicOn(prev => !prev);
     if (kind === 'video') setIsCameraOn(prev => !prev);
@@ -286,9 +288,6 @@ export function LiveSessionPage() {
       try {
         const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
         screenStreamRef.current = stream;
-        if (screenVideoRef.current) {
-          screenVideoRef.current.srcObject = stream;
-        }
         setIsScreenSharing(true);
         toast.success('Screen sharing started');
 
@@ -302,6 +301,13 @@ export function LiveSessionPage() {
       }
     }
   };
+
+  // Safe ref assignment for screen sharing video element to avoid React mounting races
+  useEffect(() => {
+    if (isScreenSharing && screenStreamRef.current && screenVideoRef.current) {
+      screenVideoRef.current.srcObject = screenStreamRef.current;
+    }
+  }, [isScreenSharing]);
 
   // Leave / Exit Meeting Room
   const handleExitMeeting = () => {
@@ -405,6 +411,9 @@ export function LiveSessionPage() {
   };
 
   const firstStudent = participantsList.find(p => p.role === 'Student');
+  const isCurrentUserHost = user?.id === sessionOwnerId;
+  const myName = user?.user_metadata?.full_name || (isCurrentUserHost ? 'Host' : 'Student');
+  const myInitials = myName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase();
 
   if (!hasJoined) {
     return (
@@ -427,9 +436,10 @@ export function LiveSessionPage() {
             {(!isCameraOn || !inSession) && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/95 backdrop-blur-sm z-20 space-y-4 animate-in fade-in duration-300">
                 <div className="w-20 h-20 rounded-full bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 flex items-center justify-center text-3xl font-extrabold shadow-lg shadow-indigo-600/10 animate-bounce">
-                  {participantsList[0]?.avatar || 'H'}
+                  {myInitials}
                 </div>
-                <h4 className="font-bold text-white text-sm">Camera is paused</h4>
+                <h4 className="font-bold text-white text-sm">{myName}</h4>
+                <p className="text-xs text-slate-500 font-semibold">Camera is paused</p>
               </div>
             )}
 
@@ -585,10 +595,10 @@ export function LiveSessionPage() {
               {(!isCameraOn || !inSession) && !isWhiteboardOpen && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 space-y-4 animate-in fade-in duration-300">
                   <div className="w-24 h-24 rounded-full bg-indigo-600/20 text-indigo-400 border-2 border-indigo-500/30 flex items-center justify-center text-3xl font-extrabold shadow-lg shadow-indigo-600/10 animate-bounce">
-                    {participantsList[0]?.avatar || 'H'}
+                    {myInitials}
                   </div>
                   <div className="text-center">
-                    <h4 className="font-bold text-white text-base">{participantsList[0]?.name || 'Host'} (You)</h4>
+                    <h4 className="font-bold text-white text-base">{myName} (You)</h4>
                     <p className="text-xs text-slate-500 mt-1 font-semibold">Camera streams paused</p>
                   </div>
                 </div>
@@ -596,8 +606,10 @@ export function LiveSessionPage() {
 
               {/* Tag Overlays */}
               <div className="absolute bottom-4 left-4 z-30 bg-slate-950/70 border border-white/5 backdrop-blur-md px-3.5 py-1.5 rounded-xl flex items-center gap-2">
-                <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-ping"></div>
-                <span className="text-xs font-bold text-white">Host (Instructor View)</span>
+                <div className={`w-2.5 h-2.5 rounded-full ${isCurrentUserHost ? 'bg-indigo-500' : 'bg-emerald-500'} animate-ping`}></div>
+                <span className="text-xs font-bold text-white">
+                  {isCurrentUserHost ? 'Host (Instructor View)' : 'Student (Participant View)'}
+                </span>
               </div>
             </div>
 
@@ -661,17 +673,18 @@ export function LiveSessionPage() {
                     </div>
                   );
                 }
+                const isMe = message.senderId === user?.id;
                 return (
-                  <div key={message.id} className={`flex items-start gap-2.5 text-left ${message.isHost ? 'flex-row-reverse' : ''}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${message.isHost ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-800 text-slate-300 border border-slate-700'}`}>
+                  <div key={message.id} className={`flex items-start gap-2.5 text-left ${isMe ? 'flex-row-reverse' : ''}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${isMe ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-800 text-slate-300 border border-slate-700'}`}>
                       {message.avatar}
                     </div>
                     <div className="max-w-[75%] space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-200">{message.sender}</span>
+                      <div className={`flex items-center gap-2 ${isMe ? 'justify-end' : ''}`}>
+                        <span className="text-xs font-bold text-slate-200">{isMe ? 'You' : message.sender}</span>
                         <span className="text-[8px] text-slate-500">{message.timestamp}</span>
                       </div>
-                      <div className={`p-3 rounded-2xl text-xs leading-relaxed ${message.isHost ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-slate-950 border border-slate-850 rounded-tl-none text-slate-200'}`}>
+                      <div className={`p-3 rounded-2xl text-xs leading-relaxed ${isMe ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-slate-950 border border-slate-850 rounded-tl-none text-slate-200'}`}>
                         {message.text}
                       </div>
                     </div>
