@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 
 interface ChatMessage {
   id: string;
@@ -34,6 +35,10 @@ interface ChatMessage {
 export function LiveSessionPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Lobby/Preview Screen State
+  const [hasJoined, setHasJoined] = useState(false);
 
   // Dynamic Room Metadata
   const [meetingTopic, setMeetingTopic] = useState('Mentozy Live Session');
@@ -70,7 +75,7 @@ export function LiveSessionPage() {
   // Cohort participants roster
   const [participantsList, setParticipantsList] = useState<any[]>([]);
 
-  // Fetch session details from Supabase if available
+  // Fetch session details, roster, and past chats from Supabase
   useEffect(() => {
     async function fetchMeetingDetails() {
       if (!roomId || !supabase) return;
@@ -78,6 +83,7 @@ export function LiveSessionPage() {
         const { data, error } = await supabase
           .from('live_sessions')
           .select(`
+            id,
             topic,
             description,
             org_id,
@@ -110,18 +116,6 @@ export function LiveSessionPage() {
             }
           ];
 
-          // Initialize chat with customized welcome
-          setChatList([
-            { 
-              id: '1', 
-              sender: hostName, 
-              avatar: hostAvatar, 
-              text: `Welcome to Mentozy Live Space! Let's start the "${data.topic}" sync. Ready to review the milestones.`, 
-              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), 
-              isHost: true 
-            }
-          ]);
-
           // Fetch the profiles of invited students
           const studentIds = data.invited_student_ids || [];
           if (studentIds.length > 0) {
@@ -144,13 +138,92 @@ export function LiveSessionPage() {
             }
           }
           setParticipantsList(roster);
+
+          // Fetch past database chats
+          const { data: chatData, error: chatError } = await supabase
+            .from('live_session_chats')
+            .select('*')
+            .eq('session_id', data.id)
+            .order('created_at', { ascending: true });
+
+          if (!chatError && chatData && chatData.length > 0) {
+            const loadedChats = chatData.map(msg => ({
+              id: msg.id,
+              sender: msg.sender_name,
+              avatar: msg.sender_avatar_initials,
+              text: msg.text,
+              timestamp: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              isHost: msg.sender_id === data.org_id
+            }));
+            setChatList(loadedChats);
+          } else {
+            // Dynamic welcome greeting
+            setChatList([
+              { 
+                id: '1', 
+                sender: hostName, 
+                avatar: hostAvatar, 
+                text: `Welcome to Mentozy Live Space! Let's start the "${data.topic}" sync. Ready to review the milestones.`, 
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), 
+                isHost: true 
+              }
+            ]);
+          }
         }
       } catch (err) {
-        console.error("Failed to query meeting participants:", err);
+        console.error("Failed to query meeting details:", err);
       }
     }
     fetchMeetingDetails();
   }, [roomId]);
+
+  // Subscribe to real-time chat database inserts
+  useEffect(() => {
+    if (!roomId || !supabase || !user) return;
+
+    let subscription: any;
+
+    async function setupRealtimeChat() {
+      const { data: session } = await supabase
+        .from('live_sessions')
+        .select('id, org_id')
+        .eq('room_id', roomId)
+        .single();
+
+      if (!session) return;
+
+      subscription = supabase
+        .channel(`chat-channel-${roomId}`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'live_session_chats',
+          filter: `session_id=eq.${session.id}`
+        }, (payload) => {
+          const newMsg = payload.new;
+          setChatList(prev => {
+            if (prev.some(m => m.id === newMsg.id)) return prev;
+            return [...prev, {
+              id: newMsg.id,
+              sender: newMsg.sender_name,
+              avatar: newMsg.sender_avatar_initials,
+              text: newMsg.text,
+              timestamp: new Date(newMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              isHost: newMsg.sender_id === session.org_id
+            }];
+          });
+        })
+        .subscribe();
+    }
+
+    setupRealtimeChat();
+
+    return () => {
+      if (subscription) {
+        supabase.removeChannel(subscription);
+      }
+    };
+  }, [roomId, user]);
 
   // Request media device streams
   useEffect(() => {
@@ -237,51 +310,41 @@ export function LiveSessionPage() {
     navigate(-1); // Redirect back dynamically to dashboard/calendar
   };
 
-  // Chat sender & dynamic response simulator
-  const handleSendChat = () => {
-    if (!chatMessage.trim()) return;
+  // Chat sender (writes real messages to Supabase live_session_chats)
+  const handleSendChat = async () => {
+    if (!chatMessage.trim() || !user || !supabase) return;
 
-    const newMessage: ChatMessage = {
-      id: `chat-${Date.now()}`,
-      sender: 'Host (You)',
-      avatar: 'H',
-      text: chatMessage,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      isHost: true
-    };
+    const senderName = user.user_metadata?.full_name || 'Anonymous Member';
+    const senderInitials = senderName.split(' ').map((n: string) => n[0]).join('').substring(0, 2);
 
-    setChatList(prev => [...prev, newMessage]);
-    const userMessage = chatMessage;
-    setChatMessage('');
+    try {
+      const { data: session } = await supabase
+        .from('live_sessions')
+        .select('id')
+        .eq('room_id', roomId)
+        .single();
 
-    // Dynamic Cohort response simulator
-    setTimeout(() => {
-      let replyText = 'Got it! Looking forward to reviewing.';
-      let responder = 'Sophia Patel';
-      let avatar = 'SP';
+      if (session) {
+        const { error } = await supabase
+          .from('live_session_chats')
+          .insert({
+            session_id: session.id,
+            sender_id: user.id,
+            sender_name: senderName,
+            sender_avatar_initials: senderInitials,
+            text: chatMessage
+          });
 
-      if (userMessage.toLowerCase().includes('hello') || userMessage.toLowerCase().includes('hi')) {
-        replyText = 'Hello professor! Great to connect.';
-        responder = 'Alex Rivera';
-        avatar = 'AR';
-      } else if (userMessage.toLowerCase().includes('webrtc') || userMessage.toLowerCase().includes('link')) {
-        replyText = 'Perfect! The native WebRTC latency is incredible compared to Zoom.';
-        responder = 'Alex Rivera';
-        avatar = 'AR';
-      } else if (userMessage.toLowerCase().includes('code') || userMessage.toLowerCase().includes('milestone')) {
-        replyText = 'Just committed the milestone solution. All tests passed! 🎉';
-        responder = 'Sophia Patel';
-        avatar = 'SP';
+        if (error) {
+          console.error("Error inserting chat to database:", error);
+          toast.error("Message delivery failed.");
+        }
       }
-
-      setChatList(prev => [...prev, {
-        id: `chat-${Date.now() + 1}`,
-        sender: responder,
-        avatar: avatar,
-        text: replyText,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }]);
-    }, 1500);
+    } catch (e) {
+      console.error("Error sending real chat message:", e);
+    }
+    
+    setChatMessage('');
   };
 
   // Trigger Raise Hand
@@ -342,6 +405,77 @@ export function LiveSessionPage() {
   };
 
   const firstStudent = participantsList.find(p => p.role === 'Student');
+
+  if (!hasJoined) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-slate-950 flex items-center justify-center font-sans text-slate-100 p-6 md:p-12 select-none overflow-y-auto animate-in fade-in duration-300">
+        <div className="w-full max-w-6xl flex flex-col lg:flex-row items-center gap-12">
+          
+          {/* Left Side: Large Video Preview Card */}
+          <div className="flex-[7] w-full aspect-video md:aspect-[16/9] rounded-3xl bg-slate-900 border border-slate-800 relative overflow-hidden shadow-2xl flex flex-col items-center justify-center">
+            
+            {/* Local Video Stream */}
+            <video 
+              ref={localVideoRef} 
+              autoPlay 
+              muted 
+              playsInline 
+              className={`w-full h-full object-cover z-10 ${isCameraOn && inSession ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`} 
+            />
+
+            {/* Camera Off Slate */}
+            {(!isCameraOn || !inSession) && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/95 backdrop-blur-sm z-20 space-y-4 animate-in fade-in duration-300">
+                <div className="w-20 h-20 rounded-full bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 flex items-center justify-center text-3xl font-extrabold shadow-lg shadow-indigo-600/10 animate-bounce">
+                  {participantsList[0]?.avatar || 'H'}
+                </div>
+                <h4 className="font-bold text-white text-sm">Camera is paused</h4>
+              </div>
+            )}
+
+            {/* Bottom Floating Control Pills inside Video */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 bg-slate-950/80 border border-slate-850 px-4 py-2 rounded-full backdrop-blur-md">
+              
+              {/* Mic Toggle button */}
+              <button 
+                onClick={() => toggleTrack('audio')}
+                className={`p-3 rounded-full transition-all border ${isMicOn ? 'bg-slate-850 border-slate-700 text-white hover:bg-slate-800' : 'bg-rose-500/20 border-rose-500/30 text-rose-400 hover:bg-rose-500/30'}`}
+                title={isMicOn ? 'Turn off mic' : 'Turn on mic'}
+              >
+                {isMicOn ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+              </button>
+
+              {/* Camera Toggle button */}
+              <button 
+                onClick={() => toggleTrack('video')}
+                className={`p-3 rounded-full transition-all border ${isCameraOn ? 'bg-slate-850 border-slate-700 text-white hover:bg-slate-800' : 'bg-rose-500/20 border-rose-500/30 text-rose-400 hover:bg-rose-500/30'}`}
+                title={isCameraOn ? 'Turn off camera' : 'Turn on camera'}
+              >
+                {isCameraOn ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Right Side: Ready to Join Control Panel */}
+          <div className="flex-[3] w-full max-w-sm text-center lg:text-left space-y-6 font-sans">
+            <div className="space-y-2">
+              <h2 className="text-3xl font-extrabold text-white tracking-tight leading-tight">Ready to join?</h2>
+              <p className="text-sm text-slate-400 font-medium">Topic: <span className="text-indigo-400 font-bold">{meetingTopic}</span></p>
+            </div>
+
+            <div className="pt-2">
+              <button 
+                onClick={() => setHasJoined(true)}
+                className="w-full lg:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-bold text-sm shadow-xl shadow-indigo-600/20 hover:-translate-y-0.5 transition-all text-center flex items-center justify-center gap-2"
+              >
+                Join now
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[100] bg-slate-950 flex flex-col font-sans select-none text-slate-100 overflow-hidden">

@@ -28,3 +28,32 @@ CREATE POLICY "Orgs can manage their own live sessions"
     ON public.live_sessions FOR ALL
     USING (auth.uid() = org_id)
     WITH CHECK (auth.uid() = org_id);
+
+-- =======================================================
+-- REAL-TIME LIVE SESSION CHATS
+-- =======================================================
+
+CREATE TABLE IF NOT EXISTS public.live_session_chats (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id UUID REFERENCES public.live_sessions(id) ON DELETE CASCADE,
+    sender_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    sender_name TEXT NOT NULL,
+    sender_avatar_initials TEXT NOT NULL,
+    text TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable Row Level Security
+ALTER TABLE public.live_session_chats ENABLE ROW LEVEL SECURITY;
+
+-- Policies for Live Chats
+CREATE POLICY "Allow public select on live chats" 
+    ON public.live_session_chats FOR SELECT 
+    USING (true);
+
+CREATE POLICY "Allow authenticated insert on live chats" 
+    ON public.live_session_chats FOR INSERT 
+    WITH CHECK (auth.uid() = sender_id);
+
+-- Enable Realtime publication for real-time channel subscriptions
+ALTER PUBLICATION supabase_realtime ADD TABLE public.live_session_chats;
