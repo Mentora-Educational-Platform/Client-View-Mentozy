@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Plus, MapPin, Video, Users, Clock, X, Loader
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 export function OrgCalendarPage() {
     const { user } = useAuth();
@@ -26,26 +27,69 @@ export function OrgCalendarPage() {
     const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-    // Fetch Events
+    // Fetch Events and Live Sessions
     useEffect(() => {
         if (!user || !supabase) return;
         
         const fetchEvents = async () => {
             if (!supabase) return;
             setIsLoading(true);
-            const { data, error } = await supabase
+            
+            // 1. Fetch general events
+            const { data: eventsData, error: eventsError } = await supabase
                 .from('org_events')
                 .select('*')
                 .eq('org_id', user.id)
                 .order('date', { ascending: true })
                 .order('time', { ascending: true });
+
+            // 2. Fetch live sessions
+            const { data: sessionsData, error: sessionsError } = await supabase
+                .from('live_sessions')
+                .select('*')
+                .eq('org_id', user.id)
+                .order('scheduled_at', { ascending: true });
                 
-            if (error) {
-                console.error("Error fetching events:", error);
+            if (eventsError) {
+                console.error("Error fetching events:", eventsError);
                 toast.error("Failed to load events.");
-            } else {
-                setEvents(data || []);
             }
+            
+            if (sessionsError) {
+                console.error("Error fetching live sessions:", sessionsError);
+            }
+
+            const normalEvents = eventsData || [];
+            
+            // Map live sessions to event structure
+            const mappedSessions = (sessionsData || []).map((session: any) => {
+                const dt = new Date(session.scheduled_at);
+                const dateStr = dt.toISOString().split('T')[0];
+                const timeStr = dt.toTimeString().substring(0, 5); // "HH:MM"
+                
+                return {
+                    id: session.id,
+                    org_id: session.org_id,
+                    title: `🔴 Live: ${session.topic}`,
+                    description: session.description,
+                    date: dateStr,
+                    time: timeStr,
+                    location: `${window.location.origin}/live/${session.room_id}`,
+                    type: 'Class',
+                    status: 'Scheduled',
+                    isLiveSession: true,
+                    roomId: session.room_id
+                };
+            });
+
+            // Combine and sort by date and time
+            const combined = [...normalEvents, ...mappedSessions].sort((a, b) => {
+                const dateCompare = a.date.localeCompare(b.date);
+                if (dateCompare !== 0) return dateCompare;
+                return a.time.localeCompare(b.time);
+            });
+
+            setEvents(combined);
             setIsLoading(false);
         };
         fetchEvents();
@@ -215,12 +259,18 @@ export function OrgCalendarPage() {
                                             {event.date === new Date().toISOString().split('T')[0] ? 'Today' : event.date} • {event.time.substring(0, 5)}
                                         </div>
                                         <div className="flex items-center gap-2 text-xs text-gray-500">
-                                            {event.location.includes('Zoom') || event.location.includes('Online') ? (
-                                                <Video className="w-3.5 h-3.5" />
+                                            {event.isLiveSession || event.location.includes('Zoom') || event.location.includes('Online') || event.location.includes('live') ? (
+                                                <Video className="w-3.5 h-3.5 text-indigo-500 animate-pulse" />
                                             ) : (
                                                 <MapPin className="w-3.5 h-3.5" />
                                             )}
-                                            {event.location}
+                                            {event.isLiveSession ? (
+                                                <Link to={`/live/${event.roomId}`} className="text-indigo-600 hover:text-indigo-700 font-bold underline">
+                                                    Join Live Session
+                                                </Link>
+                                            ) : (
+                                                event.location
+                                            )}
                                         </div>
                                         <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                                             <Users className="w-3.5 h-3.5" />

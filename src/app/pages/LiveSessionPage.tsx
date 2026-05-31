@@ -20,6 +20,7 @@ import {
   Tv
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '../../lib/supabase';
 
 interface ChatMessage {
   id: string;
@@ -33,6 +34,10 @@ interface ChatMessage {
 export function LiveSessionPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
+
+  // Dynamic Room Metadata
+  const [meetingTopic, setMeetingTopic] = useState('Mentozy Live Session');
+  const [meetingDesc, setMeetingDesc] = useState('');
 
   // Media Stream States
   const [inSession, setInSession] = useState(false);
@@ -72,6 +77,33 @@ export function LiveSessionPage() {
     { id: 'p3', name: 'Sophia Patel', role: 'Student', avatar: 'SP', active: true },
     { id: 'p4', name: 'Ethan Hunt', role: 'Student', avatar: 'EH', active: false }
   ]);
+
+  // Fetch session details from Supabase if available
+  useEffect(() => {
+    async function fetchMeetingDetails() {
+      if (!roomId || !supabase) return;
+      try {
+        const { data, error } = await supabase
+          .from('live_sessions')
+          .select('topic, description')
+          .eq('room_id', roomId)
+          .single();
+
+        if (error) {
+          console.warn("Could not find session topic in database:", error);
+          return;
+        }
+
+        if (data) {
+          if (data.topic) setMeetingTopic(data.topic);
+          if (data.description) setMeetingDesc(data.description);
+        }
+      } catch (err) {
+        console.error("Failed to query meeting topic:", err);
+      }
+    }
+    fetchMeetingDetails();
+  }, [roomId]);
 
   // Request media device streams
   useEffect(() => {
@@ -155,7 +187,7 @@ export function LiveSessionPage() {
   const handleExitMeeting = () => {
     stopSession();
     toast.success('Disconnected from Live Session.');
-    navigate('/org-dashboard'); // Redirect to Org Dashboard
+    navigate(-1); // Redirect back dynamically to dashboard/calendar
   };
 
   // Chat sender & dynamic response simulator

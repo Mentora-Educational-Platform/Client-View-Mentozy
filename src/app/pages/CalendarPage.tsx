@@ -9,6 +9,7 @@ import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { getStudentBookings, Booking } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { StudentBookingDetailsModal } from '../components/booking/StudentBookingDetailsModal';
+import { supabase } from '../../lib/supabase';
 
 interface Reminder {
     id: string;
@@ -24,49 +25,91 @@ export function CalendarPage() {
     const [popoverPosition, setPopoverPosition] = useState<{ x: number, y: number } | null>(null);
     const [isPopoverInputMode, setIsPopoverInputMode] = useState(false);
     
-    // Live WebRTC Sessions (loading from localStorage)
+    // Live WebRTC Sessions (loading from Supabase)
     const [liveSessions, setLiveSessions] = useState<any[]>([]);
 
     useEffect(() => {
-        const loadSessions = () => {
-            const stored = localStorage.getItem('mentozy_live_sessions');
-            const defaultSessions = [
-                {
-                    id: 'live-1',
-                    topic: 'Advanced Asynchronous Javascript & Event Loop',
-                    instructor: 'Dr. Sarah Jenkins',
-                    time: 'Starts in 10 minutes',
-                    roomId: 'mentozy-live-async-pipeline',
-                    duration: '1 Hour',
-                    isActive: true
-                },
-                {
-                    id: 'live-2',
-                    topic: 'Custom WebRTC Architectures & Media Streams',
-                    instructor: 'Prof. Marcus Brody',
-                    time: 'Tomorrow, 10:00 AM',
-                    roomId: 'mentozy-live-webrtc-blueprint',
-                    duration: '1.5 Hours',
-                    isActive: false
+        async function fetchLiveSessions() {
+            if (!user || !supabase) return;
+            try {
+                const { data, error } = await supabase
+                    .from('live_sessions')
+                    .select(`
+                        id,
+                        topic,
+                        duration,
+                        room_id,
+                        scheduled_at,
+                        profiles:org_id (full_name)
+                    `)
+                    .contains('invited_student_ids', [user.id]);
+
+                if (error) {
+                    console.error("Error fetching live sessions from database:", error);
+                    return;
                 }
-            ];
-            if (stored) {
-                try {
-                    const parsed = JSON.parse(stored);
-                    setLiveSessions([...parsed, ...defaultSessions]);
-                } catch (e) {
+
+                const defaultSessions = [
+                    {
+                        id: 'live-1',
+                        topic: 'Advanced Asynchronous Javascript & Event Loop',
+                        instructor: 'Dr. Sarah Jenkins',
+                        time: 'Starts in 10 minutes',
+                        roomId: 'mentozy-live-async-pipeline',
+                        duration: '1 Hour',
+                        isActive: true
+                    },
+                    {
+                        id: 'live-2',
+                        topic: 'Custom WebRTC Architectures & Media Streams',
+                        instructor: 'Prof. Marcus Brody',
+                        time: 'Tomorrow, 10:00 AM',
+                        roomId: 'mentozy-live-webrtc-blueprint',
+                        duration: '1.5 Hours',
+                        isActive: false
+                    }
+                ];
+
+                if (data && data.length > 0) {
+                    const mapped = data.map((session: any) => {
+                        const scheduledDate = new Date(session.scheduled_at);
+                        const now = new Date();
+                        const diffMs = now.getTime() - scheduledDate.getTime();
+                        const oneHour = 60 * 60 * 1000;
+                        
+                        const isActive = diffMs >= -15 * 60 * 1000 && diffMs <= 2 * oneHour;
+
+                        const timeStr = scheduledDate.toLocaleString('en-US', {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+
+                        return {
+                            id: session.id,
+                            topic: session.topic,
+                            instructor: (session.profiles as any)?.full_name || 'Mentozy Instructor',
+                            time: timeStr,
+                            roomId: session.room_id,
+                            duration: session.duration,
+                            isActive: isActive
+                        };
+                    });
+                    setLiveSessions([...mapped, ...defaultSessions]);
+                } else {
                     setLiveSessions(defaultSessions);
                 }
-            } else {
-                setLiveSessions(defaultSessions);
+            } catch (err) {
+                console.error("Failed to load live sessions:", err);
             }
-        };
-        loadSessions();
-        
-        // Setup listener for local storage changes across tabs
-        window.addEventListener('storage', loadSessions);
-        return () => window.removeEventListener('storage', loadSessions);
-    }, []);
+        }
+
+        fetchLiveSessions();
+        const timer = setInterval(fetchLiveSessions, 60000);
+        return () => clearInterval(timer);
+    }, [user]);
     const [popoverInputText, setPopoverInputText] = useState('');
     const [reminders, setReminders] = useState<Reminder[]>([
         { id: '1', text: 'Prepare questions for session', completed: false },

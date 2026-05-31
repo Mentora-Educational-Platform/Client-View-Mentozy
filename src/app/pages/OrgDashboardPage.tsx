@@ -135,6 +135,11 @@ export function OrgDashboardPage() {
             return;
         }
 
+        if (!user || !supabase) {
+            toast.error('Session error. Please log in again.');
+            return;
+        }
+
         setIsCreatingMeeting(true);
         // Simulate API call to provision Zoom/Native secure room
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -142,24 +147,32 @@ export function OrgDashboardPage() {
         // Random meeting parameters
         const randId = Math.floor(1000000000 + Math.random() * 9000000000).toString().replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
         const randPasscode = `MZ-LIVE-${Math.floor(1000 + Math.random() * 9000)}`;
-        const joinLink = `https://mentozy.app/live/${randId.replace(/\s/g, '')}`;
-
-        const newSession = {
-            id: `live-${Date.now()}`,
-            topic: meetingTopic,
-            instructor: orgName,
-            time: 'Active Now',
-            roomId: randId.replace(/\s/g, ''),
-            duration: meetingDuration,
-            isActive: true
-        };
+        const cleanRoomId = randId.replace(/\s/g, '');
+        const joinLink = `${window.location.origin}/live/${cleanRoomId}`;
 
         try {
-            const stored = localStorage.getItem('mentozy_live_sessions');
-            const parsed = stored ? JSON.parse(stored) : [];
-            localStorage.setItem('mentozy_live_sessions', JSON.stringify([newSession, ...parsed]));
+            const { error } = await supabase
+                .from('live_sessions')
+                .insert({
+                    org_id: user.id,
+                    topic: meetingTopic,
+                    description: meetingDesc,
+                    scheduled_at: meetingDate,
+                    duration: meetingDuration,
+                    room_id: cleanRoomId,
+                    passcode: randPasscode,
+                    invited_student_ids: invitedUsers.map(u => u.id)
+                });
+
+            if (error) {
+                console.error("Database insert error:", error);
+                toast.error("Failed to sync live session to Supabase. Check if SQL table is created.");
+                setIsCreatingMeeting(false);
+                return;
+            }
         } catch (e) {
-            console.error("Failed to save live session to localStorage", e);
+            console.error("Database transaction failed:", e);
+            toast.error("Cloud DB sync failed. Saving locally as fallback.");
         }
 
         setCreatedMeetingDetails({
