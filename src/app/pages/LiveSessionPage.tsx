@@ -65,18 +65,10 @@ export function LiveSessionPage() {
 
   // Live Chat state
   const [chatMessage, setChatMessage] = useState('');
-  const [chatList, setChatList] = useState<ChatMessage[]>([
-    { id: '1', sender: 'Dr. Sarah Jenkins', avatar: 'SJ', text: 'Welcome to Mentozy Live WebRTC Space! Ready to review the milestones.', timestamp: '10:00 AM', isHost: true },
-    { id: '2', sender: 'Alex Rivera', avatar: 'AR', text: 'Setting up ICE candidate configurations now.', timestamp: '10:01 AM' }
-  ]);
+  const [chatList, setChatList] = useState<ChatMessage[]>([]);
 
   // Cohort participants roster
-  const [participantsList] = useState([
-    { id: 'p1', name: 'Dr. Sarah Jenkins', role: 'Host / Instructor', avatar: 'SJ', active: true },
-    { id: 'p2', name: 'Alex Rivera', role: 'Student', avatar: 'AR', active: true },
-    { id: 'p3', name: 'Sophia Patel', role: 'Student', avatar: 'SP', active: true },
-    { id: 'p4', name: 'Ethan Hunt', role: 'Student', avatar: 'EH', active: false }
-  ]);
+  const [participantsList, setParticipantsList] = useState<any[]>([]);
 
   // Fetch session details from Supabase if available
   useEffect(() => {
@@ -85,21 +77,76 @@ export function LiveSessionPage() {
       try {
         const { data, error } = await supabase
           .from('live_sessions')
-          .select('topic, description')
+          .select(`
+            topic,
+            description,
+            org_id,
+            invited_student_ids,
+            profiles:org_id (full_name)
+          `)
           .eq('room_id', roomId)
           .single();
 
         if (error) {
-          console.warn("Could not find session topic in database:", error);
+          console.warn("Could not find session details in database:", error);
           return;
         }
 
         if (data) {
           if (data.topic) setMeetingTopic(data.topic);
           if (data.description) setMeetingDesc(data.description);
+
+          const hostName = (data.profiles as any)?.full_name || 'Mentozy Organisation';
+          const hostAvatar = hostName.split(' ').map((n: string) => n[0]).join('').substring(0, 2);
+
+          // Build dynamic live roster!
+          const roster = [
+            {
+              id: data.org_id,
+              name: hostName,
+              role: 'Host / Instructor',
+              avatar: hostAvatar,
+              active: true
+            }
+          ];
+
+          // Initialize chat with customized welcome
+          setChatList([
+            { 
+              id: '1', 
+              sender: hostName, 
+              avatar: hostAvatar, 
+              text: `Welcome to Mentozy Live Space! Let's start the "${data.topic}" sync. Ready to review the milestones.`, 
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), 
+              isHost: true 
+            }
+          ]);
+
+          // Fetch the profiles of invited students
+          const studentIds = data.invited_student_ids || [];
+          if (studentIds.length > 0) {
+            const { data: studentProfiles, error: studentError } = await supabase
+              .from('profiles')
+              .select('id, full_name, avatar_url')
+              .in('id', studentIds);
+
+            if (!studentError && studentProfiles) {
+              studentProfiles.forEach(student => {
+                const initials = (student.full_name || 'Student').split(' ').map((n: string) => n[0]).join('').substring(0, 2);
+                roster.push({
+                  id: student.id,
+                  name: student.full_name || 'Student',
+                  role: 'Student',
+                  avatar: initials,
+                  active: true
+                });
+              });
+            }
+          }
+          setParticipantsList(roster);
         }
       } catch (err) {
-        console.error("Failed to query meeting topic:", err);
+        console.error("Failed to query meeting participants:", err);
       }
     }
     fetchMeetingDetails();
@@ -294,6 +341,8 @@ export function LiveSessionPage() {
     toast.success('Whiteboard cleared');
   };
 
+  const firstStudent = participantsList.find(p => p.role === 'Student');
+
   return (
     <div className="fixed inset-0 z-[100] bg-slate-950 flex flex-col font-sans select-none text-slate-100 overflow-hidden">
       
@@ -402,10 +451,10 @@ export function LiveSessionPage() {
               {(!isCameraOn || !inSession) && !isWhiteboardOpen && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 space-y-4 animate-in fade-in duration-300">
                   <div className="w-24 h-24 rounded-full bg-indigo-600/20 text-indigo-400 border-2 border-indigo-500/30 flex items-center justify-center text-3xl font-extrabold shadow-lg shadow-indigo-600/10 animate-bounce">
-                    SJ
+                    {participantsList[0]?.avatar || 'H'}
                   </div>
                   <div className="text-center">
-                    <h4 className="font-bold text-white text-base">Dr. Sarah Jenkins (You)</h4>
+                    <h4 className="font-bold text-white text-base">{participantsList[0]?.name || 'Host'} (You)</h4>
                     <p className="text-xs text-slate-500 mt-1 font-semibold">Camera streams paused</p>
                   </div>
                 </div>
@@ -430,26 +479,28 @@ export function LiveSessionPage() {
             )}
 
             {/* FLOATING SUB-GRID: Student Overlay (Simulated Peer Feeds) */}
-            <div className="absolute top-4 right-4 w-48 aspect-video rounded-2xl overflow-hidden bg-slate-950/80 border border-white/10 shadow-2xl z-30 pointer-events-auto">
-              <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 relative">
-                
-                {/* Simulated live avatar waves */}
-                <div className="w-10 h-10 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/25 flex items-center justify-center text-xs font-bold shadow-md shadow-purple-600/10">
-                  AR
-                </div>
-                <span className="text-[9px] font-bold text-slate-300 mt-2">Alex Rivera</span>
-                
-                {/* Micro speaking wave badge */}
-                <div className="absolute bottom-2 left-2 bg-slate-950/80 px-2 py-0.5 rounded border border-white/5 flex items-center gap-1">
-                  <div className="flex gap-0.5">
-                    <div className="w-0.5 h-2 bg-emerald-500 animate-pulse"></div>
-                    <div className="w-0.5 h-3 bg-emerald-500 animate-pulse"></div>
-                    <div className="w-0.5 h-1.5 bg-emerald-500 animate-pulse"></div>
+            {firstStudent && (
+              <div className="absolute top-4 right-4 w-48 aspect-video rounded-2xl overflow-hidden bg-slate-950/80 border border-white/10 shadow-2xl z-30 pointer-events-auto">
+                <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 relative">
+                  
+                  {/* Dynamic live avatar waves */}
+                  <div className="w-10 h-10 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/25 flex items-center justify-center text-xs font-bold shadow-md shadow-purple-600/10">
+                    {firstStudent.avatar}
                   </div>
-                  <span className="text-[8px] text-emerald-400 font-extrabold uppercase">Live</span>
+                  <span className="text-[9px] font-bold text-slate-300 mt-2">{firstStudent.name}</span>
+                  
+                  {/* Micro speaking wave badge */}
+                  <div className="absolute bottom-2 left-2 bg-slate-950/80 px-2 py-0.5 rounded border border-white/5 flex items-center gap-1">
+                    <div className="flex gap-0.5">
+                      <div className="w-0.5 h-2 bg-emerald-500 animate-pulse"></div>
+                      <div className="w-0.5 h-3 bg-emerald-500 animate-pulse"></div>
+                      <div className="w-0.5 h-1.5 bg-emerald-500 animate-pulse"></div>
+                    </div>
+                    <span className="text-[8px] text-emerald-400 font-extrabold uppercase">Live</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
           </div>
         </div>
