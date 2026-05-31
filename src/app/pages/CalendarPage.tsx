@@ -24,27 +24,49 @@ export function CalendarPage() {
     const [popoverPosition, setPopoverPosition] = useState<{ x: number, y: number } | null>(null);
     const [isPopoverInputMode, setIsPopoverInputMode] = useState(false);
     
-    // Live WebRTC Sessions
-    const [liveSessions] = useState([
-        {
-            id: 'live-1',
-            topic: 'Advanced Asynchronous Javascript & Event Loop',
-            instructor: 'Dr. Sarah Jenkins',
-            time: 'Starts in 10 minutes',
-            roomId: 'mentozy-live-async-pipeline',
-            duration: '1 Hour',
-            isActive: true
-        },
-        {
-            id: 'live-2',
-            topic: 'Custom WebRTC Architectures & Media Streams',
-            instructor: 'Prof. Marcus Brody',
-            time: 'Tomorrow, 10:00 AM',
-            roomId: 'mentozy-live-webrtc-blueprint',
-            duration: '1.5 Hours',
-            isActive: false
-        }
-    ]);
+    // Live WebRTC Sessions (loading from localStorage)
+    const [liveSessions, setLiveSessions] = useState<any[]>([]);
+
+    useEffect(() => {
+        const loadSessions = () => {
+            const stored = localStorage.getItem('mentozy_live_sessions');
+            const defaultSessions = [
+                {
+                    id: 'live-1',
+                    topic: 'Advanced Asynchronous Javascript & Event Loop',
+                    instructor: 'Dr. Sarah Jenkins',
+                    time: 'Starts in 10 minutes',
+                    roomId: 'mentozy-live-async-pipeline',
+                    duration: '1 Hour',
+                    isActive: true
+                },
+                {
+                    id: 'live-2',
+                    topic: 'Custom WebRTC Architectures & Media Streams',
+                    instructor: 'Prof. Marcus Brody',
+                    time: 'Tomorrow, 10:00 AM',
+                    roomId: 'mentozy-live-webrtc-blueprint',
+                    duration: '1.5 Hours',
+                    isActive: false
+                }
+            ];
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    setLiveSessions([...parsed, ...defaultSessions]);
+                } catch (e) {
+                    setLiveSessions(defaultSessions);
+                }
+            } else {
+                setLiveSessions(defaultSessions);
+            }
+        };
+        loadSessions();
+        
+        // Setup listener for local storage changes across tabs
+        window.addEventListener('storage', loadSessions);
+        return () => window.removeEventListener('storage', loadSessions);
+    }, []);
     const [popoverInputText, setPopoverInputText] = useState('');
     const [reminders, setReminders] = useState<Reminder[]>([
         { id: '1', text: 'Prepare questions for session', completed: false },

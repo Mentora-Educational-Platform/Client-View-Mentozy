@@ -144,6 +144,24 @@ export function OrgDashboardPage() {
         const randPasscode = `MZ-LIVE-${Math.floor(1000 + Math.random() * 9000)}`;
         const joinLink = `${window.location.origin}/live/${randId.replace(/\s/g, '')}`;
 
+        const newSession = {
+            id: `live-${Date.now()}`,
+            topic: meetingTopic,
+            instructor: orgName,
+            time: 'Active Now',
+            roomId: randId.replace(/\s/g, ''),
+            duration: meetingDuration,
+            isActive: true
+        };
+
+        try {
+            const stored = localStorage.getItem('mentozy_live_sessions');
+            const parsed = stored ? JSON.parse(stored) : [];
+            localStorage.setItem('mentozy_live_sessions', JSON.stringify([newSession, ...parsed]));
+        } catch (e) {
+            console.error("Failed to save live session to localStorage", e);
+        }
+
         setCreatedMeetingDetails({
             topic: meetingTopic,
             duration: meetingDuration,

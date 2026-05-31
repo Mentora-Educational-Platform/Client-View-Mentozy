@@ -1,9 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, BookOpen, Calendar, MessageSquare, PieChart, Award, LogOut, X, User, Users, PlusCircle, Settings, GraduationCap, CalendarDays, BookMarked, Building2, Bell, PanelLeftClose } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Calendar, MessageSquare, PieChart, Award, LogOut, X, User, Users, PlusCircle, Settings, GraduationCap, CalendarDays, BookMarked, Building2, Bell, PanelLeftClose, ChevronDown, Check } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useOrganizationMode } from '../../../context/OrganizationModeContext';
 import { getUserProfile } from '../../../lib/api';
+import { toast } from 'sonner';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -97,7 +98,8 @@ const DoodleIcon = ({ label, className, active }: { label: string, className?: s
 export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }: SidebarProps) {
     const location = useLocation();
     const { signOut, user } = useAuth();
-    const { mode, activeOrganization } = useOrganizationMode();
+    const { mode, activeOrganization, userOrganizations, setActiveOrganization } = useOrganizationMode();
+    const [isOrgDropdownOpen, setIsOrgDropdownOpen] = useState(false);
     const [profileRole, setProfileRole] = useState<string | null>(null);
 
     useEffect(() => {
@@ -242,16 +244,61 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
                         </div>
                     </div>
 
-                    {/* Organization Mode Badge */}
+                    {/* Organization Mode Badge / Dropdown */}
                     {mode === 'organization' && activeOrganization && (
-                        <div className={`mx-4 my-3 p-3 bg-indigo-50 rounded-2xl border border-indigo-100 transition-all duration-300 overflow-hidden ${isDesktopCollapsed ? 'md:px-2 md:py-2 md:h-12 flex items-center justify-center' : ''}`}>
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                                <Building2 className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-                                <span className={`text-xs font-bold text-indigo-700 whitespace-nowrap transition-all duration-300 ${isDesktopCollapsed ? 'md:hidden' : 'block'}`}>{activeOrganization.name}</span>
+                        <div className="relative mx-4 my-3 flex flex-col">
+                            <div 
+                                onClick={() => userOrganizations.length > 1 && setIsOrgDropdownOpen(prev => !prev)}
+                                className={`p-3 bg-indigo-50 rounded-2xl border border-indigo-100 transition-all duration-300 flex flex-col justify-center ${userOrganizations.length > 1 ? 'cursor-pointer hover:bg-indigo-100/50' : ''} ${isDesktopCollapsed ? 'md:px-2 md:py-2 md:h-12 items-center' : ''}`}
+                            >
+                                <div className="flex items-center justify-between w-full flex-shrink-0">
+                                    <div className="flex items-center gap-2">
+                                        <Building2 className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                                        <span className={`text-xs font-bold text-indigo-700 whitespace-nowrap transition-all duration-300 text-left ${isDesktopCollapsed ? 'md:hidden' : 'block'}`}>{activeOrganization.name}</span>
+                                    </div>
+                                    {userOrganizations.length > 1 && !isDesktopCollapsed && (
+                                        <ChevronDown className={`w-3.5 h-3.5 text-indigo-500 transition-transform ${isOrgDropdownOpen ? 'rotate-180' : ''}`} />
+                                    )}
+                                </div>
+                                <span className={`text-[10px] font-semibold text-indigo-500 uppercase tracking-wider bg-indigo-100 px-2 py-0.5 rounded-full mt-1.5 transition-all duration-300 self-start whitespace-nowrap ${isDesktopCollapsed ? 'md:hidden' : 'inline-block'}`}>
+                                    {activeOrganization.role === 'teacher' ? 'Teacher View' : 'Student View'}
+                                </span>
                             </div>
-                            <span className={`text-[10px] font-semibold text-indigo-500 uppercase tracking-wider bg-indigo-100 px-2 py-0.5 rounded-full mt-1.5 transition-all duration-300 whitespace-nowrap ${isDesktopCollapsed ? 'md:hidden' : 'inline-block'}`}>
-                                {activeOrganization.role === 'teacher' ? 'Teacher View' : 'Student View'}
-                            </span>
+
+                            {/* Floating Dropdown */}
+                            {isOrgDropdownOpen && userOrganizations.length > 1 && !isDesktopCollapsed && (
+                                <div className="absolute top-full left-0 right-0 mt-1.5 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-2 z-50 space-y-1 animate-in fade-in zoom-in-95 duration-200">
+                                    <div className="px-3 py-1.5 border-b border-slate-800 text-left">
+                                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Switch Organisation</span>
+                                    </div>
+                                    {userOrganizations.map(org => {
+                                        const isActiveOrg = org.id === activeOrganization.id;
+                                        return (
+                                            <button
+                                                key={org.id}
+                                                onClick={() => {
+                                                    setActiveOrganization(org);
+                                                    setIsOrgDropdownOpen(false);
+                                                    toast.success(`Switched workspace to ${org.name}!`);
+                                                }}
+                                                className={`w-full text-left p-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-colors ${isActiveOrg ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'}`}
+                                            >
+                                                <div className="flex items-center gap-2 truncate">
+                                                    <Building2 className="w-3.5 h-3.5 shrink-0" />
+                                                    <span className="truncate">{org.name}</span>
+                                                </div>
+                                                {isActiveOrg ? (
+                                                    <Check className="w-3 h-3 text-white shrink-0" />
+                                                ) : (
+                                                    <span className="text-[8px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded shrink-0">
+                                                        {org.role === 'teacher' ? 'Teacher' : 'Student'}
+                                                    </span>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     )}
 
