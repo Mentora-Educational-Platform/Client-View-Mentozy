@@ -452,9 +452,20 @@ export function OrgDashboardPage() {
                                     <div className="flex gap-3">
                                         <button 
                                             onClick={handleCloseMeetingModal}
-                                            className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-sm shadow-lg shadow-indigo-600/20 transition-all text-center"
+                                            className="flex-1 py-3 bg-slate-800 hover:bg-slate-750 text-slate-300 rounded-2xl border border-slate-750 font-bold text-xs transition-colors text-center"
                                         >
                                             Done
+                                        </button>
+                                        <button 
+                                            onClick={() => {
+                                                const roomId = createdMeetingDetails.meetingId.replace(/\s/g, '');
+                                                setIsMeetingModalOpen(false);
+                                                navigate(`/live/${roomId}`);
+                                            }}
+                                            className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-xs shadow-lg shadow-emerald-500/10 hover:-translate-y-0.5 transition-all text-center flex items-center justify-center gap-1.5"
+                                        >
+                                            <Video className="w-4.5 h-4.5 animate-pulse" />
+                                            Launch Meeting
                                         </button>
                                     </div>
                                 </div>
