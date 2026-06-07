@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
     BookOpen, ChevronRight, Clock, Calendar, Bell,
     GraduationCap, Building2, Users, CheckCircle2,
-    Play, Lock, TrendingUp, Award
+    TrendingUp, Award
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useOrganizationMode } from '../../../context/OrganizationModeContext';
@@ -38,18 +38,16 @@ export function OrgStudentDashboard() {
                 if (enrollmentsData) setEnrollments(enrollmentsData);
                 if (bookingsData) setBookings(bookingsData);
 
-                // Fetch org-specific courses assigned by this organization
+                // Fetch org-specific tasks assigned by this organization
                 if (supabase) {
-                    const { data: coursesData } = await supabase
-                        .from('org_courses')
-                        .select(`
-                            id, assigned_at, is_mandatory,
-                            track:tracks(id, title, description, level, thumbnail_url, modules:modules(id))
-                        `)
+                    const { data: tasksData } = await supabase
+                        .from('org_tasks')
+                        .select('id, title, content, deadline, created_at')
                         .eq('org_id', activeOrganization.id)
+                        .order('created_at', { ascending: false })
                         .limit(10);
 
-                    if (coursesData) setOrgCourses(coursesData);
+                    if (tasksData) setOrgCourses(tasksData);
 
                     // Fetch teachers under this org
                     const { data: teachersData } = await supabase
@@ -200,8 +198,8 @@ export function OrgStudentDashboard() {
                                     <GraduationCap className="w-5 h-5 text-indigo-600" />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-bold text-gray-900">Organization Courses</h2>
-                                    <p className="text-sm text-gray-500">Assigned by {orgName}</p>
+                                    <h2 className="text-xl font-bold text-gray-900">Task Bar</h2>
+                                    <p className="text-sm text-gray-500">Your Task for today</p>
                                 </div>
                             </div>
                             <Link to="/courses" className="flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors">
@@ -217,10 +215,7 @@ export function OrgStudentDashboard() {
                             </div>
                         ) : orgCourses.length > 0 ? (
                             <div className="grid md:grid-cols-2 gap-4">
-                                {orgCourses.slice(0, 4).map((orgCourse: any, index: number) => {
-                                    const track = orgCourse.track;
-                                    const enrollment = enrollments.find(e => e.track_id === track?.id);
-                                    const progress = enrollment?.progress || 0;
+                                {orgCourses.slice(0, 4).map((task: any, index: number) => {
                                     const gradients = [
                                         'from-indigo-500 to-violet-500',
                                         'from-blue-500 to-cyan-500',
@@ -228,58 +223,34 @@ export function OrgStudentDashboard() {
                                         'from-amber-500 to-orange-500',
                                     ];
                                     return (
-                                        <div key={orgCourse.id} className="group relative overflow-hidden rounded-3xl bg-white border-2 border-gray-100 shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all duration-300 hover:-translate-y-1">
+                                        <Link 
+                                            key={task.id} 
+                                            to={`/tasks/${task.id}`}
+                                            className="group block relative overflow-hidden rounded-3xl bg-white border-2 border-gray-100 shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                                        >
                                             {/* Top gradient bar */}
                                             <div className={`h-1.5 bg-gradient-to-r ${gradients[index % 4]}`} />
-                                            {orgCourse.is_mandatory && (
-                                                <div className="absolute top-4 right-4">
-                                                    <span className="text-xs font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                                        <Lock className="w-3 h-3" /> Required
-                                                    </span>
-                                                </div>
-                                            )}
                                             <div className="p-6">
                                                 <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${gradients[index % 4]} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                                                     <BookOpen className="w-5 h-5 text-white" />
                                                 </div>
-                                                <h3 className="font-bold text-gray-900 text-lg mb-1 leading-tight group-hover:text-indigo-600 transition-colors line-clamp-1">
-                                                    {track?.title || 'Untitled Course'}
+                                                <h3 className="font-bold text-gray-900 text-lg mb-2 leading-tight group-hover:text-indigo-600 transition-colors line-clamp-1">
+                                                    {task.title || 'Untitled Task'}
                                                 </h3>
-                                                <p className="text-sm text-gray-500 mb-1 line-clamp-2">
-                                                    {track?.description || 'Organization assigned course'}
-                                                </p>
-                                                <div className="flex items-center gap-2 mb-4">
-                                                    <span className="text-xs font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                                                        {track?.level || 'All Levels'}
-                                                    </span>
-                                                    <span className="text-xs text-gray-400">
-                                                        {track?.modules?.length || 0} modules
-                                                    </span>
-                                                </div>
-                                                {/* Progress */}
-                                                <div className="space-y-2">
-                                                    <div className="flex justify-between items-center">
-                                                        <span className="text-xs font-medium text-gray-500">Progress</span>
-                                                        <span className="text-xs font-bold text-indigo-600">{progress}%</span>
-                                                    </div>
-                                                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                                        <div
-                                                            className={`h-full bg-gradient-to-r ${gradients[index % 4]} rounded-full transition-all duration-700`}
-                                                            style={{ width: `${progress}%` }}
-                                                        />
-                                                    </div>
-                                                    {track?.id && (
-                                                        <Link
-                                                            to={`/learn/${track.id}`}
-                                                            className="flex items-center justify-center gap-2 w-full py-2.5 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all mt-2 group/btn"
-                                                        >
-                                                            <Play className="w-4 h-4" />
-                                                            {progress > 0 ? 'Continue' : 'Start'} Learning
-                                                        </Link>
+                                                <div 
+                                                    className="text-sm text-gray-500 mb-4 line-clamp-3 prose prose-sm overflow-hidden" 
+                                                    dangerouslySetInnerHTML={{ __html: task.content || '' }}
+                                                />
+                                                <div className="flex flex-col gap-2 pt-2 border-t border-gray-55">
+                                                    {task.deadline && (
+                                                        <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full w-fit flex items-center gap-1.5">
+                                                            <Clock className="w-3.5 h-3.5" />
+                                                            Deadline: {new Date(task.deadline).toLocaleString()}
+                                                        </span>
                                                     )}
                                                 </div>
                                             </div>
-                                        </div>
+                                        </Link>
                                     );
                                 })}
                             </div>
@@ -288,9 +259,9 @@ export function OrgStudentDashboard() {
                                 <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                                     <Building2 className="w-8 h-8 text-indigo-500" />
                                 </div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-2">No Courses Assigned Yet</h3>
+                                <h3 className="text-lg font-bold text-gray-900 mb-2">No Tasks Assigned Yet</h3>
                                 <p className="text-gray-500 text-sm max-w-xs mx-auto">
-                                    {orgName} hasn't assigned any courses yet. Check back soon or contact your organization.
+                                    {orgName} hasn't assigned any tasks yet. Check back soon or contact your organization.
                                 </p>
                             </div>
                         )}

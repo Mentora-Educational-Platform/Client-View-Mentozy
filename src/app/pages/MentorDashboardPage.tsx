@@ -180,6 +180,7 @@ export function MentorDashboardPage() {
         } catch (error) {
             console.error(`[Dashboard] Catch block error accepting booking:`, error);
             toast.error("An unexpected error occurred. Please try again.");
+            return false;
         } finally {
             setProcessingId(null);
         }

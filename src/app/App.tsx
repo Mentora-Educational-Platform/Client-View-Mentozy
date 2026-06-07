@@ -37,6 +37,7 @@ const AuthCallbackPage = lazy(() => import('./pages/AuthCallbackPage').then(modu
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage').then(module => ({ default: module.ForgotPasswordPage })));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage').then(module => ({ default: module.ResetPasswordPage })));
 const EmailUpdatePage = lazy(() => import('./pages/EmailUpdatePage').then(module => ({ default: module.EmailUpdatePage })));
+const TaskDetailPage = lazy(() => import('./pages/TaskDetailPage').then(module => ({ default: module.TaskDetailPage })));
 
 
 
@@ -55,6 +56,7 @@ const OrgCreateCoursePage = lazy(() => import('./pages/OrgCreateCoursePage').the
 const OrgMaterialsPage = lazy(() => import('./pages/OrgMaterialsPage').then(module => ({ default: module.OrgMaterialsPage })));
 const OrgSettingsPage = lazy(() => import('./pages/OrgSettingsPage').then(module => ({ default: module.OrgSettingsPage })));
 const OrgAnnouncementsPage = lazy(() => import('./pages/OrgAnnouncementsPage').then(module => ({ default: module.OrgAnnouncementsPage })));
+const OrgSubmissionsPage = lazy(() => import('./pages/OrgSubmissionsPage').then(module => ({ default: module.OrgSubmissionsPage })));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage').then(module => ({ default: module.AdminDashboardPage })));
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(module => ({ default: module.ProfilePage })));
 const PlansPage = lazy(() => import('./pages/PlansPage').then(module => ({ default: module.PlansPage })));
@@ -308,6 +310,11 @@ function App() {
             <OrgAnnouncementsPage />
           </Suspense>
         } />
+        <Route path="/org-submissions" element={
+          <Suspense fallback={<PageLoader />}>
+            <OrgSubmissionsPage />
+          </Suspense>
+        } />
         <Route path="/org-settings" element={
           <Suspense fallback={<PageLoader />}>
             <OrgSettingsPage />
@@ -433,6 +440,11 @@ function App() {
         <Route path="/live/:roomId" element={
           <Suspense fallback={<PageLoader />}>
             <LiveSessionPage />
+          </Suspense>
+        } />
+        <Route path="/tasks/:taskId" element={
+          <Suspense fallback={<PageLoader />}>
+            <TaskDetailPage />
           </Suspense>
         } />
 

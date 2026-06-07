@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -6,11 +6,8 @@ import {
   GraduationCap, 
   DollarSign, 
   UserPlus, 
-  Settings, 
-  BookOpen, 
   Video, 
   Search, 
-  Calendar, 
   Copy, 
   Check, 
   X, 
@@ -32,6 +29,54 @@ export function OrgDashboardPage() {
     const [staff, setStaff] = useState<any[]>([]);
     const [students, setStudents] = useState<any[]>([]);
     const [orgProfile, setOrgProfile] = useState<any>(null);
+
+    // Task board states
+    const [taskName, setTaskName] = useState('');
+    const [taskDeadline, setTaskDeadline] = useState('');
+    const [isSavingTask, setIsSavingTask] = useState(false);
+    const editorRef = useRef<HTMLDivElement>(null);
+
+    const handleAssignTask = async () => {
+        if (!taskName.trim()) {
+            toast.error('Please enter a task name');
+            return;
+        }
+        const taskHtml = editorRef.current?.innerHTML || '';
+        if (!taskHtml.trim() || taskHtml === '<br>') {
+            toast.error('Please write some task instructions');
+            return;
+        }
+
+        const client = supabase;
+        if (!client) {
+            toast.error('Database client not initialized');
+            return;
+        }
+
+        setIsSavingTask(true);
+        try {
+            const { error } = await client.from('org_tasks').insert({
+                org_id: user?.id,
+                title: taskName,
+                content: taskHtml,
+                deadline: taskDeadline ? new Date(taskDeadline).toISOString() : null
+            });
+
+            if (error) throw error;
+
+            toast.success('Task assigned successfully!');
+            setTaskName('');
+            setTaskDeadline('');
+            if (editorRef.current) {
+                editorRef.current.innerHTML = '';
+            }
+        } catch (err: any) {
+            console.error('Error assigning task:', err);
+            toast.error(err.message || 'Failed to assign task. Make sure database table exists.');
+        } finally {
+            setIsSavingTask(false);
+        }
+    };
 
     // Meeting Modal states
     const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
@@ -64,7 +109,7 @@ export function OrgDashboardPage() {
         const timer = setTimeout(async () => {
             try {
                 const results = await searchStudentsForOrg(searchQuery);
-                setSearchResults(results);
+                setSearchResults(results || []);
             } catch (err) {
                 console.error("Error searching students:", err);
                 setSearchResults([]);
@@ -82,7 +127,8 @@ export function OrgDashboardPage() {
     // Fetch org profile details
     useEffect(() => {
         const fetchOrgDetails = async () => {
-            if (!user?.id || !supabase) return;
+            const client = supabase;
+            if (!user?.id || !client) return;
 
             // Strict redirect logic
             if (!user.user_metadata?.is_org) {
@@ -95,7 +141,7 @@ export function OrgDashboardPage() {
                 return;
             }
 
-            const { data } = await supabase.from('mentors').select('company, bio').eq('user_id', user.id).single();
+            const { data } = await client.from('mentors').select('company, bio').eq('user_id', user.id).single();
             if (data) setOrgProfile(data);
 
             const teachersData = await getOrgTeachers(user.id);
@@ -264,68 +310,69 @@ export function OrgDashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column: Staff Management */}
                 <div className="lg:col-span-2 space-y-8">
-                    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-gray-900">Staff & Teachers</h2>
-                            {canManageStaff && (
-                                <span className="text-xs font-semibold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
-                                    Admin Privileges Active
-                                </span>
-                            )}
-                        </div>
-                        <div className="divide-y divide-gray-100">
-                            {staff.length === 0 ? (
-                                <div className="p-8 text-center text-gray-500">
-                                    No staff members added yet.
-                                </div>
-                            ) : (
-                                staff.map((teacher) => (
-                                    <div key={teacher.id} className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center font-bold text-gray-500 text-lg">
-                                                {teacher.name.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <h4 className="font-bold text-gray-900">{teacher.name}</h4>
-                                                <p className="text-sm text-gray-500">{teacher.role}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-4">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${teacher.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-                                                }`}>
-                                                {teacher.status}
-                                            </span>
-                                            {canManageStaff && (
-                                                <button className="p-2 text-gray-400 hover:text-indigo-600 transition-colors" title="Manage Role">
-                                                    <Settings className="w-5 h-5" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                        {canManageStaff && (
-                            <div className="p-4 bg-gray-50 border-t border-gray-100 text-center">
-                                <Link to="/org-teachers" className="text-sm font-bold text-indigo-600 hover:text-indigo-700">View All Staff &rarr;</Link>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Quick Access to Courses */}
-                    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600">
-                                <BookOpen className="w-7 h-7" />
-                            </div>
+                    {/* CLEAN WRITING BOARD / TASK CREATOR */}
+                    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-6 space-y-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100">
                             <div>
-                                <h3 className="font-bold text-gray-900 text-lg">Organisation Courses</h3>
-                                <p className="text-sm text-gray-500">Manage all courses taught by your staff</p>
+                                <h2 className="text-xl font-bold text-gray-900">Task Creator</h2>
+                                <p className="text-sm text-gray-500">Draft tasks and assign them to your students</p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3">
+                                <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl">
+                                    <Clock className="w-4 h-4 text-gray-500" />
+                                    <input 
+                                        type="datetime-local" 
+                                        className="bg-transparent text-xs text-gray-700 outline-none border-none cursor-pointer"
+                                        value={taskDeadline}
+                                        onChange={e => setTaskDeadline(e.target.value)}
+                                        title="Choose Deadline Time"
+                                    />
+                                </div>
+                                <button 
+                                    onClick={handleAssignTask}
+                                    disabled={isSavingTask}
+                                    className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5"
+                                >
+                                    {isSavingTask ? (
+                                        <>
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            Saving...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sparkles className="w-3.5 h-3.5" />
+                                            Assign Task
+                                        </>
+                                    )}
+                                </button>
                             </div>
                         </div>
-                        <Link to="/org-courses" className="px-6 py-2.5 bg-gray-900 text-white rounded-xl font-bold text-sm hover:bg-gray-800 transition-colors whitespace-nowrap">
-                            Manage Courses
-                        </Link>
+
+                        {/* Task Title Frameless Input */}
+                        <div className="space-y-1">
+                            <label className="text-[10px] uppercase tracking-wider font-extrabold text-gray-400">Task Title</label>
+                            <input 
+                                type="text"
+                                placeholder="Untitled Task Name"
+                                value={taskName}
+                                onChange={e => setTaskName(e.target.value)}
+                                className="w-full bg-transparent text-2xl font-black text-gray-900 placeholder-gray-300 outline-none border-b-2 border-transparent focus:border-indigo-500/10 pb-1 transition-all"
+                            />
+                        </div>
+
+                        {/* Rich text Google Docs-style clean white pad */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] uppercase tracking-wider font-extrabold text-gray-400">Task Details & Description (Copy-paste matching ChatGPT font/size styling)</label>
+                            <div className="bg-gray-50/50 rounded-2xl p-4 border border-gray-150">
+                                <div 
+                                    ref={editorRef}
+                                    contentEditable={true}
+                                    data-placeholder="Write or copy-paste task contents here... (Rich formats, sizes, and fonts from ChatGPT will preserve automatically)"
+                                    className="min-h-[320px] bg-white text-gray-900 border border-gray-200/80 rounded-xl p-6 shadow-sm outline-none overflow-y-auto prose prose-sm max-w-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-left cursor-text"
+                                    style={{ fontFamily: 'Georgia, serif', fontSize: '15px', lineHeight: '1.6' }}
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
 

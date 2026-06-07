@@ -67,6 +67,7 @@ export function LiveSessionPage() {
   const [isRemoteVideoActive, setIsRemoteVideoActive] = useState(false);
   const [presenceUsers, setPresenceUsers] = useState<any[]>([]);
   const [channelSubscribed, setChannelSubscribed] = useState(false);
+  const [remoteTracksCount, setRemoteTracksCount] = useState(0);
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -267,9 +268,12 @@ export function LiveSessionPage() {
     };
 
     pc.ontrack = (event: any) => {
-      console.log("WebRTC: Received remote track!", event.streams[0]);
-      setRemoteStream(event.streams[0]);
-      setIsRemoteVideoActive(true);
+      console.log("WebRTC: Received remote track!", event.track.kind, event.streams[0]);
+      if (event.streams[0]) {
+        setRemoteStream(event.streams[0]);
+        setIsRemoteVideoActive(true);
+        setRemoteTracksCount(prev => prev + 1);
+      }
     };
 
     pc.onconnectionstatechange = () => {
@@ -462,13 +466,13 @@ export function LiveSessionPage() {
   useEffect(() => {
     const activeRemoteUser = presenceUsers.find(p => p.id !== user?.id);
     if (remoteStream && remoteVideoRef.current && activeRemoteUser) {
-      console.log("WebRTC: Binding remoteStream to remoteVideoRef");
+      console.log("WebRTC: Binding remoteStream to remoteVideoRef, tracks count:", remoteTracksCount);
       remoteVideoRef.current.srcObject = remoteStream;
       remoteVideoRef.current.play().catch(err => {
         console.warn("WebRTC remote video play failed or was interrupted:", err);
       });
     }
-  }, [remoteStream, presenceUsers, user]);
+  }, [remoteStream, presenceUsers, user, remoteTracksCount]);
 
   // Request media device streams
   useEffect(() => {

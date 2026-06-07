@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, BookOpen, Calendar, MessageSquare, PieChart, Award, LogOut, X, User, Users, PlusCircle, Settings, GraduationCap, CalendarDays, BookMarked, Building2, Bell, PanelLeftClose, ChevronDown, Check } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Calendar, MessageSquare, PieChart, Award, LogOut, X, User, Users, PlusCircle, Settings, GraduationCap, CalendarDays, BookMarked, Building2, Bell, PanelLeftClose, ChevronDown, Check, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useOrganizationMode } from '../../../context/OrganizationModeContext';
 import { getUserProfile } from '../../../lib/api';
@@ -22,6 +22,12 @@ const DoodleIcon = ({ label, className, active }: { label: string, className?: s
                 <path d="M13.5 3.5h7c.5 0 1 .5 1 1v4c0 .5-.5 1-1 1h-7c-.5 0-1-.5-1-1v-4c0-.5.5-1 1-1Z" />
                 <path d="M13.5 12.5h7c.5 0 1 .5 1 1v7c0 .5-.5 1-1 1h-7c-.5 0-1-.5-1-1v-7c0-.5.5-1 1-1Z" />
                 <path d="M3.5 15.5h7c.5 0 1 .5 1 1v4c0 .5-.5 1-1 1h-7c-.5 0-1-.5-1-1v-4c0-.5.5-1 1-1Z" />
+            </svg>
+        ),
+        'Submissions': (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+                <path d="m9 12 2 2 4-4" />
             </svg>
         ),
         'Courses': (
@@ -151,6 +157,7 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
         { icon: Users, label: 'Teachers', path: '/org-teachers' },
         { icon: CalendarDays, label: 'Events', path: '/org-events' },
         { icon: Bell, label: 'Announcements', path: '/org-announcements' },
+        { icon: CheckCircle2, label: 'Submissions', path: '/org-submissions' },
         { icon: BookOpen, label: 'Courses', path: '/org-courses' },
         { icon: BookMarked, label: 'Study Materials', path: '/org-materials' },
         { icon: Settings, label: 'Settings', path: '/org-settings' },
