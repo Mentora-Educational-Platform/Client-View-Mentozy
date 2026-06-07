@@ -3,26 +3,34 @@ import { Link } from 'react-router-dom';
 import {
     BookOpen, ChevronRight, Clock, Calendar, Bell,
     GraduationCap, Building2, Users, CheckCircle2,
-    TrendingUp, Award, HelpCircle
+    TrendingUp, Award, HelpCircle, Dna, FlaskConical, 
+    Calculator, Atom, Briefcase, Plus, CheckSquare, 
+    CalendarRange, FileText, Check, Dumbbell, Sparkles, Pin, ExternalLink
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useOrganizationMode } from '../../../context/OrganizationModeContext';
 import { getStudentEnrollments, getStudentBookings, Enrollment, Booking } from '../../../lib/api';
 import { getSupabase } from '../../../lib/supabase';
+import { toast } from 'sonner';
+
+interface Submission {
+    task_id: string;
+    status: string;
+}
 
 export function OrgStudentDashboard() {
     const { user } = useAuth();
     const { activeOrganization } = useOrganizationMode();
-    const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [orgTasks, setOrgTasks] = useState<any[]>([]);
     const [orgTeachers, setOrgTeachers] = useState<any[]>([]);
-    const [announcements, setAnnouncements] = useState<any[]>([]);
     const [taskSubmissions, setTaskSubmissions] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
 
-    const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 'Student';
     const orgName = activeOrganization?.name || 'Your Organization';
+    const orgEmail = (activeOrganization as any)?.email || 'academy.support@krishnaite.dev';
+
+    const [announcements, setAnnouncements] = useState<any[]>([]);
 
     useEffect(() => {
         const loadData = async () => {
@@ -30,27 +38,21 @@ export function OrgStudentDashboard() {
             setLoading(true);
             try {
                 const supabase = getSupabase();
-
-                const [enrollmentsData, bookingsData] = await Promise.all([
-                    getStudentEnrollments(user.id),
-                    getStudentBookings(user.id),
-                ]);
-
-                if (enrollmentsData) setEnrollments(enrollmentsData);
+                const bookingsData = await getStudentBookings(user.id);
                 if (bookingsData) setBookings(bookingsData);
 
                 if (supabase) {
-                    // 1. Fetch org-specific tasks assigned by this organization
+                    // Fetch tasks
                     const { data: tasksData } = await supabase
                         .from('org_tasks')
                         .select('id, title, content, deadline, created_at')
                         .eq('org_id', activeOrganization.id)
                         .order('created_at', { ascending: false })
-                        .limit(10);
+                        .limit(5);
 
                     if (tasksData) setOrgTasks(tasksData);
 
-                    // 2. Fetch student's submissions for these tasks to display statuses
+                    // Fetch submissions
                     try {
                         const { data: subData } = await supabase
                             .from('org_task_submissions')
@@ -68,7 +70,7 @@ export function OrgStudentDashboard() {
                         console.warn('Could not query submissions for badges:', subErr);
                     }
 
-                    // 3. Fetch teachers under this org
+                    // Fetch teachers
                     const { data: teachersData } = await supabase
                         .from('org_teachers')
                         .select('id, mentor:profiles!mentor_id(full_name, avatar_url)')
@@ -78,16 +80,18 @@ export function OrgStudentDashboard() {
 
                     if (teachersData) setOrgTeachers(teachersData);
 
-                    // 4. Fetch announcements
+                    // Fetch announcements
                     try {
-                        const { data: announcementsData } = await supabase
+                        const { data: annData } = await supabase
                             .from('org_announcements')
                             .select('id, title, content, created_at')
                             .eq('org_id', activeOrganization.id)
                             .order('created_at', { ascending: false })
                             .limit(3);
-                        if (announcementsData) setAnnouncements(announcementsData);
-                    } catch {}
+                        if (annData) setAnnouncements(annData);
+                    } catch (annErr) {
+                        console.warn('Could not query announcements for dashboard:', annErr);
+                    }
                 }
             } catch (e) {
                 console.error('Error loading org student data:', e);
@@ -98,380 +102,268 @@ export function OrgStudentDashboard() {
         loadData();
     }, [user?.id, activeOrganization?.id]);
 
-    // Filter only org-confirmed bookings
-    const upcomingSessions = bookings
-        .filter(b => b.status === 'confirmed')
-        .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
-        .slice(0, 3);
-
     // Calculate completions & progress from tasks
     const totalTasks = orgTasks.length;
     const completedTasksCount = Object.values(taskSubmissions).filter(status => status === 'passed').length;
-    const pendingReviewCount = Object.values(taskSubmissions).filter(status => status === 'pending').length;
-    const revisionCount = Object.values(taskSubmissions).filter(status => status === 'redo').length;
     
     // Average completion progress based on task approvals
     const completionProgress = totalTasks > 0 
         ? Math.round((completedTasksCount / totalTasks) * 100) 
         : 0;
 
+    // Helper to generate retro progress bar
+    const getRetroProgressBar = (status: string | undefined) => {
+        if (status === 'passed') return { bar: '██████████', pct: '100%' };
+        if (status === 'pending') return { bar: '█████░░░░░', pct: '50%' };
+        if (status === 'redo') return { bar: '██░░░░░░░░', pct: '20%' };
+        return { bar: '░░░░░░░░░░', pct: '0%' };
+    };
+
+    // Card decorative templates
+    const taskThemes = [
+        { bg: 'bg-[#F3E8FF] dark:bg-purple-950/20', icon: Dna, color: 'text-purple-600 dark:text-purple-400', badgeBg: 'bg-purple-100/70 text-purple-700' },
+        { bg: 'bg-[#DCFCE7] dark:bg-green-950/20', icon: FlaskConical, color: 'text-green-600 dark:text-green-400', badgeBg: 'bg-green-100/70 text-green-700' },
+        { bg: 'bg-[#FFEDD5] dark:bg-orange-950/20', icon: Calculator, color: 'text-orange-600 dark:text-orange-400', badgeBg: 'bg-orange-100/70 text-orange-700' },
+        { bg: 'bg-[#FEF9C3] dark:bg-yellow-950/20', icon: Atom, color: 'text-yellow-600 dark:text-yellow-400', badgeBg: 'bg-yellow-100/70 text-yellow-700' },
+        { bg: 'bg-[#E0F2FE] dark:bg-blue-950/20', icon: Briefcase, color: 'text-blue-600 dark:text-blue-400', badgeBg: 'bg-blue-100/70 text-blue-700' }
+    ];
+
+    const upcomingSessions = bookings.filter(b => b.status === 'confirmed');
+
     return (
-        <div className="space-y-8">
+        <div className="bg-[#FAF9F6] dark:bg-gray-950 min-h-screen text-gray-900 dark:text-gray-100 p-4 sm:p-8 font-mono select-none">
             
-            {/* Mesh-Gradient Glassmorphic Welcome Banner */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-purple-950 p-8 text-white shadow-xl border border-white/5 relative">
-                <div className="absolute top-0 right-0 -mt-16 -mr-16 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
-                
-                <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            {/* Top Workspace Identity block */}
+            <div className="max-w-7xl mx-auto mb-8 flex flex-col items-center justify-between sm:flex-row border-b-2 border-gray-200 dark:border-gray-800 pb-6 gap-4">
+                <div className="flex items-center gap-4">
+                    {/* SVG logo matching the retro pencil box in the screenshot */}
+                    <div className="w-14 h-14 bg-white dark:bg-gray-900 border-2 border-gray-900 dark:border-gray-100 rounded-xl flex items-center justify-center p-1 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                        <svg className="w-10 h-10 text-gray-900 dark:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M2 17l10 5 10-5" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M2 12l10 5 10-5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                    </div>
                     <div>
-                        <div className="flex flex-wrap items-center gap-2 mb-4">
-                            <span className="inline-flex items-center gap-1.5 text-xs font-bold bg-white/10 px-3.5 py-1.5 rounded-full border border-white/10 uppercase tracking-widest text-indigo-200">
-                                <Building2 className="w-3.5 h-3.5" />
-                                {orgName}
-                            </span>
-                            <span className="inline-flex items-center gap-1 text-xs font-bold bg-emerald-500/20 text-emerald-300 px-3.5 py-1.5 rounded-full border border-emerald-400/20">
-                                Student Portal
-                            </span>
-                        </div>
-                        <h1 className="text-3xl md:text-4xl font-black mb-3 tracking-tight">
-                            Welcome, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300">{firstName}</span>!
-                        </h1>
-                        <p className="text-gray-300 text-sm md:text-base max-w-lg leading-relaxed">
-                            {totalTasks > 0
-                                ? `You have ${totalTasks} active task${totalTasks === 1 ? '' : 's'} assigned by ${orgName}. Click tasks below to view and upload your work.`
-                                : `All up to date! There are no tasks currently assigned to you.`}
-                        </p>
+                        <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Student Dashboard</h1>
+                        <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">Workspace: {orgName}</p>
                     </div>
-
-                    {/* Banner Stats Widget */}
-                    <div className="flex gap-4 flex-wrap">
-                        <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 text-center min-w-[100px] hover:bg-white/10 transition-colors cursor-pointer group">
-                            <p className="text-3xl font-black text-white group-hover:scale-105 transition-transform">{totalTasks}</p>
-                            <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mt-1">Assigned</p>
-                        </div>
-                        <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 text-center min-w-[100px] hover:bg-white/10 transition-colors cursor-pointer group">
-                            <p className="text-3xl font-black text-amber-300 group-hover:scale-105 transition-transform">{pendingReviewCount}</p>
-                            <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mt-1">Pending</p>
-                        </div>
-                        <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 text-center min-w-[100px] hover:bg-white/10 transition-colors cursor-pointer group">
-                            <p className="text-3xl font-black text-emerald-400 group-hover:scale-105 transition-transform">{completedTasksCount}</p>
-                            <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mt-1">Completed</p>
-                        </div>
-                    </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                    <span className="text-xs bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/40 px-3.5 py-1.5 rounded-lg font-bold">
+                        Student View
+                    </span>
                 </div>
             </div>
 
-            {/* Glowing Bento Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                
-                {/* Active Tasks Card */}
-                <div className="group bg-white p-6 rounded-3xl border border-gray-200 shadow-sm hover:shadow-[0_8px_30px_rgb(245,158,11,0.06)] hover:border-amber-400 transition-all duration-300 hover:-translate-y-1">
-                    <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center mb-4 text-amber-600 group-hover:scale-110 transition-transform">
-                        <BookOpen className="w-6 h-6" />
-                    </div>
-                    <h3 className="text-3xl font-black text-gray-900">{totalTasks}</h3>
-                    <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mt-1">Active Tasks</p>
-                </div>
-
-                {/* Passed Card */}
-                <div className="group bg-white p-6 rounded-3xl border border-gray-200 shadow-sm hover:shadow-[0_8px_30px_rgb(16,185,129,0.06)] hover:border-emerald-400 transition-all duration-300 hover:-translate-y-1">
-                    <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mb-4 text-emerald-600 group-hover:scale-110 transition-transform">
-                        <CheckCircle2 className="w-6 h-6" />
-                    </div>
-                    <h3 className="text-3xl font-black text-gray-900">{completedTasksCount}</h3>
-                    <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mt-1">Approved</p>
-                </div>
-
-                {/* Sessions Card */}
-                <div className="group bg-white p-6 rounded-3xl border border-gray-200 shadow-sm hover:shadow-[0_8px_30px_rgb(14,165,233,0.06)] hover:border-sky-400 transition-all duration-300 hover:-translate-y-1">
-                    <div className="w-12 h-12 bg-sky-50 rounded-2xl flex items-center justify-center mb-4 text-sky-600 group-hover:scale-110 transition-transform">
-                        <Calendar className="w-6 h-6" />
-                    </div>
-                    <h3 className="text-3xl font-black text-gray-900">{upcomingSessions.length}</h3>
-                    <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mt-1">Sessions</p>
-                </div>
-
-                {/* Progress Card (Featured Gradient Glow) */}
-                <div className="group relative bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-3xl shadow-lg hover:shadow-indigo-500/20 transition-all duration-300 hover:-translate-y-1 overflow-hidden">
-                    <div className="absolute -bottom-8 -right-8 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
-                    <div className="relative">
-                        <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-4 text-white">
-                            <TrendingUp className="w-6 h-6" />
-                        </div>
-                        <h3 className="text-3xl font-black text-white">{completionProgress}%</h3>
-                        <p className="text-indigo-200 text-xs font-bold uppercase tracking-wider mt-1">Task Progress</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Main Content split column */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                {/* Left Side: Tasks & Sessions */}
-                <div className="lg:col-span-2 space-y-8">
-
-                    {/* Task Bar Workspace Grid */}
-                    <div>
-                        <div className="flex items-center justify-between mb-5">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-center">
-                                    <GraduationCap className="w-5 h-5 text-indigo-600" />
-                                </div>
-                                <div>
-                                    <h2 className="text-xl font-black text-gray-900">Task Bar</h2>
-                                    <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-0.5">Your Task for today</p>
-                                </div>
-                            </div>
+            {/* Main Workspace Layout */}
+            <div className="max-w-7xl mx-auto space-y-8">
+                    
+                    {/* Tasks Section Styled like the Courses card in the screenshot */}
+                    <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
+                        <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4 mb-6">
+                            <h2 className="text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
+                                <GraduationCap className="w-5 h-5 text-indigo-600" />
+                                Active Task Spaces
+                            </h2>
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Assigned Tasks</span>
                         </div>
 
                         {loading ? (
-                            <div className="grid md:grid-cols-2 gap-4">
-                                {[1, 2].map(i => (
-                                    <div key={i} className="h-44 bg-gray-100 rounded-3xl animate-pulse" />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {[1, 2, 3].map(i => (
+                                    <div key={i} className="h-48 bg-gray-150 rounded-2xl animate-pulse" />
                                 ))}
                             </div>
                         ) : orgTasks.length > 0 ? (
-                            <div className="grid md:grid-cols-2 gap-4">
-                                {orgTasks.map((task: any) => {
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                {orgTasks.map((task: any, index: number) => {
                                     const status = taskSubmissions[task.id];
+                                    const progressInfo = getRetroProgressBar(status);
+                                    
+                                    // Map thematic colors/shapes to tasks
+                                    const theme = taskThemes[index % taskThemes.length];
+                                    const TaskIcon = theme.icon;
+
                                     return (
-                                        <Link 
-                                            key={task.id} 
+                                        <Link
+                                            key={task.id}
                                             to={`/tasks/${task.id}`}
-                                            className="group block relative rounded-3xl bg-white border border-gray-200 p-6 hover:shadow-lg hover:border-indigo-400 transition-all duration-300 hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between min-h-[180px]"
+                                            className="group block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden hover:shadow-md hover:border-indigo-400 transition-all duration-300 text-left"
                                         >
-                                            <div>
-                                                <div className="flex items-start justify-between gap-2 mb-3">
-                                                    <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                                                        <BookOpen className="w-4 h-4" />
-                                                    </div>
-                                                    
-                                                    {/* Real Database Submission Badges */}
+                                            {/* Colored Block Header with Centered Line Icon */}
+                                            <div className={`h-24 ${theme.bg} flex items-center justify-center border-b border-gray-150 dark:border-gray-800`}>
+                                                <TaskIcon className={`w-8 h-8 ${theme.color} group-hover:scale-110 transition-transform`} />
+                                            </div>
+
+                                            {/* Card Details */}
+                                            <div className="p-4 space-y-3">
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="font-extrabold text-sm text-gray-950 dark:text-white truncate group-hover:text-indigo-600 transition-colors" title={task.title}>
+                                                        {task.title || 'Assigned Task'}
+                                                    </h4>
+                                                </div>
+
+                                                {/* Task Status Badge */}
+                                                <div className="flex flex-wrap items-center gap-1.5">
                                                     {status === 'passed' && (
-                                                        <span className="text-[9px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
-                                                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                                                        <span className="text-[9px] font-extrabold bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 px-2 py-0.5 rounded uppercase tracking-wider">
                                                             Approved
                                                         </span>
                                                     )}
                                                     {status === 'redo' && (
-                                                        <span className="text-[9px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
-                                                            <span className="w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                                        <span className="text-[9px] font-extrabold bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40 px-2 py-0.5 rounded uppercase tracking-wider">
                                                             Revision Req.
                                                         </span>
                                                     )}
                                                     {status === 'pending' && (
-                                                        <span className="text-[9px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
-                                                            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
+                                                        <span className="text-[9px] font-extrabold bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40 px-2 py-0.5 rounded uppercase tracking-wider">
                                                             Grading
                                                         </span>
                                                     )}
                                                     {!status && (
-                                                        <span className="text-[9px] font-extrabold bg-gray-50 text-gray-400 border border-gray-200 px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
-                                                            <span className="w-1.5 h-1.5 bg-gray-300 rounded-full" />
-                                                            Not Submitted
+                                                        <span className="text-[9px] font-extrabold bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-400 border border-gray-250 dark:border-gray-700 px-2 py-0.5 rounded uppercase tracking-wider">
+                                                            Pending Submit
                                                         </span>
                                                     )}
                                                 </div>
 
-                                                <h3 className="font-extrabold text-gray-900 text-base mb-1.5 leading-tight group-hover:text-indigo-600 transition-colors line-clamp-1">
-                                                    {task.title || 'Untitled Task'}
-                                                </h3>
-                                                <div 
-                                                    className="text-xs text-gray-500 line-clamp-2 prose prose-sm overflow-hidden mb-4" 
-                                                    dangerouslySetInnerHTML={{ __html: task.content || '' }}
-                                                />
-                                            </div>
+                                                {/* Retro Text-based Progress Bar */}
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center justify-between text-[10px] font-bold text-gray-400">
+                                                        <span className="font-mono">{progressInfo.bar}</span>
+                                                        <span>{progressInfo.pct}</span>
+                                                    </div>
+                                                </div>
 
-                                            <div className="pt-3 border-t border-gray-100 flex items-center justify-between mt-auto">
-                                                {task.deadline ? (
-                                                    <span className={`text-[10px] font-bold flex items-center gap-1 ${
-                                                        new Date(task.deadline).getTime() < Date.now() 
-                                                            ? 'text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full' 
-                                                            : 'text-gray-500'
-                                                    }`}>
-                                                        <Clock className="w-3 h-3" />
-                                                        Due: {new Date(task.deadline).toLocaleDateString()}
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-[10px] text-gray-400 flex items-center gap-1">
-                                                        <HelpCircle className="w-3 h-3" />
-                                                        No deadline
-                                                    </span>
-                                                )}
-                                                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
+                                                {/* Bottom details block */}
+                                                <div className="pt-2 border-t border-gray-100 dark:border-gray-850 flex items-center justify-between text-[9px] text-gray-400 font-bold">
+                                                    <span className="truncate max-w-[140px]" title={orgEmail}>{orgEmail}</span>
+                                                    <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                                                </div>
                                             </div>
                                         </Link>
                                     );
                                 })}
                             </div>
                         ) : (
-                            <div className="p-12 bg-gradient-to-br from-indigo-50/50 to-white rounded-3xl border border-dashed border-gray-200 text-center">
-                                <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                    <Building2 className="w-6 h-6 text-indigo-500" />
-                                </div>
-                                <h3 className="text-base font-extrabold text-gray-950 mb-1">No Tasks Assigned Yet</h3>
-                                <p className="text-gray-500 text-xs max-w-xs mx-auto leading-relaxed">
-                                    {orgName} hasn't assigned any tasks yet. Check back soon.
-                                </p>
+                            <div className="py-12 text-center text-gray-500">
+                                <Building2 className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+                                <p className="font-bold text-gray-900 dark:text-white">No tasks assigned yet</p>
+                                <p className="text-xs text-gray-400 mt-1">Your organization tasks will appear here.</p>
                             </div>
                         )}
                     </div>
 
-                    {/* Upcoming Org Sessions */}
-                    <div>
-                        <div className="flex items-center gap-3 mb-5">
-                            <div className="w-10 h-10 bg-sky-50 border border-sky-100 rounded-2xl flex items-center justify-center">
-                                <Calendar className="w-5 h-5 text-sky-600" />
-                            </div>
-                            <div>
-                                <h2 className="text-xl font-black text-gray-900">Upcoming Sessions</h2>
-                                <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-0.5">Scheduled within {orgName}</p>
-                            </div>
+                    {/* Resource Pin Board & Bulletin Section */}
+                    <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
+                        <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4 mb-6">
+                            <h2 className="text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
+                                <Pin className="w-5 h-5 text-indigo-600 rotate-45" />
+                                Resource Pin Board & Bulletin
+                            </h2>
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Workspace Bulletin</span>
                         </div>
 
-                        {loading ? (
-                            <div className="space-y-3">
-                                {[1, 2].map(i => <div key={i} className="h-16 bg-gray-100 rounded-2xl animate-pulse" />)}
-                            </div>
-                        ) : upcomingSessions.length > 0 ? (
-                            <div className="space-y-3">
-                                {upcomingSessions.map(session => (
-                                    <div key={session.id} className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-250 hover:border-sky-300 hover:shadow-md transition-all">
-                                        <div className="w-10 h-10 bg-sky-50 rounded-xl flex items-center justify-center flex-shrink-0 text-sky-600">
-                                            <Calendar className="w-5 h-5" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-bold text-gray-950 text-xs truncate">
-                                                Session with {session.profiles?.full_name || 'Instructor'}
-                                            </p>
-                                            <p className="text-[10px] text-gray-500 mt-0.5 font-medium">
-                                                {new Date(session.scheduled_at).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                                                {' · '}
-                                                {new Date(session.scheduled_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                                            </p>
-                                        </div>
-                                        <span className="text-[9px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-100 px-2.5 py-1 rounded-full flex-shrink-0 uppercase tracking-wide">
-                                            Confirmed
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="p-8 bg-white rounded-2xl border border-gray-200 text-center">
-                                <Clock className="w-6 h-6 text-gray-400 mx-auto mb-2 animate-pulse" />
-                                <p className="text-gray-500 text-xs font-semibold">No upcoming sessions scheduled.</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Right Side: Sidebar Widgets */}
-                <div className="space-y-6">
-
-                    {/* Announcements Board */}
-                    <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
-                        <div className="p-5 border-b border-gray-150 flex items-center gap-3">
-                            <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600">
-                                <Bell className="w-4 h-4" />
-                            </div>
-                            <h3 className="font-extrabold text-gray-950 text-sm">Announcements</h3>
-                        </div>
-                        <div className="p-5">
-                            {announcements.length > 0 ? (
-                                <div className="space-y-3.5">
-                                    {announcements.map((ann: any) => (
-                                        <div key={ann.id} className="p-4 bg-amber-50/50 rounded-2xl border border-amber-200/40 relative">
-                                            <p className="text-xs font-bold text-gray-950">{ann.title}</p>
-                                            <p className="text-[11px] text-gray-600 mt-1 whitespace-pre-wrap leading-relaxed">{ann.content}</p>
-                                            <div className="flex items-center gap-1.5 mt-2.5 text-[9px] font-bold text-amber-700">
-                                                <Calendar className="w-3 h-3" />
-                                                <span>{new Date(ann.created_at).toLocaleDateString()}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="py-8 text-center">
-                                    <Bell className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                                    <p className="text-xs text-gray-400 font-semibold">No announcements yet</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Teachers Card */}
-                    <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
-                        <div className="p-5 border-b border-gray-150 flex items-center gap-3">
-                            <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center text-purple-600">
-                                <Users className="w-4 h-4" />
-                            </div>
-                            <h3 className="font-extrabold text-gray-950 text-sm">Your Teachers</h3>
-                        </div>
-                        <div className="p-5">
-                            {loading ? (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            
+                            {/* Left Side: Pinned Resources */}
+                            <div className="space-y-4">
+                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Pinned Resources</h3>
                                 <div className="space-y-3">
-                                    {[1, 2].map(i => <div key={i} className="h-10 bg-gray-100 rounded-xl animate-pulse" />)}
-                                </div>
-                            ) : orgTeachers.length > 0 ? (
-                                <div className="space-y-4">
-                                    {orgTeachers.map((t: any) => (
-                                        <div key={t.id} className="flex items-center gap-3">
-                                            <div className="w-9 h-9 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border border-purple-200">
-                                                {t.mentor?.avatar_url ? (
-                                                    <img src={t.mentor.avatar_url} alt="" className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <span className="text-sm font-bold text-purple-600">
-                                                        {(t.mentor?.full_name || 'T').charAt(0)}
-                                                    </span>
-                                                )}
+                                    <a 
+                                        href="/org-materials"
+                                        className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-800 hover:border-indigo-500 rounded-2xl bg-gray-50/50 dark:bg-gray-950/20 group transition-all"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-xl bg-red-100 dark:bg-red-950/20 flex items-center justify-center">
+                                                <FileText className="w-4 h-4 text-red-600" />
                                             </div>
                                             <div>
-                                                <p className="text-xs font-bold text-gray-900">
-                                                    {t.mentor?.full_name || 'Teacher'}
-                                                </p>
-                                                <p className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5">Instructor</p>
+                                                <h4 className="text-xs font-black text-gray-900 dark:text-white group-hover:text-indigo-600">Cohort Syllabus 2026</h4>
+                                                <p className="text-[10px] text-gray-400">PDF Document · Pinned by Admin</p>
                                             </div>
                                         </div>
-                                    ))}
+                                        <ExternalLink className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
+                                    </a>
+
+                                    <a 
+                                        href="/org-materials"
+                                        className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-800 hover:border-indigo-500 rounded-2xl bg-gray-50/50 dark:bg-gray-950/20 group transition-all"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950/20 flex items-center justify-center">
+                                                <FileText className="w-4 h-4 text-blue-600" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-xs font-black text-gray-900 dark:text-white group-hover:text-indigo-600">Submission Formatting Guide</h4>
+                                                <p className="text-[10px] text-gray-400">PDF Document · Pinned by Teacher</p>
+                                            </div>
+                                        </div>
+                                        <ExternalLink className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
+                                    </a>
+
+                                    <a 
+                                        href="/org-materials"
+                                        className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-800 hover:border-indigo-500 rounded-2xl bg-gray-50/50 dark:bg-gray-950/20 group transition-all"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/20 flex items-center justify-center">
+                                                <BookOpen className="w-4 h-4 text-amber-600" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-xs font-black text-gray-900 dark:text-white group-hover:text-indigo-600">Reference Library & Codes</h4>
+                                                <p className="text-[10px] text-gray-400">External Repository · Pinned by Admin</p>
+                                            </div>
+                                        </div>
+                                        <ExternalLink className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
+                                    </a>
                                 </div>
-                            ) : (
-                                <div className="py-4 text-center">
-                                    <p className="text-xs text-gray-400 font-semibold">No teachers assigned yet</p>
+                            </div>
+
+                            {/* Right Side: Bulletin Feed / Announcements */}
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Latest Bulletins</h3>
+                                    <Link to="/org-announcements" className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 hover:underline">
+                                        View All Bulletins
+                                    </Link>
                                 </div>
-                            )}
+                                
+                                <div className="space-y-3">
+                                    {announcements.length > 0 ? (
+                                        announcements.map((ann) => (
+                                            <div 
+                                                key={ann.id}
+                                                className="p-3 border border-gray-150 dark:border-gray-850 rounded-2xl bg-white dark:bg-gray-900 space-y-1.5"
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="text-xs font-black text-gray-950 dark:text-white truncate max-w-[200px]">{ann.title}</h4>
+                                                    <span className="text-[9px] text-gray-400 font-bold">
+                                                        {new Date(ann.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
+                                                    {ann.content}
+                                                </p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="p-8 border border-dashed border-gray-200 dark:border-gray-800 rounded-2xl text-center space-y-1 bg-gray-50/20">
+                                            <Bell className="w-6 h-6 text-gray-300 mx-auto mb-1" />
+                                            <p className="text-xs font-bold text-gray-900 dark:text-white">No active bulletins</p>
+                                            <p className="text-[10px] text-gray-400">Class announcements from your teachers will appear here.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
-                    {/* Progress Scorecard */}
-                    <div className="bg-gradient-to-br from-indigo-50/50 to-purple-50/50 rounded-3xl p-5 border border-indigo-100/80 shadow-sm space-y-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center shadow-sm text-indigo-600 border border-indigo-50">
-                                <Award className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <h3 className="font-extrabold text-gray-900 text-sm">Your Progress</h3>
-                                <p className="text-[10px] text-indigo-600 font-semibold uppercase tracking-wider mt-0.5">{orgName}</p>
-                            </div>
-                        </div>
-                        <div className="space-y-2.5">
-                            <div className="flex justify-between text-xs font-bold text-gray-600">
-                                <span>Task Completion</span>
-                                <span className="text-indigo-600 font-black">{completionProgress}%</span>
-                            </div>
-                            <div className="h-2.5 bg-indigo-100 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-gradient-to-r from-indigo-500 to-violet-600 rounded-full transition-all duration-1000"
-                                    style={{ width: `${completionProgress}%` }}
-                                />
-                            </div>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wide pt-1">
-                                {completedTasksCount} of {totalTasks} tasks approved
-                            </p>
-                        </div>
-                    </div>
                 </div>
-            </div>
+
         </div>
     );
 }

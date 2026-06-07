@@ -1,9 +1,16 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, BookOpen, Calendar, MessageSquare, PieChart, Award, LogOut, X, User, Users, PlusCircle, Settings, GraduationCap, CalendarDays, BookMarked, Building2, Bell, PanelLeftClose, ChevronDown, Check, CheckCircle2 } from 'lucide-react';
+import { 
+    LayoutDashboard, BookOpen, Calendar, MessageSquare, PieChart, Award, 
+    LogOut, X, User, Users, PlusCircle, Settings, GraduationCap, 
+    CalendarDays, BookMarked, Building2, Bell, PanelLeftClose, 
+    ChevronDown, Check, CheckCircle2, Plus, CalendarRange, 
+    CheckSquare, FileText, Clock, HelpCircle 
+} from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useOrganizationMode } from '../../../context/OrganizationModeContext';
 import { getUserProfile } from '../../../lib/api';
+import { getSupabase } from '../../../lib/supabase';
 import { toast } from 'sonner';
 
 interface SidebarProps {
@@ -14,7 +21,6 @@ interface SidebarProps {
 }
 
 const DoodleIcon = ({ label, className, active }: { label: string, className?: string, active?: boolean }) => {
-    // Custom hand-drawn paths for doodle feel
     const icons: Record<string, React.ReactNode> = {
         'Dashboard': (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -108,6 +114,10 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
     const [isOrgDropdownOpen, setIsOrgDropdownOpen] = useState(false);
     const [profileRole, setProfileRole] = useState<string | null>(null);
 
+    // Dynamic Org Student Sidebar stats
+    const [orgTaskCount, setOrgTaskCount] = useState(0);
+    const [orgProgress, setOrgProgress] = useState(0);
+
     useEffect(() => {
         if (user?.id) {
             getUserProfile(user.id).then(profile => {
@@ -118,9 +128,29 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
         }
     }, [user]);
 
-    const isActive = (path: string) => location.pathname === path;
+    // Query active organization task stats to populate the sidebar progress bar in real-time
+    useEffect(() => {
+        if (mode === 'organization' && activeOrganization && user?.id) {
+            const supabase = getSupabase();
+            if (supabase) {
+                Promise.all([
+                    supabase.from('org_tasks').select('id').eq('org_id', activeOrganization.id),
+                    supabase.from('org_task_submissions').select('task_id, status').eq('student_id', user.id)
+                ]).then(([tasksRes, subsRes]) => {
+                    const tasks = tasksRes.data || [];
+                    const subs = subsRes.data || [];
+                    setOrgTaskCount(tasks.length);
+                    const completed = subs.filter(s => s.status === 'passed').length;
+                    setOrgProgress(tasks.length > 0 ? Math.round((completed / tasks.length) * 100) : 0);
+                }).catch(err => console.warn('Could not query stats for sidebar', err));
+            }
+        }
+    }, [mode, activeOrganization?.id, user?.id, location.pathname]);
 
+    const isActive = (path: string) => location.pathname === path;
     const role = profileRole || user?.user_metadata?.role || 'student';
+
+    const isOrgStudent = mode === 'organization' && activeOrganization && activeOrganization.role !== 'teacher';
 
     // Personal mode navigation items
     const studentItems = [
@@ -195,17 +225,13 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
 
     // Determine nav items based on mode and role
     const getNavItems = () => {
-        // If user is in organization mode
         if (mode === 'organization' && activeOrganization) {
-            // Check the user's role within the organization
             if (activeOrganization.role === 'teacher') {
                 return orgTeacherItems;
             } else {
                 return orgStudentItems;
             }
         }
-        
-        // Personal mode - use existing logic
         if (isOrg) return orgItems;
         if (isMentor) return mentorItems;
         return studentItems;
@@ -225,141 +251,248 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
 
             {/* Sidebar Container */}
             <aside className={`
-                fixed top-0 left-0 z-50 h-screen bg-white border-r border-gray-200 transition-all duration-300 ease-in-out
+                fixed top-0 left-0 z-50 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out
                 ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
                 ${isDesktopCollapsed ? 'md:w-20' : 'md:w-64'}
                 w-64
             `}>
-                <div className="h-full flex flex-col overflow-x-hidden">
-                    {/* Header */}
-                    <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 flex-shrink-0">
-                        <div className={`flex items-center transition-all duration-300 overflow-hidden ${isDesktopCollapsed ? 'md:opacity-0 md:w-0' : 'opacity-100 w-auto'}`}>
-                            <Link to="/" className="flex items-center gap-2 font-bold text-xl text-gray-900 whitespace-nowrap">
-                                Mentozy
-                                <div className="w-1.5 h-1.5 bg-amber-500 rounded-sm flex-shrink-0"></div>
-                            </Link>
+                <div className="h-full flex flex-col overflow-x-hidden font-mono text-xs select-none">
+                    
+                    {/* Retro / Notion Style student sidebar Header */}
+                    {isOrgStudent && !isDesktopCollapsed ? (
+                        <div className="p-5 border-b border-gray-150 dark:border-gray-850 flex items-center gap-3 shrink-0">
+                            <div className="w-10 h-10 bg-white dark:bg-gray-800 border-2 border-gray-900 dark:border-gray-100 rounded-lg flex items-center justify-center shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+                                <svg className="w-6 h-6 text-gray-900 dark:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M2 17l10 5 10-5" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <Link to="/" className="font-black text-sm text-gray-950 dark:text-white uppercase tracking-tight block">
+                                    Mentozy
+                                </Link>
+                                <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider block mt-0.5">Workspace Mode</span>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                            {onToggleDesktop && (
-                                <button onClick={onToggleDesktop} className="hidden md:flex p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-                                    <PanelLeftClose className={`w-5 h-5 transition-transform duration-300 ${isDesktopCollapsed ? 'rotate-180' : ''}`} />
+                    ) : (
+                        /* Standard Mentozy Header */
+                        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 dark:border-gray-850 flex-shrink-0">
+                            <div className={`flex items-center transition-all duration-300 overflow-hidden ${isDesktopCollapsed ? 'md:opacity-0 md:w-0' : 'opacity-100 w-auto'}`}>
+                                <Link to="/" className="flex items-center gap-2 font-bold text-xl text-gray-900 dark:text-white whitespace-nowrap">
+                                    Mentozy
+                                    <div className="w-1.5 h-1.5 bg-amber-500 rounded-sm flex-shrink-0"></div>
+                                </Link>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                                {onToggleDesktop && (
+                                    <button onClick={onToggleDesktop} className="hidden md:flex p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+                                        <PanelLeftClose className={`w-5 h-5 transition-transform duration-300 ${isDesktopCollapsed ? 'rotate-180' : ''}`} />
+                                    </button>
+                                )}
+                                <button onClick={onClose} className="md:hidden p-1 text-gray-500 hover:bg-gray-100 rounded-lg">
+                                    <X className="w-5 h-5" />
                                 </button>
-                            )}
-                            <button onClick={onClose} className="md:hidden p-1 text-gray-500 hover:bg-gray-100 rounded-lg">
-                                <X className="w-5 h-5" />
-                            </button>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
-                    {/* Organization Mode Badge / Dropdown */}
-                    {mode === 'organization' && activeOrganization && (
+                    {/* Org Switch Selector badge (only if not custom org student sidebar) */}
+                    {!isOrgStudent && mode === 'organization' && activeOrganization && (
                         <div className="relative mx-4 my-3 flex flex-col">
                             <div 
                                 onClick={() => userOrganizations.length > 1 && setIsOrgDropdownOpen(prev => !prev)}
-                                className={`p-3 bg-indigo-50 rounded-2xl border border-indigo-100 transition-all duration-300 flex flex-col justify-center ${userOrganizations.length > 1 ? 'cursor-pointer hover:bg-indigo-100/50' : ''} ${isDesktopCollapsed ? 'md:px-2 md:py-2 md:h-12 items-center' : ''}`}
+                                className={`p-3 bg-indigo-50 dark:bg-indigo-950/20 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 transition-all duration-300 flex flex-col justify-center ${userOrganizations.length > 1 ? 'cursor-pointer hover:bg-indigo-100/50' : ''} ${isDesktopCollapsed ? 'md:px-2 md:py-2 md:h-12 items-center' : ''}`}
                             >
                                 <div className="flex items-center justify-between w-full flex-shrink-0">
                                     <div className="flex items-center gap-2">
-                                        <Building2 className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-                                        <span className={`text-xs font-bold text-indigo-700 whitespace-nowrap transition-all duration-300 text-left ${isDesktopCollapsed ? 'md:hidden' : 'block'}`}>{activeOrganization.name}</span>
+                                        <Building2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
+                                        <span className={`text-xs font-bold text-indigo-700 dark:text-indigo-300 whitespace-nowrap transition-all duration-300 text-left ${isDesktopCollapsed ? 'md:hidden' : 'block'}`}>{activeOrganization.name}</span>
                                     </div>
                                     {userOrganizations.length > 1 && !isDesktopCollapsed && (
                                         <ChevronDown className={`w-3.5 h-3.5 text-indigo-500 transition-transform ${isOrgDropdownOpen ? 'rotate-180' : ''}`} />
                                     )}
                                 </div>
-                                <span className={`text-[10px] font-semibold text-indigo-500 uppercase tracking-wider bg-indigo-100 px-2 py-0.5 rounded-full mt-1.5 transition-all duration-300 self-start whitespace-nowrap ${isDesktopCollapsed ? 'md:hidden' : 'inline-block'}`}>
-                                    {activeOrganization.role === 'teacher' ? 'Teacher View' : 'Student View'}
-                                </span>
                             </div>
-
-                            {/* Floating Dropdown */}
-                            {isOrgDropdownOpen && userOrganizations.length > 1 && !isDesktopCollapsed && (
-                                <div className="absolute top-full left-0 right-0 mt-1.5 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-2 z-50 space-y-1 animate-in fade-in zoom-in-95 duration-200">
-                                    <div className="px-3 py-1.5 border-b border-slate-800 text-left">
-                                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Switch Organisation</span>
-                                    </div>
-                                    {userOrganizations.map(org => {
-                                        const isActiveOrg = org.id === activeOrganization.id;
-                                        return (
-                                            <button
-                                                key={org.id}
-                                                onClick={() => {
-                                                    setActiveOrganization(org);
-                                                    setIsOrgDropdownOpen(false);
-                                                    toast.success(`Switched workspace to ${org.name}!`);
-                                                }}
-                                                className={`w-full text-left p-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-colors ${isActiveOrg ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'}`}
-                                            >
-                                                <div className="flex items-center gap-2 truncate">
-                                                    <Building2 className="w-3.5 h-3.5 shrink-0" />
-                                                    <span className="truncate">{org.name}</span>
-                                                </div>
-                                                {isActiveOrg ? (
-                                                    <Check className="w-3 h-3 text-white shrink-0" />
-                                                ) : (
-                                                    <span className="text-[8px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded shrink-0">
-                                                        {org.role === 'teacher' ? 'Teacher' : 'Student'}
-                                                    </span>
-                                                )}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
                         </div>
                     )}
 
-                    {/* Nav Items */}
-                    <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto hide-scrollbar overflow-x-hidden">
-                        {navItems.map((item) => (
-                            <Link
-                                key={item.path}
-                                to={item.path}
-                                onClick={() => window.innerWidth < 768 && onClose()}
-                                className={`
-                                    flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200
-                                    ${isDesktopCollapsed ? 'md:justify-center md:px-0' : ''}
-                                    ${isActive(item.path)
-                                        ? mode === 'organization'
-                                            ? 'bg-indigo-50 text-indigo-900'
-                                            : 'bg-amber-50 text-amber-900'
-                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
-                                `}
-                                title={isDesktopCollapsed ? item.label : undefined}
-                            >
-                                {isDesktopCollapsed ? (
-                                    <div className={`p-3 rounded-2xl transition-all duration-300 ${isActive(item.path) ? 'bg-[#fff9e6] shadow-sm' : ''}`}>
-                                        <DoodleIcon label={item.label} active={isActive(item.path)} className={`w-6 h-6 flex-shrink-0 transition-colors ${isActive(item.path) ? (mode === 'organization' ? 'text-indigo-500' : 'text-amber-500') : 'text-gray-400 opacity-60'}`} />
-                                    </div>
-                                ) : (
-                                    <>
-                                        <item.icon className={`w-5 h-5 flex-shrink-0 transition-colors ${isActive(item.path) ? (mode === 'organization' ? 'text-indigo-500' : 'text-amber-500') : 'text-gray-400'}`} />
-                                        <span className={`whitespace-nowrap transition-opacity duration-300 ${isDesktopCollapsed ? 'md:hidden' : 'block'}`}>{item.label}</span>
-                                    </>
-                                )}
-                            </Link>
-                        ))}
-                    </nav>
-
-                    {/* Footer / Sign Out */}
-                    <div className="p-4 border-t border-gray-100 flex-shrink-0">
-                        <button
-                            onClick={() => signOut()}
-                            className={`flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 rounded-xl hover:bg-red-50 w-full transition-all duration-200 ${isDesktopCollapsed ? 'md:justify-center md:px-0' : ''}`}
-                            title={isDesktopCollapsed ? "Sign Out" : undefined}
-                        >
-                            {isDesktopCollapsed ? (
-                                <div className="p-3 rounded-2xl bg-red-50/30">
-                                    <DoodleIcon label="LogOut" className="w-6 h-6 text-red-400" />
+                    {/* -------------------- CUSTOM ORGANISATION STUDENT SIDEBAR WIDGETS -------------------- */}
+                    {isOrgStudent && !isDesktopCollapsed ? (
+                        <div className="flex-1 flex flex-col justify-between p-4 overflow-y-auto space-y-6">
+                            
+                            {/* Quick Actions Panel */}
+                            <div className="space-y-3">
+                                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-800 pb-1">Quick Action</h4>
+                                <div className="space-y-2">
+                                    <Link 
+                                        to="/courses"
+                                        onClick={() => window.innerWidth < 768 && onClose()}
+                                        className="flex items-center gap-2 px-3 py-2 border border-gray-250 dark:border-gray-800 hover:border-indigo-500 hover:bg-indigo-50/20 dark:hover:bg-indigo-950/10 rounded-xl font-bold text-[11px] text-gray-700 dark:text-gray-300 transition-all"
+                                    >
+                                        <Plus className="w-3.5 h-3.5 text-indigo-500" />
+                                        Explore Courses
+                                    </Link>
+                                    <Link 
+                                        to="/calendar"
+                                        onClick={() => window.innerWidth < 768 && onClose()}
+                                        className="flex items-center gap-2 px-3 py-2 border border-gray-250 dark:border-gray-800 hover:border-indigo-500 hover:bg-indigo-50/20 dark:hover:bg-indigo-950/10 rounded-xl font-bold text-[11px] text-gray-700 dark:text-gray-300 transition-all"
+                                    >
+                                        <CalendarRange className="w-3.5 h-3.5 text-indigo-500" />
+                                        Book Session
+                                    </Link>
+                                    <Link 
+                                        to="/messages"
+                                        onClick={() => window.innerWidth < 768 && onClose()}
+                                        className="flex items-center gap-2 px-3 py-2 border border-gray-250 dark:border-gray-800 hover:border-indigo-500 hover:bg-indigo-50/20 dark:hover:bg-indigo-950/10 rounded-xl font-bold text-[11px] text-gray-700 dark:text-gray-300 transition-all"
+                                    >
+                                        <Users className="w-3.5 h-3.5 text-indigo-500" />
+                                        Open Messages
+                                    </Link>
                                 </div>
-                            ) : (
-                                <>
-                                    <LogOut className="w-5 h-5 flex-shrink-0" />
-                                    <span className={`whitespace-nowrap transition-opacity duration-300 ${isDesktopCollapsed ? 'md:hidden' : 'block'}`}>Sign Out</span>
-                                </>
-                            )}
-                        </button>
-                    </div>
+                            </div>
+
+                            {/* Custom Navigation Links */}
+                            <div className="space-y-3">
+                                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-800 pb-1">Navigation</h4>
+                                <div className="space-y-1">
+                                    <Link 
+                                        to="/student-dashboard" 
+                                        onClick={() => window.innerWidth < 768 && onClose()}
+                                        className={`flex items-center justify-between px-3 py-2.5 rounded-xl font-bold text-[11px] border transition-all ${
+                                            isActive('/student-dashboard')
+                                                ? 'bg-indigo-50 dark:bg-indigo-950/10 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30'
+                                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 border-transparent'
+                                        }`}
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            <CheckSquare className="w-4 h-4" />
+                                            Tasks
+                                        </span>
+                                        <span className="text-[9px] bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded font-black">{orgTaskCount}</span>
+                                    </Link>
+                                    <Link 
+                                        to="/calendar" 
+                                        onClick={() => window.innerWidth < 768 && onClose()}
+                                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl font-bold text-[11px] border transition-all ${
+                                            isActive('/calendar')
+                                                ? 'bg-indigo-50 dark:bg-indigo-950/10 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30'
+                                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 border-transparent'
+                                        }`}
+                                    >
+                                        <Calendar className="w-4 h-4" />
+                                        Sessions
+                                    </Link>
+                                    <Link 
+                                        to="/profile" 
+                                        onClick={() => window.innerWidth < 768 && onClose()}
+                                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl font-bold text-[11px] border transition-all ${
+                                            isActive('/profile')
+                                                ? 'bg-indigo-50 dark:bg-indigo-950/10 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30'
+                                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 border-transparent'
+                                        }`}
+                                    >
+                                        <Users className="w-4 h-4" />
+                                        Profiles
+                                    </Link>
+                                    <Link 
+                                        to="/settings" 
+                                        onClick={() => window.innerWidth < 768 && onClose()}
+                                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl font-bold text-[11px] border transition-all ${
+                                            isActive('/settings')
+                                                ? 'bg-indigo-50 dark:bg-indigo-950/10 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30'
+                                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 border-transparent'
+                                        }`}
+                                    >
+                                        <FileText className="w-4 h-4" />
+                                        Notes
+                                    </Link>
+                                </div>
+                            </div>
+
+                            {/* Retro Status scorecard inside the Sidebar */}
+                            <div className="space-y-2 pt-4 border-t border-gray-150 dark:border-gray-800">
+                                <div className="flex justify-between text-[10px] font-bold text-gray-500">
+                                    <span>Approval Rate</span>
+                                    <span className="text-indigo-600 dark:text-indigo-400">{orgProgress}%</span>
+                                </div>
+                                <div className="font-mono text-xs tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/20 p-2 rounded-lg text-center border border-indigo-100/50 dark:border-indigo-900/30">
+                                    {orgProgress === 100 ? '██████████' :
+                                     orgProgress >= 80 ? '████████░░' :
+                                     orgProgress >= 60 ? '██████░░░░' :
+                                     orgProgress >= 40 ? '████░░░░░░' :
+                                     orgProgress >= 20 ? '██░░░░░░░░' : '░░░░░░░░░░'}
+                                </div>
+                            </div>
+
+                            {/* Switch back to Personal view */}
+                            <div className="pt-4 mt-auto">
+                                <button 
+                                    onClick={() => {
+                                        setActiveOrganization(null);
+                                        toast.success("Returned to Personal Dashboard!");
+                                    }}
+                                    className="w-full py-2.5 border border-indigo-300 text-indigo-700 bg-indigo-50/50 rounded-xl font-bold hover:bg-indigo-100 text-[10px] transition-colors"
+                                >
+                                    Switch to Personal
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        /* -------------------- STANDARD / DEFAULT NAVIGATION LIST -------------------- */
+                        <>
+                            <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto hide-scrollbar overflow-x-hidden">
+                                {navItems.map((item) => (
+                                    <Link
+                                        key={item.path}
+                                        to={item.path}
+                                        onClick={() => window.innerWidth < 768 && onClose()}
+                                        className={`
+                                            flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200
+                                            ${isDesktopCollapsed ? 'md:justify-center md:px-0' : ''}
+                                            ${isActive(item.path)
+                                                ? mode === 'organization'
+                                                    ? 'bg-indigo-50 text-indigo-900'
+                                                    : 'bg-amber-50 text-amber-900'
+                                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
+                                        `}
+                                        title={isDesktopCollapsed ? item.label : undefined}
+                                    >
+                                        {isDesktopCollapsed ? (
+                                            <div className={`p-3 rounded-2xl transition-all duration-300 ${isActive(item.path) ? 'bg-[#fff9e6] shadow-sm' : ''}`}>
+                                                <DoodleIcon label={item.label} active={isActive(item.path)} className={`w-6 h-6 flex-shrink-0 transition-colors ${isActive(item.path) ? (mode === 'organization' ? 'text-indigo-500' : 'text-amber-500') : 'text-gray-400 opacity-60'}`} />
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <item.icon className={`w-5 h-5 flex-shrink-0 transition-colors ${isActive(item.path) ? (mode === 'organization' ? 'text-indigo-500' : 'text-amber-500') : 'text-gray-400'}`} />
+                                                <span className={`whitespace-nowrap transition-opacity duration-300 ${isDesktopCollapsed ? 'md:hidden' : 'block'}`}>{item.label}</span>
+                                            </>
+                                        )}
+                                    </Link>
+                                ))}
+                            </nav>
+
+                            {/* Footer Sign Out */}
+                            <div className="p-4 border-t border-gray-100 dark:border-gray-850 flex-shrink-0">
+                                <button
+                                    onClick={() => signOut()}
+                                    className={`flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 rounded-xl hover:bg-red-50 w-full transition-all duration-200 ${isDesktopCollapsed ? 'md:justify-center md:px-0' : ''}`}
+                                    title={isDesktopCollapsed ? "Sign Out" : undefined}
+                                >
+                                    {isDesktopCollapsed ? (
+                                        <div className="p-3 rounded-2xl bg-red-50/30">
+                                            <DoodleIcon label="LogOut" className="w-6 h-6 text-red-400" />
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <LogOut className="w-5 h-5 flex-shrink-0" />
+                                            <span className={`whitespace-nowrap transition-opacity duration-300 ${isDesktopCollapsed ? 'md:hidden' : 'block'}`}>Sign Out</span>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </>
+                    )}
+
                 </div>
             </aside>
         </>
