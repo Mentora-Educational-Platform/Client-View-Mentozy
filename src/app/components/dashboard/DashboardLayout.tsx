@@ -65,25 +65,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             {/* Main Content */}
             <div className={`transition-all duration-300 ${isDesktopCollapsed ? 'md:ml-20' : 'md:ml-64'} min-h-screen flex flex-col`}>
 
-                {/* Organization Mode Banner — always visible when in org mode */}
-                {isOrgMode && (
-                    <div className="bg-gradient-to-r from-indigo-600 to-violet-600 px-4 md:px-6 py-2.5 flex items-center justify-between sticky top-0 z-40">
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-6 h-6 bg-white/20 rounded-md flex items-center justify-center flex-shrink-0">
-                                <Building2 className="w-3.5 h-3.5 text-white" />
-                            </div>
-                            <span className="text-white text-sm font-semibold truncate">
-                                {activeOrganization.name}
-                            </span>
-                            <span className="hidden sm:inline text-xs text-indigo-200 bg-white/10 px-2 py-0.5 rounded-full capitalize">
-                                {activeOrganization.role === 'teacher' ? 'Teacher' : 'Student'} · Organization Mode
-                            </span>
-                        </div>
-                        <div className="flex-shrink-0">
-                            <ModeToggle compact />
-                        </div>
-                    </div>
-                )}
+
 
                 {/* Mobile Header */}
                 <header className="md:hidden bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-30">

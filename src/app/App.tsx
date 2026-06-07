@@ -66,6 +66,7 @@ const MessagesPage = lazy(() => import('./pages/MessagesPage').then(module => ({
 const CommunityForumsPage = lazy(() => import('./pages/CommunityForumsPage').then(module => ({ default: module.CommunityForumsPage })));
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
 const CertificationsPage = lazy(() => import('./pages/CertificationsPage'));
+const NotesPage = lazy(() => import('./pages/NotesPage').then(module => ({ default: module.NotesPage })));
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then(module => ({ default: module.SettingsPage })));
 const CommunityProjectsPage = lazy(() => import('./pages/CommunityProjectsPage').then(module => ({ default: module.CommunityProjectsPage })));
 const KeywordLandingPage = lazy(() => import('./pages/KeywordLandingPage').then(module => ({ default: module.KeywordLandingPage })));
@@ -197,6 +198,11 @@ function App() {
             <StudentDashboardPage />
           </Suspense>
         } />
+        <Route path="/notes" element={
+          <Suspense fallback={<PageLoader />}>
+            <NotesPage />
+          </Suspense>
+        } />
         <Route path="/settings" element={
           <Suspense fallback={<PageLoader />}>
             <SettingsPage />
@@ -231,6 +237,11 @@ function App() {
         <Route path="/mentor-dashboard" element={
           <Suspense fallback={<PageLoader />}>
             <MentorDashboardPage />
+          </Suspense>
+        } />
+        <Route path="/mentor-notes" element={
+          <Suspense fallback={<PageLoader />}>
+            <NotesPage />
           </Suspense>
         } />
         <Route path="/mentor-settings" element={

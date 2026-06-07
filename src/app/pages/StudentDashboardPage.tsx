@@ -6,7 +6,7 @@ import {
     Flame, Trophy, GraduationCap, Target, Sparkles,
     Sun, Moon, Plus, CheckSquare, FileText, Palette,
     Pause, Music, SlidersHorizontal, Calendar as CalendarIcon,
-    MoreVertical, RotateCcw, Play, Settings, ChevronLeft, Trash2, Code, Link2, Github, Copy
+    MoreVertical, RotateCcw, Play, Settings, ChevronLeft, Trash2, Code, Link2, Github, Copy, StickyNote
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useOrganizationMode } from '../../context/OrganizationModeContext';
@@ -586,7 +586,7 @@ export function StudentDashboardPage() {
                                      )}
                                  </button>
                                  <button onClick={() => toast.success("Focus music activated")} className="text-gray-400 hover:text-gray-900 transition-colors"><Music className="w-5 h-5"/></button>
-                                 <Link to="/settings" className="text-gray-400 hover:text-gray-900 transition-colors"><Settings className="w-5 h-5"/></Link>
+                                 <Link to="/notes" className="text-gray-400 hover:text-gray-900 transition-colors"><StickyNote className="w-5 h-5"/></Link>
                              </div>
                         </div>
                     </div>

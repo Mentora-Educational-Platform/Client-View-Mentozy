@@ -5,7 +5,7 @@ import {
     LogOut, X, User, Users, PlusCircle, Settings, GraduationCap, 
     CalendarDays, BookMarked, Building2, Bell, PanelLeftClose, 
     ChevronDown, Check, CheckCircle2, Plus, CalendarRange, 
-    CheckSquare, FileText, Clock, HelpCircle 
+    CheckSquare, FileText, Clock, HelpCircle, StickyNote 
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useOrganizationMode } from '../../../context/OrganizationModeContext';
@@ -91,6 +91,14 @@ const DoodleIcon = ({ label, className, active }: { label: string, className?: s
                 <path d="M19.5 21a7.5 7.5 0 0 0-15 0" />
             </svg>
         ),
+        'Notes': (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3z" />
+                <path d="M15 3v6h6" />
+                <path d="M12 11h-4" />
+                <path d="M12 15h-4" />
+            </svg>
+        ),
         'Settings': (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
                 <circle cx="12" cy="12" r="3" />
@@ -163,6 +171,7 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
         { icon: PieChart, label: 'Analytics', path: '/analytics' },
         { icon: Award, label: 'Certifications', path: '/certifications' },
         { icon: User, label: 'Profile', path: '/profile' },
+        { icon: StickyNote, label: 'Notes', path: '/notes' },
         { icon: Settings, label: 'Settings', path: '/settings' },
     ];
 
@@ -176,6 +185,7 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
         { icon: PieChart, label: 'Analytics', path: '/mentor-analytics' },
         { icon: Award, label: 'Achievements', path: '/mentor-achievements' },
         { icon: User, label: 'Profile', path: '/mentor-profile' },
+        { icon: StickyNote, label: 'Notes', path: '/mentor-notes' },
         { icon: Settings, label: 'Settings', path: '/mentor-settings' },
     ];
 
@@ -202,6 +212,7 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
         { icon: MessageSquare, label: 'Messages', path: '/messages' },
         { icon: Users, label: 'Community', path: '/community' },
         { icon: User, label: 'Profile', path: '/profile' },
+        { icon: StickyNote, label: 'Notes', path: '/notes' },
         { icon: Settings, label: 'Settings', path: '/settings' },
     ];
 
@@ -215,6 +226,7 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
         { icon: MessageSquare, label: 'Messages', path: '/mentor-messages' },
         { icon: Users, label: 'Community', path: '/mentor-community' },
         { icon: User, label: 'Profile', path: '/mentor-profile' },
+        { icon: StickyNote, label: 'Notes', path: '/mentor-notes' },
         { icon: Settings, label: 'Settings', path: '/mentor-settings' },
     ];
 
@@ -262,9 +274,14 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
                     {isOrgStudent && !isDesktopCollapsed ? (
                         <div className="p-5 border-b border-gray-150 dark:border-gray-850 flex items-center gap-3 shrink-0">
                             <div className="w-10 h-10 bg-white dark:bg-gray-800 border-2 border-gray-900 dark:border-gray-100 rounded-lg flex items-center justify-center shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
-                                <svg className="w-6 h-6 text-gray-900 dark:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <path d="M12 2L2 7l10 5 10-5-10-5z" strokeLinecap="round" strokeLinejoin="round"/>
-                                    <path d="M2 17l10 5 10-5" strokeLinecap="round" strokeLinejoin="round"/>
+                                <svg className="w-7 h-7 text-gray-900 dark:text-white animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                                    <path d="M12 5.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z" fill="currentColor" />
+                                    <path d="M11 2.5a1 1 0 0 1 2 0" />
+                                    <path d="M12 7.5v-2" />
+                                    <path d="M6 9.5l0.5 0.5-0.5 0.5-0.5-0.5z" fill="currentColor" />
+                                    <path d="M18 9.5l0.5 0.5-0.5 0.5-0.5-0.5z" fill="currentColor" />
                                 </svg>
                             </div>
                             <div>
@@ -395,6 +412,18 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
                                         Profiles
                                     </Link>
                                     <Link 
+                                        to="/notes" 
+                                        onClick={() => window.innerWidth < 768 && onClose()}
+                                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl font-bold text-[11px] border transition-all ${
+                                            isActive('/notes')
+                                                ? 'bg-indigo-50 dark:bg-indigo-950/10 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30'
+                                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 border-transparent'
+                                        }`}
+                                    >
+                                        <StickyNote className="w-4 h-4" />
+                                        Notes
+                                    </Link>
+                                    <Link 
                                         to="/settings" 
                                         onClick={() => window.innerWidth < 768 && onClose()}
                                         className={`flex items-center gap-2 px-3 py-2.5 rounded-xl font-bold text-[11px] border transition-all ${
@@ -403,8 +432,8 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
                                                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 border-transparent'
                                         }`}
                                     >
-                                        <FileText className="w-4 h-4" />
-                                        Notes
+                                        <Settings className="w-4 h-4" />
+                                        Settings
                                     </Link>
                                 </div>
                             </div>

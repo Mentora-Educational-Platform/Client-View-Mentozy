@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useOrganizationMode } from '../../context/OrganizationModeContext';
 import { getUserProfile, updateUserProfile, Profile } from '../../lib/api';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import {
@@ -13,6 +14,8 @@ import { toast } from 'sonner';
 
 export function ProfilePage() {
     const { user } = useAuth();
+    const { mode, activeOrganization } = useOrganizationMode();
+    const isOrgMode = mode === 'organization' && activeOrganization;
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -133,25 +136,25 @@ export function ProfilePage() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-6xl mx-auto space-y-10 pb-20">
+            <div className={`max-w-6xl mx-auto space-y-10 pb-20 ${isOrgMode ? 'font-mono text-gray-900 select-none bg-[#FAF9F6] p-4 sm:p-8 min-h-screen rounded-3xl border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)]' : ''}`}>
 
                 {/* 1. Identity & Trust (Above the fold) */}
-                <div className="bg-white rounded-[3rem] p-6 md:p-10 border border-gray-100 shadow-xl relative overflow-hidden group">
+                <div className={`bg-white p-6 md:p-10 ${isOrgMode ? 'border-2 border-gray-900 rounded-3xl shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)]' : 'rounded-[3rem] border border-gray-100 shadow-xl'} relative overflow-hidden group`}>
                     <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl -mr-20 -mt-20 opacity-40 group-hover:opacity-60 transition-opacity"></div>
 
                     <div className="flex flex-col lg:flex-row items-center gap-10 relative z-10">
                         {/* Profile Photo */}
                         <div className="relative group/avatar">
-                            <div className="w-44 h-44 rounded-[2.5rem] bg-indigo-50 overflow-hidden border-8 border-white shadow-2xl transition-transform duration-500 group-hover/avatar:scale-105">
+                            <div className={`w-44 h-44 overflow-hidden border-8 border-white shadow-2xl transition-transform duration-500 group-hover/avatar:scale-105 ${isOrgMode ? 'rounded-2xl border-gray-900 border-4 shadow-[3px_3px_0px_rgba(0,0,0,1)]' : 'rounded-[2.5rem]'}`}>
                                 {profile?.avatar_url ? (
                                     <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-indigo-200">
+                                    <div className="w-full h-full flex items-center justify-center text-indigo-200 bg-indigo-50">
                                         <User className="w-20 h-20" />
                                     </div>
                                 )}
                             </div>
-                            <button onClick={() => toast.info("Profile photo upload coming soon!")} className="absolute bottom-2 right-2 p-3 bg-indigo-600 text-white rounded-2xl shadow-xl hover:bg-indigo-700 transition-all hover:scale-110">
+                            <button onClick={() => toast.info("Profile photo upload coming soon!")} className={`absolute bottom-2 right-2 p-3 bg-indigo-600 text-white shadow-xl hover:bg-indigo-700 transition-all hover:scale-110 ${isOrgMode ? 'rounded-xl border-2 border-gray-900 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]' : 'rounded-2xl'}`}>
                                 <Camera className="w-5 h-5" />
                             </button>
                         </div>
@@ -166,7 +169,7 @@ export function ProfilePage() {
                                     value={formData.full_name}
                                     onChange={handleChange}
                                     placeholder="Your Full Name"
-                                    className="text-4xl font-black text-gray-900 bg-transparent border-b-2 border-transparent hover:border-gray-200 focus:border-indigo-500 focus:ring-0 rounded-none w-full transition-all placeholder:text-gray-300"
+                                    className={`text-4xl font-black text-gray-900 bg-transparent border-b-2 border-transparent hover:border-gray-200 focus:border-indigo-500 focus:ring-0 rounded-none w-full transition-all placeholder:text-gray-300 ${isOrgMode ? 'font-mono' : ''}`}
                                 />
                                 <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover/name:opacity-100 transition-opacity pointer-events-none">
                                     <span className="text-xs text-gray-400 font-medium">Click to edit</span>
@@ -174,7 +177,7 @@ export function ProfilePage() {
                             </div>
 
                             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-gray-500 font-bold text-sm">
-                                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl group/field hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100 cursor-text" onClick={() => document.getElementsByName('grade')[0]?.focus()}>
+                                <div className={`flex items-center gap-2 px-4 py-2 rounded-xl group/field hover:bg-white hover:shadow-md transition-all border cursor-text ${isOrgMode ? 'border-2 border-gray-900 bg-white shadow-[1px_1px_0px_rgba(0,0,0,1)]' : 'bg-gray-50 border-transparent hover:border-gray-100'}`} onClick={() => document.getElementsByName('grade')[0]?.focus()}>
                                     <GraduationCap className="w-4 h-4 text-indigo-500" />
                                     <input
                                         type="text"
@@ -185,7 +188,7 @@ export function ProfilePage() {
                                         className="bg-transparent border-none outline-none focus:ring-0 w-24 font-bold text-gray-700 placeholder:text-gray-400"
                                     />
                                 </div>
-                                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl group/field hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100 cursor-text" onClick={() => document.getElementsByName('age')[0]?.focus()}>
+                                <div className={`flex items-center gap-2 px-4 py-2 rounded-xl group/field hover:bg-white hover:shadow-md transition-all border cursor-text ${isOrgMode ? 'border-2 border-gray-900 bg-white shadow-[1px_1px_0px_rgba(0,0,0,1)]' : 'bg-gray-50 border-transparent hover:border-gray-100'}`} onClick={() => document.getElementsByName('age')[0]?.focus()}>
                                     <Clock className="w-4 h-4 text-rose-500" />
                                     <input
                                         type="number"
@@ -196,7 +199,7 @@ export function ProfilePage() {
                                         className="bg-transparent border-none outline-none focus:ring-0 w-12 font-bold text-gray-700 placeholder:text-gray-400"
                                     />
                                 </div>
-                                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl group/field hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100 cursor-text" onClick={() => document.getElementsByName('location')[0]?.focus()}>
+                                <div className={`flex items-center gap-2 px-4 py-2 rounded-xl group/field hover:bg-white hover:shadow-md transition-all border cursor-text ${isOrgMode ? 'border-2 border-gray-900 bg-white shadow-[1px_1px_0px_rgba(0,0,0,1)]' : 'bg-gray-50 border-transparent hover:border-gray-100'}`} onClick={() => document.getElementsByName('location')[0]?.focus()}>
                                     <MapPin className="w-4 h-4 text-amber-500" />
                                     <input
                                         type="text"
@@ -207,18 +210,18 @@ export function ProfilePage() {
                                         className="bg-transparent border-none outline-none focus:ring-0 w-32 font-bold text-gray-700 placeholder:text-gray-400"
                                     />
                                 </div>
-                                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl opacity-70 cursor-not-allowed">
+                                <div className={`flex items-center gap-2 px-4 py-2 rounded-xl opacity-70 cursor-not-allowed border ${isOrgMode ? 'border-2 border-gray-900 bg-white shadow-[1px_1px_0px_rgba(0,0,0,1)]' : 'bg-gray-50 border-transparent'}`}>
                                     <Mail className="w-4 h-4 text-indigo-400" />
                                     {user?.email}
                                 </div>
                             </div>
 
                             <div className="mt-8 flex flex-wrap gap-3 justify-center lg:justify-start">
-                                <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+                                <span className={`flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest border ${isOrgMode ? 'border-2 border-gray-900 rounded-lg bg-emerald-100' : 'rounded-full border-emerald-100'}`}>
                                     <CheckCircle2 className="w-3 h-3" /> Email Verified
                                 </span>
                                 {(!formData.age || parseInt(formData.age) < 16) && (
-                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-100">
+                                    <span className={`flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-black uppercase tracking-widest border ${isOrgMode ? 'border-2 border-gray-900 rounded-lg bg-amber-100' : 'rounded-full border-amber-100'}`}>
                                         <AlertCircle className="w-3 h-3" /> Parent Unverified
                                     </span>
                                 )}
@@ -226,14 +229,14 @@ export function ProfilePage() {
                         </div>
 
                         {/* Profile Completion */}
-                        <div className="w-full lg:w-72 bg-amber-50 rounded-[2.5rem] p-8 text-gray-900 border border-amber-100 shadow-lg relative overflow-hidden">
+                        <div className={`w-full lg:w-72 ${isOrgMode ? 'bg-[#FFEDD5] border-2 border-gray-900 rounded-3xl p-6 shadow-[2px_2px_0px_rgba(0,0,0,1)]' : 'bg-amber-50 rounded-[2.5rem] p-8 border border-amber-100 shadow-lg'} text-gray-900 relative overflow-hidden`}>
                             <Zap className="absolute -bottom-8 -right-8 w-32 h-32 text-amber-500/20 -rotate-12" />
                             <div className="relative z-10 text-center">
                                 <div className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-2">Profile Strength</div>
                                 <div className="text-4xl font-black mb-4 text-gray-900">{completionPercentage}%</div>
-                                <div className="h-3 w-full bg-amber-200/50 rounded-full overflow-hidden mb-4 p-0.5">
+                                <div className={`h-3 w-full bg-amber-200/50 overflow-hidden mb-4 p-0.5 ${isOrgMode ? 'border-2 border-gray-900 rounded-xl bg-white' : 'rounded-full bg-amber-200/50'}`}>
                                     <div
-                                        className="h-full bg-amber-500 rounded-full transition-all duration-1000 ease-out shadow-sm"
+                                        className="h-full bg-[#818CF8] rounded-full transition-all duration-1000 ease-out shadow-sm"
                                         style={{ width: `${completionPercentage}%` }}
                                     ></div>
                                 </div>
@@ -247,8 +250,8 @@ export function ProfilePage() {
 
                     <div className="lg:col-span-2 space-y-10">
                         {/* 2. About Me Section (Human) */}
-                        <div className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-gray-100 shadow-sm">
-                            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-6 md:mb-8 flex items-center gap-3">
+                        <div className={`bg-white p-6 md:p-8 ${isOrgMode ? 'border-2 border-gray-900 rounded-3xl shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)]' : 'rounded-[2.5rem] border border-gray-100 shadow-sm'}`}>
+                            <h2 className="text-xl md:text-2xl font-black text-gray-900 mb-6 md:mb-8 flex items-center gap-3">
                                 About Me
                             </h2>
                             <div className="space-y-8">
@@ -260,7 +263,7 @@ export function ProfilePage() {
                                         onChange={handleChange}
                                         rows={2}
                                         placeholder="E.g. Class 11 student interested in AI and startups..."
-                                        className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all font-medium text-gray-700 resize-none"
+                                        className={`w-full px-6 py-4 outline-none transition-all font-medium text-gray-700 resize-none ${isOrgMode ? 'bg-white border-2 border-gray-900 rounded-xl focus:ring-2 focus:ring-indigo-500/55 font-mono' : 'bg-gray-50 border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100'}`}
                                     />
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -271,7 +274,7 @@ export function ProfilePage() {
                                             value={formData.curiosities}
                                             onChange={handleChange}
                                             placeholder="Quantum Physics, Ethics, etc."
-                                            className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all font-medium text-gray-700"
+                                            className={`w-full px-6 py-4 outline-none transition-all font-medium text-gray-700 ${isOrgMode ? 'bg-white border-2 border-gray-900 rounded-xl focus:ring-2 focus:ring-indigo-500/55 font-mono' : 'bg-gray-50 border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100'}`}
                                         />
                                     </div>
                                     <div className="space-y-3">
@@ -281,7 +284,7 @@ export function ProfilePage() {
                                             value={formData.learning_now}
                                             onChange={handleChange}
                                             placeholder="React Native, Calculus..."
-                                            className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all font-medium text-gray-700"
+                                            className={`w-full px-6 py-4 outline-none transition-all font-medium text-gray-700 ${isOrgMode ? 'bg-white border-2 border-gray-900 rounded-xl focus:ring-2 focus:ring-indigo-500/55 font-mono' : 'bg-gray-50 border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100'}`}
                                         />
                                     </div>
                                 </div>
@@ -292,15 +295,15 @@ export function ProfilePage() {
                                         value={formData.future_goals}
                                         onChange={handleChange}
                                         placeholder="I want to become a Lead AI Engineer or founder..."
-                                        className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all font-medium text-gray-700"
+                                        className={`w-full px-6 py-4 outline-none transition-all font-medium text-gray-700 ${isOrgMode ? 'bg-white border-2 border-gray-900 rounded-xl focus:ring-2 focus:ring-indigo-500/55 font-mono' : 'bg-gray-50 border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100'}`}
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {/* 3. Learning Preferences & Interests */}
-                        <div className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-gray-100 shadow-sm">
-                            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-6 md:mb-8 flex items-center gap-3">
+                        <div className={`bg-white p-6 md:p-8 ${isOrgMode ? 'border-2 border-gray-900 rounded-3xl shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)]' : 'rounded-[2.5rem] border border-gray-100 shadow-sm'}`}>
+                            <h2 className="text-xl md:text-2xl font-black text-gray-900 mb-6 md:mb-8 flex items-center gap-3">
                                 <Target className="w-6 h-6 text-indigo-500" />
                                 Learning Preferences
                             </h2>
@@ -311,7 +314,7 @@ export function ProfilePage() {
                                         name="learning_goals"
                                         value={formData.learning_goals}
                                         onChange={handleChange}
-                                        className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all font-bold text-gray-700 appearance-none cursor-pointer"
+                                        className={`w-full px-6 py-4 border outline-none transition-all font-bold text-gray-750 appearance-none cursor-pointer ${isOrgMode ? 'bg-white border-2 border-gray-900 rounded-xl focus:ring-2 focus:ring-indigo-500/55 font-mono' : 'bg-gray-50 border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100'}`}
                                     >
                                         <option value="">Select a goal</option>
                                         <option value="Exam Prep">Exam Preparation</option>
@@ -326,7 +329,7 @@ export function ProfilePage() {
                                         name="learning_style"
                                         value={formData.learning_style}
                                         onChange={handleChange}
-                                        className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all font-bold text-gray-700 appearance-none cursor-pointer"
+                                        className={`w-full px-6 py-4 border outline-none transition-all font-bold text-gray-750 appearance-none cursor-pointer ${isOrgMode ? 'bg-white border-2 border-gray-900 rounded-xl focus:ring-2 focus:ring-indigo-500/55 font-mono' : 'bg-gray-50 border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100'}`}
                                     >
                                         <option value="">Select a style</option>
                                         <option value="1-on-1">1-on-1 Mentorship</option>
@@ -340,7 +343,7 @@ export function ProfilePage() {
                                         name="availability"
                                         value={formData.availability}
                                         onChange={handleChange}
-                                        className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all font-bold text-gray-700 appearance-none cursor-pointer"
+                                        className={`w-full px-6 py-4 border outline-none transition-all font-bold text-gray-750 appearance-none cursor-pointer ${isOrgMode ? 'bg-white border-2 border-gray-900 rounded-xl focus:ring-2 focus:ring-indigo-500/55 font-mono' : 'bg-gray-50 border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100'}`}
                                     >
                                         <option value="">Select availability</option>
                                         <option value="Weekdays">Weekdays Only</option>
@@ -357,7 +360,7 @@ export function ProfilePage() {
                                         value={formData.phone}
                                         onChange={handleChange}
                                         placeholder="+1 (555) 000-0000"
-                                        className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all font-medium text-gray-700"
+                                        className={`w-full px-6 py-4 outline-none transition-all font-medium text-gray-700 ${isOrgMode ? 'bg-white border-2 border-gray-900 rounded-xl focus:ring-2 focus:ring-indigo-500/55 font-mono' : 'bg-gray-50 border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100'}`}
                                     />
                                 </div>
                             </div>
@@ -365,9 +368,9 @@ export function ProfilePage() {
                             {/* Interests (Tags) */}
                             <div className="mt-8 space-y-3">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Interests (Skills & Hobbies)</label>
-                                <div className="flex flex-wrap gap-2 p-4 bg-gray-50 rounded-[2rem] border border-gray-100 focus-within:bg-white transition-all">
+                                <div className={`flex flex-wrap gap-2 p-4 transition-all ${isOrgMode ? 'bg-white border-2 border-gray-900 rounded-2xl shadow-[1px_1px_0px_rgba(0,0,0,1)]' : 'bg-gray-50 rounded-[2rem] border border-gray-100 focus-within:bg-white'}`}>
                                     {formData.interests.map(interest => (
-                                        <span key={interest} className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-bold group">
+                                        <span key={interest} className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold group transition-all ${isOrgMode ? 'bg-[#F3E8FF] text-purple-950 border-2 border-gray-900 rounded-lg shadow-[1px_1px_0px_rgba(0,0,0,1)]' : 'bg-indigo-600 text-white rounded-xl'}`}>
                                             {interest}
                                             <button onClick={() => removeInterest(interest)} className="hover:text-indigo-200 transition-colors">
                                                 <X className="w-3 h-3" />
@@ -395,7 +398,7 @@ export function ProfilePage() {
                     {/* Right Column: 4. Activity & Progress Summary */}
                     <div className="space-y-10">
                         {/* Progress Summary Card */}
-                        <div className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-gray-100 shadow-xl shadow-indigo-100/50 relative overflow-hidden">
+                        <div className={`bg-white p-6 md:p-8 ${isOrgMode ? 'border-2 border-gray-900 rounded-3xl shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)]' : 'rounded-[2.5rem] border border-gray-100 shadow-xl shadow-indigo-100/50'} relative overflow-hidden`}>
                             <Layout className="absolute -bottom-6 -right-6 w-32 h-32 text-gray-50 -rotate-12" />
                             <h3 className="text-lg md:text-xl font-bold mb-6 flex items-center gap-2 text-gray-900">
                                 <Zap className="w-5 h-5 text-amber-500 fill-amber-500" />
@@ -407,8 +410,8 @@ export function ProfilePage() {
                                         <span>Course Completion</span>
                                         <span className="text-indigo-600">0%</span>
                                     </div>
-                                    <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                                        <div className="h-full bg-indigo-50 w-[0%] shadow-sm"></div>
+                                    <div className={`h-2 w-full rounded-full overflow-hidden ${isOrgMode ? 'bg-gray-100 border border-gray-950 p-0.5 h-3' : 'bg-gray-100'}`}>
+                                        <div className={`h-full shadow-sm ${isOrgMode ? 'bg-[#DCFCE7]' : 'bg-indigo-50'}`} style={{ width: '0%' }}></div>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
@@ -416,8 +419,8 @@ export function ProfilePage() {
                                         <span>Skill Points</span>
                                         <span className="text-emerald-600">0 XP</span>
                                     </div>
-                                    <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                                        <div className="h-full bg-emerald-500 w-[0%] shadow-sm"></div>
+                                    <div className={`h-2 w-full rounded-full overflow-hidden ${isOrgMode ? 'bg-gray-100 border border-gray-950 p-0.5 h-3' : 'bg-gray-100'}`}>
+                                        <div className="h-full bg-emerald-500 shadow-sm" style={{ width: '0%' }}></div>
                                     </div>
                                 </div>
                             </div>
@@ -434,7 +437,7 @@ export function ProfilePage() {
                         </div>
 
                         {/* Recent Badges Placeholder */}
-                        <div className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-gray-100 shadow-sm">
+                        <div className={`bg-white p-6 md:p-8 ${isOrgMode ? 'border-2 border-gray-900 rounded-3xl shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)]' : 'rounded-[2.5rem] border border-gray-100 shadow-sm'}`}>
                             <h3 className="font-bold text-gray-900 mb-6 flex items-center gap-2">
                                 <Award className="w-5 h-5 text-indigo-500" />
                                 Recent Badges
@@ -442,7 +445,7 @@ export function ProfilePage() {
                             <div className="py-4">
                                 <p className="text-xs text-gray-400 italic">No badges earned yet. Complete milestones to unlock rewards!</p>
                             </div>
-                            <button onClick={() => toast.info("Portfolio feature coming soon!")} className="w-full mt-4 py-3 bg-gray-50 text-[10px] font-black uppercase tracking-widest text-gray-500 rounded-xl hover:bg-gray-100 transition-all">
+                            <button onClick={() => toast.info("Portfolio feature coming soon!")} className={`w-full mt-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 rounded-xl transition-all ${isOrgMode ? 'bg-white border-2 border-gray-900 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] text-gray-900 hover:bg-gray-50' : 'bg-gray-50 hover:bg-gray-100'}`}>
                                 View Portfolio
                             </button>
                         </div>
@@ -452,12 +455,12 @@ export function ProfilePage() {
                             <button
                                 onClick={handleSubmit}
                                 disabled={saving}
-                                className="w-full py-4 bg-gray-900 text-white font-black rounded-[2rem] shadow-2xl hover:bg-black transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-70"
+                                className={`w-full py-4 ${isOrgMode ? 'bg-[#818CF8] hover:bg-indigo-700 text-white rounded-2xl border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)]' : 'bg-gray-900 text-white rounded-[2rem] shadow-2xl hover:bg-black'} font-black transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-70`}
                             >
                                 {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
                                 Save Everything
                             </button>
-                            <button onClick={() => { window.location.reload(); toast.info("Changes discarded"); }} className="w-full py-4 bg-white border border-gray-100 text-gray-400 font-bold rounded-[2rem] hover:text-rose-500 hover:bg-rose-50 hover:border-rose-100 transition-all flex items-center justify-center gap-3">
+                            <button onClick={() => { window.location.reload(); toast.info("Changes discarded"); }} className={`w-full py-4 ${isOrgMode ? 'bg-white text-gray-700 rounded-2xl border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-gray-50' : 'bg-white border border-gray-100 text-gray-400 rounded-[2rem] hover:text-rose-500 hover:bg-rose-50 hover:border-rose-100'} font-bold transition-all flex items-center justify-center gap-3`}>
                                 <X className="w-5 h-5" />
                                 Cancel Changes
                             </button>

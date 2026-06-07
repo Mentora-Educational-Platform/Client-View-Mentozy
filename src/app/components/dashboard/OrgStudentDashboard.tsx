@@ -31,6 +31,7 @@ export function OrgStudentDashboard() {
     const orgEmail = (activeOrganization as any)?.email || 'academy.support@krishnaite.dev';
 
     const [announcements, setAnnouncements] = useState<any[]>([]);
+    const [orgCourses, setOrgCourses] = useState<any[]>([]);
 
     useEffect(() => {
         const loadData = async () => {
@@ -92,6 +93,18 @@ export function OrgStudentDashboard() {
                     } catch (annErr) {
                         console.warn('Could not query announcements for dashboard:', annErr);
                     }
+
+                    // Fetch courses
+                    try {
+                        const { data: coursesData } = await supabase
+                            .from('org_courses')
+                            .select('id')
+                            .eq('org_id', activeOrganization.id)
+                            .limit(1);
+                        if (coursesData) setOrgCourses(coursesData);
+                    } catch (coursesErr) {
+                        console.warn('Could not query courses for dashboard:', coursesErr);
+                    }
                 }
             } catch (e) {
                 console.error('Error loading org student data:', e);
@@ -138,10 +151,14 @@ export function OrgStudentDashboard() {
                 <div className="flex items-center gap-4">
                     {/* SVG logo matching the retro pencil box in the screenshot */}
                     <div className="w-14 h-14 bg-white dark:bg-gray-900 border-2 border-gray-900 dark:border-gray-100 rounded-xl flex items-center justify-center p-1 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
-                        <svg className="w-10 h-10 text-gray-900 dark:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <path d="M12 2L2 7l10 5 10-5-10-5z" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M2 17l10 5 10-5" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M2 12l10 5 10-5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <svg className="w-10 h-10 text-gray-900 dark:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                            <path d="M12 5.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z" fill="currentColor" />
+                            <path d="M11 2.5a1 1 0 0 1 2 0" />
+                            <path d="M12 7.5v-2" />
+                            <path d="M6 9.5l0.5 0.5-0.5 0.5-0.5-0.5z" fill="currentColor" />
+                            <path d="M18 9.5l0.5 0.5-0.5 0.5-0.5-0.5z" fill="currentColor" />
                         </svg>
                     </div>
                     <div>
@@ -268,58 +285,64 @@ export function OrgStudentDashboard() {
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             
-                            {/* Left Side: Pinned Resources */}
+                            {/* Left Side: Materials & Guides */}
                             <div className="space-y-4">
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Pinned Resources</h3>
-                                <div className="space-y-3">
-                                    <a 
-                                        href="/org-materials"
-                                        className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-800 hover:border-indigo-500 rounded-2xl bg-gray-50/50 dark:bg-gray-950/20 group transition-all"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-xl bg-red-100 dark:bg-red-950/20 flex items-center justify-center">
-                                                <FileText className="w-4 h-4 text-red-600" />
+                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Materials & Guides</h3>
+                                {orgCourses.length > 0 ? (
+                                    <div className="space-y-3">
+                                        <a 
+                                            href="/org-materials"
+                                            className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-800 hover:border-indigo-500 rounded-2xl bg-gray-50/50 dark:bg-gray-950/20 group transition-all"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-xl bg-red-100 dark:bg-red-950/20 flex items-center justify-center">
+                                                    <FileText className="w-4 h-4 text-red-600" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-xs font-black text-gray-900 dark:text-white group-hover:text-indigo-600">Cohort Syllabus 2026</h4>
+                                                    <p className="text-[10px] text-gray-400">PDF Document · Pinned by Admin</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h4 className="text-xs font-black text-gray-900 dark:text-white group-hover:text-indigo-600">Cohort Syllabus 2026</h4>
-                                                <p className="text-[10px] text-gray-400">PDF Document · Pinned by Admin</p>
-                                            </div>
-                                        </div>
-                                        <ExternalLink className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
-                                    </a>
+                                            <ExternalLink className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
+                                        </a>
 
-                                    <a 
-                                        href="/org-materials"
-                                        className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-800 hover:border-indigo-500 rounded-2xl bg-gray-50/50 dark:bg-gray-950/20 group transition-all"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950/20 flex items-center justify-center">
-                                                <FileText className="w-4 h-4 text-blue-600" />
+                                        <a 
+                                            href="/org-materials"
+                                            className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-800 hover:border-indigo-500 rounded-2xl bg-gray-50/50 dark:bg-gray-950/20 group transition-all"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950/20 flex items-center justify-center">
+                                                    <FileText className="w-4 h-4 text-blue-600" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-xs font-black text-gray-900 dark:text-white group-hover:text-indigo-600">Submission Formatting Guide</h4>
+                                                    <p className="text-[10px] text-gray-400">PDF Document · Pinned by Teacher</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h4 className="text-xs font-black text-gray-900 dark:text-white group-hover:text-indigo-600">Submission Formatting Guide</h4>
-                                                <p className="text-[10px] text-gray-400">PDF Document · Pinned by Teacher</p>
-                                            </div>
-                                        </div>
-                                        <ExternalLink className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
-                                    </a>
+                                            <ExternalLink className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
+                                        </a>
 
-                                    <a 
-                                        href="/org-materials"
-                                        className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-800 hover:border-indigo-500 rounded-2xl bg-gray-50/50 dark:bg-gray-950/20 group transition-all"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/20 flex items-center justify-center">
-                                                <BookOpen className="w-4 h-4 text-amber-600" />
+                                        <a 
+                                            href="/org-materials"
+                                            className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-800 hover:border-indigo-500 rounded-2xl bg-gray-50/50 dark:bg-gray-950/20 group transition-all"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/20 flex items-center justify-center">
+                                                    <BookOpen className="w-4 h-4 text-amber-600" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-xs font-black text-gray-900 dark:text-white group-hover:text-indigo-600">Reference Library & Codes</h4>
+                                                    <p className="text-[10px] text-gray-400">External Repository · Pinned by Admin</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h4 className="text-xs font-black text-gray-900 dark:text-white group-hover:text-indigo-600">Reference Library & Codes</h4>
-                                                <p className="text-[10px] text-gray-400">External Repository · Pinned by Admin</p>
-                                            </div>
-                                        </div>
-                                        <ExternalLink className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
-                                    </a>
-                                </div>
+                                            <ExternalLink className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
+                                        </a>
+                                    </div>
+                                ) : (
+                                    <div className="py-8 text-center text-xs font-bold text-gray-400 border border-dashed border-gray-200 dark:border-gray-800 rounded-2xl bg-gray-50/20">
+                                        nothing to buzz byee 🐝
+                                    </div>
+                                )}
                             </div>
 
                             {/* Right Side: Bulletin Feed / Announcements */}

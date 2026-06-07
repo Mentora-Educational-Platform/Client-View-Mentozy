@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { getStudentBookings, Booking } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
+import { useOrganizationMode } from '../../context/OrganizationModeContext';
 import { StudentBookingDetailsModal } from '../components/booking/StudentBookingDetailsModal';
 import { supabase } from '../../lib/supabase';
 
@@ -19,6 +20,8 @@ interface Reminder {
 
 export function CalendarPage() {
     const { user } = useAuth();
+    const { mode, activeOrganization } = useOrganizationMode();
+    const isOrgMode = mode === 'organization' && activeOrganization;
     const navigate = useNavigate();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDay, setSelectedDay] = useState<number | null>(null);
@@ -189,19 +192,19 @@ export function CalendarPage() {
 
     return (
         <DashboardLayout>
-            <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-8" onClick={() => { setSelectedDay(null); setPopoverPosition(null); setIsPopoverInputMode(false); }}>
+            <div className={`relative grid grid-cols-1 lg:grid-cols-3 gap-8 ${isOrgMode ? 'font-mono text-gray-900 p-4 select-none bg-[#FAF9F6] min-h-screen' : ''}`} onClick={() => { setSelectedDay(null); setPopoverPosition(null); setIsPopoverInputMode(false); }}>
 
                 {/* Floating Popover */}
                 {selectedDay !== null && popoverPosition && (
                     <div
-                        className={`fixed z-50 -translate-x-1/2 -translate-y-full bg-gray-900 text-white rounded-2xl shadow-2xl border border-white/10 transition-all duration-200 ${isPopoverInputMode ? 'p-3 w-64' : 'p-2'}`}
+                        className={`fixed z-50 -translate-x-1/2 -translate-y-full bg-gray-900 text-white rounded-2xl shadow-2xl border border-white/10 transition-all duration-200 ${isPopoverInputMode ? 'p-3 w-64' : 'p-2'} ${isOrgMode ? 'font-mono border-2 border-gray-900 rounded-xl shadow-[2px_2px_0px_rgba(0,0,0,1)]' : ''}`}
                         style={{ left: popoverPosition.x, top: popoverPosition.y }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         {!isPopoverInputMode ? (
                             <button
                                 onClick={() => setIsPopoverInputMode(true)}
-                                className="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-xl transition-all whitespace-nowrap text-xs font-bold w-full"
+                                className={`flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-xl transition-all whitespace-nowrap text-xs font-bold w-full ${isOrgMode ? 'font-mono' : ''}`}
                             >
                                 <Plus className="w-4 h-4 text-amber-500" />
                                 Add Reminder Here
@@ -219,11 +222,11 @@ export function CalendarPage() {
                                     value={popoverInputText}
                                     onChange={(e) => setPopoverInputText(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && addReminderAtSelected()}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-all"
+                                    className={`w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-all ${isOrgMode ? 'font-mono border-gray-700 bg-white/10' : ''}`}
                                 />
                                 <button
                                     onClick={addReminderAtSelected}
-                                    className="w-full bg-amber-600 hover:bg-amber-50 py-2 rounded-xl text-xs font-bold transition-all"
+                                    className={`w-full bg-amber-600 hover:bg-amber-50 py-2 rounded-xl text-xs font-bold transition-all ${isOrgMode ? 'border-2 border-gray-900 rounded-lg shadow-[1px_1px_0px_rgba(0,0,0,1)] bg-amber-500 hover:bg-amber-400 text-gray-900' : ''}`}
                                 >
                                     Save Reminder
                                 </button>
@@ -235,22 +238,22 @@ export function CalendarPage() {
 
                 {/* Left/Center Column: The Calendar */}
                 <div className="lg:col-span-2 space-y-8">
-                    <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl p-8" onClick={(e) => e.stopPropagation()}>
+                    <div className={`bg-white ${isOrgMode ? 'border-2 border-gray-900 rounded-3xl p-6 shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)]' : 'rounded-[2.5rem] border border-gray-100 shadow-xl p-8'}`} onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-10">
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900">{monthName}</h1>
-                                <p className="text-gray-500 font-medium">{year}</p>
+                                <h1 className="text-3xl font-black text-gray-900">{monthName}</h1>
+                                <p className="text-gray-500 font-bold tracking-wide">{year}</p>
                             </div>
-                            <div className="flex items-center gap-2 bg-gray-50 rounded-2xl p-1.5 border border-gray-200">
-                                <button onClick={handlePrevMonth} className="p-2 hover:bg-white rounded-xl transition-all"><ChevronLeft className="w-5 h-5 text-gray-600" /></button>
-                                <button onClick={handleNextMonth} className="p-2 hover:bg-white rounded-xl transition-all"><ChevronRight className="w-5 h-5 text-gray-600" /></button>
+                            <div className={`flex items-center gap-2 p-1.5 ${isOrgMode ? 'bg-white border-2 border-gray-900 rounded-xl shadow-[1px_1px_0px_rgba(0,0,0,1)]' : 'bg-gray-50 rounded-2xl border border-gray-200'}`}>
+                                <button onClick={handlePrevMonth} className={`p-2 transition-all ${isOrgMode ? 'hover:bg-indigo-50 border border-transparent hover:border-gray-900 rounded-lg' : 'hover:bg-white rounded-xl'}`}><ChevronLeft className="w-5 h-5 text-gray-600" /></button>
+                                <button onClick={handleNextMonth} className={`p-2 transition-all ${isOrgMode ? 'hover:bg-indigo-50 border border-transparent hover:border-gray-900 rounded-lg' : 'hover:bg-white rounded-xl'}`}><ChevronRight className="w-5 h-5 text-gray-600" /></button>
                             </div>
                         </div>
 
                         {/* Calendar Grid */}
                         <div className="grid grid-cols-7 gap-1 mb-4 text-center">
                             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                                <div key={day} className="py-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">{day}</div>
+                                <div key={day} className="py-3 text-[10px] font-black uppercase tracking-widest text-gray-400">{day}</div>
                             ))}
                         </div>
                         <div className="grid grid-cols-7 gap-2">
@@ -272,12 +275,13 @@ export function CalendarPage() {
                                     <div
                                         key={day}
                                         onClick={(e) => handleDateClick(day, e)}
-                                        className={`aspect-square relative rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-amber-50 group border ${isToday ? 'bg-amber-600 border-amber-600 text-white shadow-lg shadow-amber-200' :
-                                            isSelected ? 'bg-amber-50 border-amber-200 text-amber-900 shadow-inner' :
-                                                'border-transparent text-gray-700'
-                                            }`}
+                                        className={`aspect-square relative flex flex-col items-center justify-center cursor-pointer transition-all border ${
+                                            isToday ? (isOrgMode ? 'bg-indigo-600 text-white border-2 border-gray-900 rounded-xl shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]' : 'bg-amber-600 border-amber-600 text-white rounded-2xl shadow-lg shadow-amber-200') :
+                                            isSelected ? (isOrgMode ? 'bg-[#F3E8FF] text-purple-950 border-2 border-gray-900 rounded-xl shadow-[1px_1px_0px_rgba(0,0,0,1)]' : 'bg-amber-50 border-amber-200 text-amber-900 rounded-2xl shadow-inner') :
+                                            isOrgMode ? 'border-gray-200 text-gray-700 hover:border-gray-900 hover:bg-gray-50 rounded-xl' : 'border-transparent text-gray-700 hover:bg-amber-50 rounded-2xl'
+                                        }`}
                                     >
-                                        <span className="text-sm font-bold">{day}</span>
+                                        <span className="text-sm font-black">{day}</span>
                                         {hasEvent && !isToday && (
                                             <div className="absolute bottom-2 w-1.5 h-1.5 bg-amber-500 rounded-full group-hover:scale-125 transition-transform"></div>
                                         )}
@@ -289,7 +293,7 @@ export function CalendarPage() {
 
                     {/* Upcoming Live Classes & Sessions */}
                     <div className="space-y-6 mb-8">
-                        <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        <h2 className="text-xl font-black text-gray-900 flex items-center gap-2">
                             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                             Upcoming Live Classes & Sessions
                         </h2>
@@ -297,20 +301,20 @@ export function CalendarPage() {
                             {liveSessions.map((session) => (
                                 <div
                                     key={session.id}
-                                    className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group flex flex-col justify-between min-h-[220px]"
+                                    className={`bg-white p-6 ${isOrgMode ? 'border-2 border-gray-900 rounded-2xl shadow-[2px_2px_0px_rgba(0,0,0,1)]' : 'rounded-3xl border border-gray-100 shadow-sm hover:shadow-md'} transition-all group flex flex-col justify-between min-h-[220px]`}
                                 >
                                     <div>
                                         <div className="flex items-center justify-between mb-3">
-                                            <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600">
+                                            <div className={`p-2.5 ${isOrgMode ? 'rounded-xl border-2 border-gray-900 bg-[#E0F2FE] text-blue-700 shadow-[1px_1px_0px_rgba(0,0,0,1)]' : 'rounded-xl bg-indigo-50 text-indigo-600'}`}>
                                                 <Video className="w-5 h-5" />
                                             </div>
                                             {session.isActive ? (
-                                                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100 flex items-center gap-1 animate-pulse">
+                                                <span className={`text-[10px] font-bold ${isOrgMode ? 'text-emerald-700 bg-emerald-50 border-2 border-gray-900 px-2.5 py-1 rounded-lg' : 'text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100'} flex items-center gap-1 animate-pulse`}>
                                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
                                                     Active Now
                                                 </span>
                                             ) : (
-                                                <span className="text-[10px] font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100">
+                                                <span className={`text-[10px] font-bold ${isOrgMode ? 'text-slate-700 bg-slate-100 border-2 border-gray-900 px-2.5 py-1 rounded-lg' : 'text-slate-500 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100'}`}>
                                                     Scheduled
                                                 </span>
                                             )}
@@ -328,7 +332,7 @@ export function CalendarPage() {
                                     
                                     <button 
                                         onClick={() => navigate(`/live/${session.roomId}`)}
-                                        className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5 ${session.isActive ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/10 hover:-translate-y-0.5' : 'bg-slate-800 text-slate-200 hover:bg-slate-700 shadow-slate-800/10'}`}
+                                        className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5 ${session.isActive ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/10 hover:-translate-y-0.5' : 'bg-slate-800 text-slate-200 hover:bg-slate-700 shadow-slate-800/10'} ${isOrgMode ? 'border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none' : ''}`}
                                     >
                                         <Video className="w-4 h-4" />
                                         {session.isActive ? 'Join Live WebRTC Session' : 'Pre-Register / Wait'}
@@ -340,16 +344,16 @@ export function CalendarPage() {
 
                     {/* Upcoming Items List */}
                     <div className="space-y-6">
-                        <h2 className="text-xl font-bold text-gray-900 text-left">Your Schedule</h2>
+                        <h2 className="text-xl font-black text-gray-900 text-left">Your Schedule</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {bookings.length > 0 ? bookings.map((booking) => (
                                 <div
                                     key={booking.id}
                                     onClick={() => handleBookingClick(booking.id)}
-                                    className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group cursor-pointer"
+                                    className={`bg-white p-6 ${isOrgMode ? 'border-2 border-gray-900 rounded-2xl shadow-[2px_2px_0px_rgba(0,0,0,1)]' : 'rounded-3xl border border-gray-100 shadow-sm hover:shadow-md'} transition-all group cursor-pointer`}
                                 >
                                     <div className="flex items-start justify-between mb-4">
-                                        <div className={`p-3 rounded-2xl ${booking.status === 'confirmed' ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-600'}`}>
+                                        <div className={`p-3 ${isOrgMode ? 'border-2 border-gray-900 rounded-xl bg-[#FEF9C3] text-amber-700 shadow-[1px_1px_0px_rgba(0,0,0,1)]' : booking.status === 'confirmed' ? 'bg-indigo-50 text-indigo-600 rounded-2xl' : 'bg-amber-50 text-amber-600 rounded-2xl'}`}>
                                             <Clock className="w-5 h-5" />
                                         </div>
                                         <button className="p-1 text-gray-400 hover:text-gray-900"><MoreVertical className="w-4 h-4" /></button>
@@ -357,7 +361,7 @@ export function CalendarPage() {
                                     <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">
                                         {new Date(booking.scheduled_at).toLocaleDateString()} • {new Date(booking.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>
-                                    <h3 className="text-lg font-bold text-gray-900 mb-2">Session with {booking.mentors?.name || 'Mentor'}</h3>
+                                    <h3 className="text-lg font-black text-gray-900 mb-2">Session with {booking.mentors?.name || 'Mentor'}</h3>
                                     <div className="flex items-center gap-2 text-sm text-gray-600">
                                         <User className="w-3.5 h-3.5 text-amber-500" />
                                         {booking.mentors?.role || 'Mentor'}
@@ -375,23 +379,23 @@ export function CalendarPage() {
                 {/* Right Column: Reminders & Notes */}
                 <div className="space-y-8">
                     {/* Personal Notes Card */}
-                    <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-[2.5rem] p-8 text-white shadow-xl shadow-amber-200 relative overflow-hidden group">
-                        <StickyNote className="absolute -top-6 -right-6 w-32 h-32 text-white/10 rotate-12 group-hover:scale-110 transition-transform duration-500" />
+                    <div className={`p-8 relative overflow-hidden group ${isOrgMode ? 'bg-[#FFEDD5] text-gray-900 border-2 border-gray-900 rounded-3xl shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)]' : 'bg-gradient-to-br from-amber-500 to-orange-600 rounded-[2.5rem] shadow-xl shadow-amber-200 text-white'}`}>
+                        <StickyNote className={`absolute -top-6 -right-6 w-32 h-32 ${isOrgMode ? 'text-gray-900/5' : 'text-white/10'} rotate-12 group-hover:scale-110 transition-transform duration-500`} />
                         <div className="relative z-10">
                             <h3 className="text-2xl font-bold mb-4">Quick Note</h3>
                             <textarea
-                                className="w-full bg-white/10 border border-white/20 rounded-2xl p-4 text-sm text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all resize-none h-32"
+                                className={`w-full p-4 text-sm transition-all resize-none h-32 rounded-2xl ${isOrgMode ? 'bg-white border-2 border-gray-900 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500/55' : 'bg-white/10 border-white/20 text-white placeholder-white/50 focus:ring-2 focus:ring-white/30'}`}
                                 placeholder="Jot down your thoughts..."
                             ></textarea>
-                            <p className="mt-4 text-[10px] uppercase font-bold text-white/60 tracking-widest">Auto-saved to your personal space</p>
+                            <p className={`mt-4 text-[10px] uppercase font-bold tracking-widest ${isOrgMode ? 'text-gray-500' : 'text-white/60'}`}>Auto-saved to your personal space</p>
                         </div>
                     </div>
 
                     {/* Reminders List */}
-                    <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-8" onClick={(e) => e.stopPropagation()}>
+                    <div className={`bg-white ${isOrgMode ? 'border-2 border-gray-900 rounded-3xl p-6 shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)]' : 'rounded-[2.5rem] border border-gray-100 shadow-sm p-8'}`} onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-8">
                             <h3 className="text-xl font-bold text-gray-900">Reminders</h3>
-                            <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
+                            <div className={`p-2 ${isOrgMode ? 'border-2 border-gray-900 rounded-xl bg-[#DCFCE7] text-green-700 shadow-[1px_1px_0px_rgba(0,0,0,1)]' : 'bg-amber-50 text-amber-600 rounded-xl'}`}>
                                 <Bell className="w-5 h-5" />
                             </div>
                         </div>
@@ -423,11 +427,11 @@ export function CalendarPage() {
                                 value={newReminder}
                                 onChange={(e) => setNewReminder(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && addReminder()}
-                                className="w-full pl-5 pr-12 py-3.5 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-amber-500 focus:outline-none transition-all text-sm font-medium"
+                                className={`w-full pl-5 pr-12 py-3.5 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-amber-500 focus:outline-none transition-all text-sm font-medium ${isOrgMode ? 'border-2 border-gray-900 rounded-xl' : ''}`}
                             />
                             <button
                                 onClick={addReminder}
-                                className="absolute right-2 top-1.5 p-2 bg-gray-900 text-white rounded-xl hover:bg-amber-600 transition-all"
+                                className={`absolute p-2 bg-gray-900 text-white rounded-xl hover:bg-amber-600 transition-all ${isOrgMode ? 'top-2 right-2 border-2 border-gray-900 shadow-[1px_1px_0px_rgba(0,0,0,1)]' : 'right-2 top-1.5'}`}
                             >
                                 <Plus className="w-4 h-4" />
                             </button>
