@@ -439,9 +439,9 @@ export function StudentDashboardPage() {
 
     return (
         <DashboardLayout>
-            <div style={{ fontFamily: '"Comic Sans MS", "Comic Sans", cursive' }} className="-m-4 md:-m-8 flex flex-col xl:flex-row min-h-[calc(100vh-4rem)] md:min-h-screen bg-white rounded-t-3xl overflow-hidden shadow-sm relative text-gray-900 tracking-tight">
+            <div className="-m-4 md:-m-8 flex flex-col xl:flex-row min-h-[calc(100vh-4rem)] md:min-h-screen bg-[#FAF9F6] overflow-hidden font-mono text-gray-900 tracking-tight select-none">
                 
-                {/* Decorative scatter elements like in the shot */}
+                {/* Decorative scatter elements */}
                 <div className="absolute top-10 left-10 text-blue-500 font-bold text-xl opacity-80 pointer-events-none z-0">△</div>
                 <div className="absolute top-14 right-1/2 text-gray-300 transform rotate-45 opacity-50 pointer-events-none z-0">+</div>
 
@@ -449,31 +449,23 @@ export function StudentDashboardPage() {
                 <div className="flex-1 p-6 md:p-10 lg:p-12 overflow-y-auto z-10">
                     
                     {/* Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-12 gap-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-12 gap-6 border-b-2 border-gray-900 pb-6">
                          <div className="flex items-center gap-4">
-                              <h1 className="text-[2.5rem] font-extrabold text-gray-900 tracking-tight leading-none">Dashboard</h1>
+                              <h1 className="text-[2.5rem] font-black text-gray-900 tracking-tight leading-none uppercase">Dashboard</h1>
                          </div>
                          
                          <div className="flex items-center gap-4">
-                             <div className="hidden sm:flex items-center bg-gray-50 rounded-full p-1 border border-gray-100">
-                                 <button className="p-2 bg-white rounded-full shadow-sm"><Sun className="w-4 h-4 text-gray-700"/></button>
-                                 <button className="p-2"><Moon className="w-4 h-4 text-gray-400"/></button>
-                             </div>
-                             <button className="p-3 bg-white border border-gray-100 rounded-full hover:bg-gray-50 relative">
-                                 <Bell className="w-5 h-5 text-gray-600"/>
-                                 <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full"></span>
-                             </button>
-                             <button onClick={() => setIsCategoryModalOpen(true)} className="flex items-center justify-center gap-2 bg-[#5763f6] text-white px-5 py-2.5 md:py-3 rounded-full text-sm font-bold shadow-[0_10px_20px_rgba(87,99,246,0.3)] hover:scale-105 transition-transform whitespace-nowrap">
-                                 <Plus className="w-4 h-4"/> New Page
-                             </button>
+                              <button onClick={() => setIsCategoryModalOpen(true)} className="flex items-center justify-center gap-2 bg-[#818CF8] text-white px-5 py-2.5 md:py-3 border-2 border-gray-900 rounded-2xl text-sm font-bold shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all whitespace-nowrap">
+                                  <Plus className="w-4 h-4"/> New Page
+                              </button>
                          </div>
                     </div>
 
                     {/* Organization Invitations Banner (Render if any) */}
                     {invites.length > 0 && (
-                        <div className="mb-8 p-6 rounded-[24px] bg-indigo-50 border border-indigo-100 flex items-center justify-between">
+                        <div className="mb-8 p-6 bg-indigo-50 border-2 border-gray-900 rounded-3xl shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)] flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm">
+                                <div className="w-12 h-12 bg-white rounded-2xl border-2 border-gray-900 flex items-center justify-center shadow-[1px_1px_0px_rgba(0,0,0,1)]">
                                     <Building2 className="w-6 h-6 text-indigo-600" />
                                 </div>
                                 <div>
@@ -482,8 +474,8 @@ export function StudentDashboardPage() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                <button onClick={() => handleRespondInvite(invites[0], true)} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold">Accept</button>
-                                <button onClick={() => handleRespondInvite(invites[0], false)} className="px-4 py-2 bg-gray-200 text-gray-600 rounded-xl text-sm font-bold">Decline</button>
+                                <button onClick={() => handleRespondInvite(invites[0], true)} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold border-2 border-gray-900 shadow-[1px_1px_0px_rgba(0,0,0,1)]">Accept</button>
+                                <button onClick={() => handleRespondInvite(invites[0], false)} className="px-4 py-2 bg-gray-250 text-gray-700 rounded-xl text-sm font-bold border-2 border-gray-900 shadow-[1px_1px_0px_rgba(0,0,0,1)]">Decline</button>
                             </div>
                         </div>
                     )}
@@ -493,79 +485,77 @@ export function StudentDashboardPage() {
                         {/* 6 Cards Metric Area */}
                         <div className="md:col-span-3 grid grid-cols-2 gap-x-6 gap-y-6 relative">
                              {/* Card 1 */}
-                             <div onClick={() => setIsTodoModalOpen(true)} className="bg-white border-2 border-slate-50 rounded-[24px] p-5 shadow-[0_10px_30px_rgba(0,0,0,0.02)] h-[120px] flex flex-col justify-between hover:-translate-y-1 transition-transform cursor-pointer">
+                             <div onClick={() => setIsTodoModalOpen(true)} className="bg-white border-2 border-gray-900 rounded-3xl p-5 shadow-[2px_2px_0px_rgba(0,0,0,1)] h-[120px] flex flex-col justify-between hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer">
                                   <div className="flex justify-between items-start">
                                       <span className="text-3xl font-extrabold">{todos.length}</span>
-                                      <div className="w-12 h-12 bg-[#eff3ff] rounded-2xl flex items-center justify-center">
+                                      <div className="w-12 h-12 bg-white border-2 border-gray-900 rounded-xl flex items-center justify-center shadow-[1px_1px_0px_rgba(0,0,0,1)]">
                                            <CheckSquare className="w-6 h-6 text-[#5763f6]" />
                                       </div>
                                   </div>
-                                  <span className="text-sm font-bold text-gray-400 tracking-wide">To-do List</span>
+                                  <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">To-do List</span>
                              </div>
                              
                              {/* Card 2 */}
-                             <div onClick={() => setIsNotesModalOpen(true)} className="bg-white border-2 border-slate-50 rounded-[24px] p-5 shadow-[0_10px_30px_rgba(0,0,0,0.02)] h-[120px] flex flex-col justify-between hover:-translate-y-1 transition-transform cursor-pointer">
+                             <div onClick={() => setIsNotesModalOpen(true)} className="bg-white border-2 border-gray-900 rounded-3xl p-5 shadow-[2px_2px_0px_rgba(0,0,0,1)] h-[120px] flex flex-col justify-between hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer">
                                   <div className="flex justify-between items-start">
                                       <span className="text-3xl font-extrabold">{notes.length}</span>
-                                      <div className="w-12 h-12 bg-[#fffdf0] rounded-2xl flex items-center justify-center">
-                                           <div className="w-8 h-8 rounded bg-[#efdc4d]"></div>
+                                      <div className="w-12 h-12 bg-[#FEF9C3] border-2 border-gray-900 rounded-xl flex items-center justify-center shadow-[1px_1px_0px_rgba(0,0,0,1)]">
+                                           <StickyNote className="w-6 h-6 text-yellow-800" />
                                       </div>
                                   </div>
-                                  <span className="text-sm font-bold text-gray-400 tracking-wide">Personal Notes</span>
+                                  <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Personal Notes</span>
                              </div>
 
-                             {/* Card 3 (Green Tilted) */}
-                             <div onClick={() => window.open('https://mentozy.app/library', '_blank')} className="bg-gradient-to-br from-[#38df92] to-[#2bba74] border-t-2 border-l-2 border-white/20 rounded-[24px] p-5 shadow-[0_20px_40px_rgba(43,186,116,0.4)] h-[120px] flex flex-col justify-between transform -rotate-3 scale-[1.02] z-10 hover:rotate-0 hover:scale-100 transition-all cursor-pointer mt-1 relative overflow-hidden">
+                             {/* Card 3 (Green Doodle Style) */}
+                             <div onClick={() => window.open('https://mentozy.app/library', '_blank')} className="bg-[#DCFCE7] text-green-950 border-2 border-gray-900 rounded-3xl p-5 shadow-[2px_2px_0px_rgba(0,0,0,1)] h-[120px] flex flex-col justify-between hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer mt-1 relative overflow-hidden">
                                   <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
                                   <div className="flex justify-between items-start relative z-10">
-                                      <span className="text-4xl font-extrabold text-white leading-none">∞</span>
-                                      <span className="text-4xl filter drop-shadow-md">📚</span>
+                                      <span className="text-4xl font-extrabold leading-none">∞</span>
+                                      <span className="text-4xl">📚</span>
                                   </div>
-                                  <span className="text-sm font-bold text-emerald-50 tracking-wide relative z-10">Study Resources</span>
+                                  <span className="text-xs font-bold uppercase tracking-widest text-emerald-850 relative z-10">Study Resources</span>
                              </div>
 
                              {/* Card 4 */}
-                             <div onClick={() => setIsProjectsModalOpen(true)} className="bg-white border-2 border-slate-50 rounded-[24px] p-5 shadow-[0_10px_30px_rgba(0,0,0,0.02)] h-[120px] flex flex-col justify-between mt-1 hover:-translate-y-1 transition-transform cursor-pointer">
+                             <div onClick={() => setIsProjectsModalOpen(true)} className="bg-white border-2 border-gray-900 rounded-3xl p-5 shadow-[2px_2px_0px_rgba(0,0,0,1)] h-[120px] flex flex-col justify-between mt-1 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer">
                                   <div className="flex justify-between items-start">
                                       <span className="text-3xl font-extrabold">{projects.length}</span>
-                                      <div className="w-12 h-12 bg-[#fff1f5] rounded-full flex items-center justify-center">
+                                      <div className="w-12 h-12 bg-white border-2 border-gray-900 rounded-xl flex items-center justify-center shadow-[1px_1px_0px_rgba(0,0,0,1)]">
                                            <Code className="w-6 h-6 text-[#ff6896]" />
                                       </div>
                                   </div>
-                                  <span className="text-sm font-bold text-gray-400 tracking-wide">My Projects</span>
+                                  <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">My Projects</span>
                              </div>
 
                              {/* Card 5 */}
-                             <div className="bg-white border-2 border-slate-50 rounded-[24px] p-5 shadow-[0_10px_30px_rgba(0,0,0,0.02)] h-[120px] flex flex-col justify-between mt-2 hover:-translate-y-1 transition-transform cursor-pointer">
+                             <div className="bg-white border-2 border-gray-900 rounded-3xl p-5 shadow-[2px_2px_0px_rgba(0,0,0,1)] h-[120px] flex flex-col justify-between mt-2 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer">
                                   <div className="flex justify-between items-start">
                                       <span className="text-3xl font-extrabold">{upcomingCount}</span>
-                                      <span className="text-4xl filter drop-shadow-sm">🗓️</span>
+                                      <span className="text-4xl">🗓️</span>
                                   </div>
-                                  <span className="text-sm font-bold text-gray-400 tracking-wide">Upcoming Event</span>
+                                  <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Upcoming Event</span>
                              </div>
 
-                             {/* Card 6 (Blue Tilted) */}
-                             <div className="bg-gradient-to-br from-[#1d91fc] to-[#0477e0] border-t-2 border-l-2 border-white/20 rounded-[24px] p-5 shadow-[0_20px_40px_rgba(4,119,224,0.4)] h-[120px] flex flex-col justify-between transform rotate-3 scale-[1.03] z-10 hover:rotate-0 hover:scale-100 transition-all cursor-pointer mt-2 -ml-2 relative overflow-hidden">
+                             {/* Card 6 (Blue Doodle Style) */}
+                             <div className="bg-[#E0F2FE] text-blue-950 border-2 border-gray-900 rounded-3xl p-5 shadow-[2px_2px_0px_rgba(0,0,0,1)] h-[120px] flex flex-col justify-between hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer mt-2 relative overflow-hidden">
                                   <div className="absolute top-0 left-0 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
                                   <div className="flex justify-between items-start relative z-10">
-                                      <span className="text-3xl font-extrabold text-white">{0}</span>
-                                      <div className="text-4xl filter drop-shadow-md">🏋️‍♂️</div>
+                                      <span className="text-3xl font-extrabold text-blue-950">{0}</span>
+                                      <div className="text-4xl">🏋️‍♂️</div>
                                   </div>
-                                  <span className="text-sm font-bold text-blue-50 tracking-wide relative z-10">Workout Record</span>
+                                  <span className="text-xs font-bold uppercase tracking-widest text-blue-900 relative z-10">Workout Record</span>
                              </div>
                         </div>
 
                         {/* Pomodoro Timer */}
-                        <div className="md:col-span-2 bg-gradient-to-b from-white to-[#fff8f5] rounded-[32px] border-2 border-slate-50 shadow-[0_20px_50px_rgba(0,0,0,0.04)] p-8 flex flex-col items-center justify-center relative overflow-hidden">
-                             <div className="absolute top-8 left-8 w-3 h-3 border-4 border-[#3bc987] rounded-full"></div>
-                             <div className="absolute top-12 right-12 text-yellow-400 text-2xl font-bold">☀️</div>
+                        <div className="md:col-span-2 bg-[#FFEDD5] text-orange-950 rounded-[2rem] border-2 border-gray-900 shadow-[3px_3px_0px_rgba(0,0,0,1)] p-8 flex flex-col items-center justify-center relative overflow-hidden">
+                             <div className="absolute top-8 left-8 w-3 h-3 border-2 border-gray-900 rounded-full"></div>
+                             <div className="absolute top-12 right-12 text-2xl font-bold">☀️</div>
                              <div className="absolute bottom-16 right-10 w-2 h-2 rounded-full bg-red-400"></div>
                              
-                             <div className="w-36 h-36 bg-[#ffe8df] rounded-full flex items-center justify-center mb-8 relative border-8 border-white shadow-xl shadow-orange-100 mt-4 overflow-hidden">
+                             <div className="w-36 h-36 bg-white rounded-2xl border-4 border-gray-900 shadow-[3px_3px_0px_rgba(0,0,0,1)] flex items-center justify-center mb-8 relative mt-4 overflow-hidden">
                                  <ClockIcon className="w-16 h-16 text-[#f76332] relative z-10" />
-                                 {/* Orange handles mimicking the design */}
-                                 <div className="absolute top-0 right-4 w-5 h-5 border-[3px] border-[#f76332] text-[#f76332] flex items-center justify-center rounded-full bg-white shadow-sm text-[10px] font-bold font-sans rotate-12 z-20">Z</div>
-                                 <div className="absolute -top-1 w-8 h-8 bg-[#f76332] rounded-full transform -translate-y-1/2"></div>
+                                 <div className="absolute top-1 right-1.5 w-6 h-6 border-2 border-gray-900 text-gray-900 flex items-center justify-center rounded bg-white shadow-[1px_1px_0px_rgba(0,0,0,1)] text-[10px] font-bold rotate-12 z-20">Z</div>
                              </div>
 
                              <div className="flex items-center gap-2 text-[10px] font-extrabold text-gray-500 tracking-widest mb-1 uppercase">
@@ -578,7 +568,7 @@ export function StudentDashboardPage() {
                              <div className="flex items-center justify-between w-full max-w-[240px]">
                                  <button onClick={() => setSessionTime(0)} title="Reset Timer" className="text-gray-400 hover:text-gray-900 transition-colors"><RotateCcw className="w-5 h-5"/></button>
                                  <button onClick={() => toast.success("Notifications enabled for this session")} className="text-gray-400 hover:text-gray-900 transition-colors"><Bell className="w-5 h-5"/></button>
-                                 <button onClick={() => setIsTimerRunning(!isTimerRunning)} className="w-16 h-16 bg-[#f76332] rounded-full flex items-center justify-center hover:scale-[1.05] transition-transform shadow-[0_15px_30px_rgba(247,99,50,0.35)] flex-shrink-0">
+                                 <button onClick={() => setIsTimerRunning(!isTimerRunning)} className="w-16 h-16 bg-[#f76332] rounded-2xl flex items-center justify-center hover:scale-[1.05] transition-transform shadow-[2px_2px_0px_rgba(0,0,0,1)] border-2 border-gray-900 flex-shrink-0">
                                      {isTimerRunning ? (
                                          <Pause className="w-7 h-7 text-white fill-current"/>
                                      ) : (
@@ -594,18 +584,18 @@ export function StudentDashboardPage() {
                     {/* Mentors Row */}
                     {myMentors.length > 0 && (
                         <div className="mb-14">
-                            <h3 className="text-[1.35rem] font-bold text-gray-900 mb-6">My Mentors</h3>
+                            <h3 className="text-[1.35rem] font-black text-gray-900 mb-6 uppercase">My Mentors</h3>
                             <div className="flex gap-6 overflow-x-auto pb-4 hide-scrollbar">
                                 {myMentors.map((mentor, i) => (
                                     <Link to={`/dashboard-mentors`} key={i} className="flex items-center gap-4 min-w-[max-content] cursor-pointer group">
                                         <div className="relative">
-                                            <div className="w-14 h-14 bg-[#f8f9fc] rounded-full flex items-center justify-center text-3xl border border-gray-100 shadow-[0_5px_15px_rgba(0,0,0,0.05)] group-hover:-translate-y-1 transition-transform overflow-hidden">
+                                            <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-3xl border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] group-hover:-translate-y-0.5 transition-transform overflow-hidden">
                                                 {mentor?.avatar_url ? <img src={mentor.avatar_url} className="w-full h-full object-cover" /> : "👨‍🏫"}
                                             </div>
-                                            <span className={`absolute bottom-0 right-0 w-4 h-4 bg-[#3bc987] border-[3px] border-white rounded-full`}></span>
+                                            <span className={`absolute bottom-0 right-0 w-3 h-3 bg-[#3bc987] border-2 border-gray-900 rounded-full`}></span>
                                         </div>
                                         <div>
-                                            <p className="font-bold text-gray-900 text-[15px]">{mentor.name}</p>
+                                            <p className="font-extrabold text-gray-900 text-[15px]">{mentor.name}</p>
                                             <p className="text-xs font-semibold text-gray-400 mt-0.5">{mentor.company || 'Mentor'}</p>
                                         </div>
                                     </Link>
@@ -617,15 +607,13 @@ export function StudentDashboardPage() {
                     {/* My Life Goals */}
                     <div>
                         <div className="flex items-center justify-between mb-8">
-                             <h3 className="text-[1.35rem] font-bold text-gray-900">My Life Goals</h3>
+                             <h3 className="text-[1.35rem] font-black text-gray-900 uppercase">My Life Goals</h3>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-x-8 gap-y-10 items-start">
                              {goalCategories.map((cat, idx) => (
                                  <div 
                                      key={cat.id} 
-                                     className={idx % 2 !== 0 
-                                         ? "bg-white border-2 border-slate-50 rounded-[28px] shadow-[0_20px_40px_rgba(0,0,0,0.04)] p-3 transform -skew-y-1 hover:skew-y-0 transition-transform relative group"
-                                         : "relative group p-3"}
+                                     className="bg-white border-2 border-gray-900 rounded-3xl shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)] p-4 relative group"
                                  >
                                      <div className="flex items-center justify-between mb-4 px-3 pt-2">
                                          <h4 className="font-extrabold text-gray-900">{cat.name}</h4>
@@ -638,14 +626,14 @@ export function StudentDashboardPage() {
                                          {cat.items.slice(0, 5).map(item => (
                                              <div key={item.id} className="flex items-center gap-3.5 px-4 py-2.5 bg-transparent hover:bg-gray-50 rounded-[20px] transition-colors relative group/item">
                                                  <Target className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                                                 <span className="text-[14px] font-bold text-gray-600 truncate">{item.text}</span>
+                                                 <span className="text-[14px] font-bold text-gray-650 truncate">{item.text}</span>
                                              </div>
                                          ))}
                                          {cat.items.length > 5 && <div className="text-xs text-gray-400 font-bold ml-10">+{cat.items.length - 5} more</div>}
                                      </div>
                                      <button 
                                          onClick={() => { setActiveGoalCategoryId(cat.id); setIsGoalItemModalOpen(true); }}
-                                         className="w-full mt-4 flex items-center justify-center gap-2 py-3 rounded-[20px] bg-gray-50/50 hover:bg-indigo-50/50 hover:text-[#5763f6] text-gray-400 font-bold text-sm transition-colors border border-dashed border-gray-200"
+                                         className="w-full mt-4 flex items-center justify-center gap-2 py-3 rounded-2xl bg-gray-50/50 hover:bg-indigo-50/50 hover:text-[#5763f6] text-gray-400 font-bold text-sm transition-colors border border-dashed border-gray-250"
                                      >
                                          <Plus className="w-4 h-4"/> Manage Goals
                                      </button>
@@ -655,7 +643,7 @@ export function StudentDashboardPage() {
                              {/* Add Category Button */}
                              <div 
                                  onClick={() => setIsCategoryModalOpen(true)}
-                                 className="rounded-[28px] border-2 border-dashed border-gray-200 mt-2 hover:border-[#5763f6] hover:bg-indigo-50/20 transition-colors flex items-center justify-center cursor-pointer h-[200px]"
+                                 className="rounded-3xl border-2 border-dashed border-gray-900 mt-2 hover:border-indigo-500 hover:bg-indigo-50/20 transition-all flex items-center justify-center cursor-pointer h-[200px]"
                              >
                                  <span className="flex items-center gap-2 text-[15px] font-bold text-gray-400 hover:text-[#5763f6] transition-colors">
                                      <Plus className="w-5 h-5"/> New Goal List
@@ -667,16 +655,13 @@ export function StudentDashboardPage() {
                 </div>
 
                 {/* Right Sidebar (Lilac section) */}
-                <div className="w-full xl:w-[380px] bg-[#f8f5ff] p-8 md:p-10 flex flex-col xl:min-h-screen border-l border-indigo-50 relative z-0">
-                    {/* Decorative elements */}
-                    <div className="absolute top-[15%] right-[-10px] w-14 h-14 border-2 border-[#3bc987] rounded-full opacity-60 pointer-events-none"></div>
-                    <div className="absolute top-[35%] right-[-20px] w-24 h-24 border-2 border-[#3bc987] rounded-full opacity-30 pointer-events-none"></div>
+                <div className="w-full xl:w-[380px] bg-[#FAF9F6] p-8 md:p-10 flex flex-col xl:min-h-screen border-l-2 border-gray-900 relative z-0">
                     
                     {/* Profile */}
                     <div className="flex flex-col items-center mt-2 mb-12 relative z-10 w-full max-w-[280px] mx-auto">
                          <div 
                             onClick={handleNextAvatar}
-                            className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg mb-5 border-4 border-white/50 relative overflow-hidden cursor-pointer hover:scale-105 transition-transform group"
+                            className="w-24 h-24 bg-white rounded-2xl flex items-center justify-center shadow-[2px_2px_0px_rgba(0,0,0,1)] border-2 border-gray-900 mb-5 relative overflow-hidden cursor-pointer hover:scale-105 transition-transform group"
                             title="Click to change avatar"
                          >
                               {profile?.avatar_url ? (
@@ -685,11 +670,11 @@ export function StudentDashboardPage() {
                                   <img src={avatarList[avatarIndex]} className="w-full h-full object-cover group-hover:rotate-12 transition-transform" />
                               )}
                          </div>
-                         <h3 className="text-[1.35rem] font-extrabold text-gray-900 leading-tight mb-1 text-center">{firstName} {profile?.full_name?.split(' ')[1] || 'Funny'}</h3>
+                         <h3 className="text-[1.35rem] font-black text-gray-900 leading-tight mb-1 text-center uppercase">{firstName} {profile?.full_name?.split(' ')[1] || 'Funny'}</h3>
                          <div className="flex flex-col items-center gap-1.5 mb-6">
                              <p className="text-[13px] font-bold text-gray-500 tracking-wide">Free Plan</p>
                              <div 
-                                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50/80 dark:bg-slate-900/80 border border-indigo-100/50 dark:border-slate-800/50 text-[11px] font-mono font-bold text-indigo-600 dark:text-indigo-400 select-all shadow-sm group/code cursor-pointer hover:bg-indigo-100/50 transition-colors" 
+                                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-gray-900 bg-white text-[11px] font-mono font-bold text-indigo-600 select-all shadow-[1px_1px_0px_rgba(0,0,0,1)] group/code cursor-pointer hover:bg-gray-50 transition-colors" 
                                  title="Click to copy unique ID" 
                                  onClick={() => {
                                      navigator.clipboard.writeText(getUniqueCode(user?.id));
@@ -700,22 +685,22 @@ export function StudentDashboardPage() {
                                  <Copy className="w-3.5 h-3.5 opacity-60 group-hover/code:opacity-100 transition-opacity" />
                              </div>
                          </div>
-                         <button className="w-full py-3 rounded-full border-2 border-[#d0bcf9] text-[#8e54f5] font-extrabold text-sm bg-transparent hover:bg-white hover:border-[#a882f0] hover:shadow-md transition-all">
+                         <button onClick={() => navigate('/profile')} className="w-full py-3 rounded-2xl border-2 border-gray-900 text-gray-900 font-extrabold text-sm bg-white hover:bg-gray-50 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
                              Edit Profile
                          </button>
                     </div>
 
                     {/* Next Deadline */}
                     <div className="mb-10 relative z-10 w-full">
-                        <h3 className="text-[1.35rem] font-extrabold text-gray-900 mb-6">Next Deadline</h3>
+                        <h3 className="text-[1.35rem] font-black text-gray-900 mb-6 uppercase">Next Deadline</h3>
                         
                         {/* Calendar Ribbon */}
-                        <div className="flex justify-between items-center bg-white p-2.5 border border-slate-100 rounded-[24px] shadow-[0_15px_30px_rgba(0,0,0,0.03)] mb-8">
+                        <div className="flex justify-between items-center bg-white p-2.5 border-2 border-gray-900 rounded-3xl shadow-[2px_2px_0px_rgba(0,0,0,1)] mb-8">
                             {getNextDays().map((d) => (
                               <div 
                                 key={d.fullDate.getTime()} 
                                 onClick={() => setSelectedDate(d.fullDate)}
-                                className={`flex flex-col items-center justify-center p-2 rounded-[20px] w-[50px] h-[68px] cursor-pointer transition-all ${d.active ? 'bg-[#985bf4] text-white shadow-[0_10px_20px_rgba(152,91,244,0.3)]' : 'text-gray-400 hover:bg-gray-50'}`}
+                                className={`flex flex-col items-center justify-center p-2 rounded-2xl w-[50px] h-[68px] cursor-pointer transition-all ${d.active ? 'bg-indigo-650 bg-indigo-600 text-white border-2 border-gray-900 shadow-[1px_1px_0px_rgba(0,0,0,1)]' : 'text-gray-400 hover:bg-gray-50'}`}
                               >
                                   <span className={`text-[11px] font-extrabold uppercase tracking-widest mb-0.5 ${d.active ? 'text-purple-100' : ''}`}>{d.day}</span>
                                   <span className={`text-[1.35rem] font-black ${d.active ? 'text-white' : 'text-gray-900'}`}>{d.date}</span>
@@ -726,16 +711,16 @@ export function StudentDashboardPage() {
                         {/* Dynamic Project Cards */}
                         <div className="space-y-4">
                             {activeProjects.length === 0 ? (
-                                <div className="text-center p-6 bg-white rounded-[24px] border border-dashed border-gray-200">
+                                <div className="text-center p-6 bg-white rounded-3xl border-2 border-dashed border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
                                     <p className="text-gray-400 font-bold mb-3">No active projects yet.</p>
                                 </div>
                             ) : (
                                 activeProjects.map(p => (
-                                    <div key={p.id} className="bg-white rounded-[24px] p-6 shadow-[0_15px_40px_rgba(0,0,0,0.04)] border border-gray-50/50 relative overflow-hidden cursor-pointer hover:-translate-y-1 transition-transform group">
-                                        <div className="absolute top-0 left-0 w-2 h-full bg-[#985bf4]"></div>
+                                    <div key={p.id} className="bg-white rounded-3xl p-6 shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)] border-2 border-gray-900 relative overflow-hidden cursor-pointer hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none transition-all group">
+                                        <div className="absolute top-0 left-0 w-2 h-full bg-[#818CF8]"></div>
                                         
                                         <div className="flex justify-between items-start mb-2 pl-3">
-                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                                            <span className="text-[10px] font-black text-gray-450 uppercase tracking-widest flex items-center gap-1.5">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span> {p.theme} <ChevronRight className="w-2.5 h-2.5"/> ONGOING
                                             </span>
                                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -748,20 +733,20 @@ export function StudentDashboardPage() {
                                         <div className="flex items-center justify-between pl-3 mb-6 pr-1">
                                             <div className="flex -space-x-2">
                                                 {p.teamType === 'solo' ? (
-                                                     <div className="w-8 h-8 rounded-full bg-indigo-50 border-2 border-white flex justify-center items-center text-sm shadow-sm z-10">🧔</div>
+                                                     <div className="w-8 h-8 rounded-full bg-indigo-50 border-2 border-gray-900 flex justify-center items-center text-sm shadow-sm z-10">🧔</div>
                                                 ) : (
                                                      Array.from({ length: Math.min(3, p.teamCount) }).map((_, idx) => (
-                                                         <div key={idx} className="w-8 h-8 rounded-full bg-indigo-50 border-2 border-white flex justify-center items-center text-sm shadow-sm" style={{ zIndex: 10 - idx }}>👦</div>
-                                                     ))
+                                                          <div key={idx} className="w-8 h-8 rounded-full bg-indigo-50 border-2 border-gray-900 flex justify-center items-center text-sm shadow-sm" style={{ zIndex: 10 - idx }}>👦</div>
+                                                      ))
                                                 )}
                                                 {p.teamType === 'team' && p.teamCount > 3 && (
-                                                     <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-white flex justify-center items-center text-xs font-bold text-gray-400 shadow-sm z-0">+{p.teamCount - 3}</div>
+                                                     <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-gray-900 flex justify-center items-center text-xs font-bold text-gray-400 shadow-sm z-0">+{p.teamCount - 3}</div>
                                                 )}
                                             </div>
-                                            <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500 bg-gray-50 px-2 py-1 rounded-lg">
+                                            <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500 bg-gray-50 px-2 py-1 border border-gray-300 rounded-lg">
                                                  <CheckSquare className="w-4 h-4 text-gray-400"/> {p.workLeft}
                                             </div>
-                                            <div className="flex items-center gap-1 text-[11px] font-bold text-[#fc4445] bg-red-50 px-2 py-1 rounded-lg truncate max-w-[100px]">
+                                            <div className="flex items-center gap-1 text-[11px] font-bold text-[#fc4445] bg-red-50 px-2 py-1 border border-red-200 rounded-lg truncate max-w-[100px]">
                                                  <ClockIcon className="w-3.5 h-3.5 flex-shrink-0"/> <span className="truncate">{p.deadline || 'No date'}</span>
                                             </div>
                                         </div>
@@ -771,24 +756,20 @@ export function StudentDashboardPage() {
                                                  <span className="text-gray-400">Progress</span>
                                                  <span className="text-[#f7aa32]">{p.progress}%</span>
                                             </div>
-                                            <div className="h-2 bg-gray-100 rounded-full w-full">
-                                                 <div className="h-full bg-[#f7aa32] rounded-full shadow-[0_2px_10px_rgba(247,170,50,0.5)] transition-all" style={{ width: `${p.progress}%` }}></div>
+                                            <div className="h-3 bg-gray-100 border border-gray-900 rounded-xl overflow-hidden w-full p-0.5">
+                                                 <div className="h-full bg-[#f7aa32] rounded-lg transition-all" style={{ width: `${p.progress}%` }}></div>
                                             </div>
                                         </div>
                                     </div>
                                 ))
                             )}
                             
-                            <button onClick={handleOpenNewActiveProject} className="w-full bg-white border-2 border-dashed border-gray-200 rounded-[20px] p-4 text-gray-400 font-bold hover:bg-gray-50 hover:text-gray-600 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                            <button onClick={handleOpenNewActiveProject} className="w-full bg-white border-2 border-dashed border-gray-900 rounded-2xl p-4 text-gray-400 font-bold hover:bg-gray-50 hover:text-gray-600 transition-all flex items-center justify-center gap-2">
                                 <Plus className="w-5 h-5"/> Add Active Project
                             </button>
                         </div>
                     </div>
-
-                    {/* Removed Purple Banner intentionally */}
                 </div>
-            </div>
-
             <StudentBookingDetailsModal
                 isOpen={detailsModalOpen}
                 onClose={() => setDetailsModalOpen(false)}
@@ -796,19 +777,18 @@ export function StudentDashboardPage() {
                 onBookingUpdated={handleBookingUpdated}
             />
 
-            {/* To-Do Modal */}
             {isTodoModalOpen && (
-                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-                    <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl relative flex flex-col max-h-[80vh]">
-                        <button onClick={() => setIsTodoModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 border border-gray-100 p-1 rounded-lg">
+                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity font-mono">
+                    <div className="bg-[#FAF9F6] border-2 border-gray-900 rounded-3xl p-6 w-full max-w-md shadow-[4px_4px_0px_rgba(0,0,0,1)] relative flex flex-col max-h-[80vh]">
+                        <button onClick={() => setIsTodoModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 border-2 border-gray-900 p-1.5 rounded-lg bg-white shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
                             <X className="w-5 h-5"/>
                         </button>
                         
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 bg-[#eff3ff] rounded-xl flex items-center justify-center">
+                            <div className="w-10 h-10 bg-[#eff3ff] border-2 border-gray-900 rounded-xl flex items-center justify-center shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
                                 <CheckSquare className="w-5 h-5 text-[#5763f6]" />
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900">To-do List</h2>
+                            <h2 className="text-2xl font-black text-gray-900 uppercase">To-do List</h2>
                         </div>
 
                         {/* Input Area */}
@@ -819,11 +799,11 @@ export function StudentDashboardPage() {
                                 onChange={(e) => setNewTodo(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleAddTodo()}
                                 placeholder="Add a new task..."
-                                className="flex-1 px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#5763f6] focus:ring-2 focus:ring-indigo-50 transition-all font-medium text-gray-700"
+                                className="flex-1 px-4 py-3 rounded-xl border-2 border-gray-900 outline-none focus:ring-2 focus:ring-indigo-150 transition-all font-bold text-gray-900 bg-white"
                             />
                             <button 
                                 onClick={handleAddTodo}
-                                className="bg-[#5763f6] text-white p-3 rounded-xl hover:bg-indigo-600 transition-colors shadow-md flex-shrink-0"
+                                className="bg-[#5763f6] text-white p-3 rounded-xl border-2 border-gray-900 hover:bg-indigo-650 shadow-[2px_2px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all flex-shrink-0"
                             >
                                 <Plus className="w-5 h-5"/>
                             </button>
@@ -832,14 +812,14 @@ export function StudentDashboardPage() {
                         {/* List Area */}
                         <div className="flex-1 overflow-y-auto space-y-2 pr-2 hide-scrollbar min-h-[200px]">
                             {todos.length === 0 ? (
-                                <p className="text-center text-gray-400 mt-10 font-medium">All caught up! Add a task.</p>
+                                <p className="text-center text-gray-400 mt-10 font-bold italic">All caught up! Add a task.</p>
                             ) : (
                                 todos.map((t) => (
-                                    <div key={t.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 hover:border-gray-200 hover:bg-gray-50/50 transition-colors group">
+                                    <div key={t.id} className="flex items-center justify-between p-3 rounded-xl border-2 border-gray-900 bg-white shadow-[1px_1px_0px_rgba(0,0,0,1)] hover:bg-gray-50/50 transition-colors group">
                                         <div className="flex items-center gap-3 flex-1">
                                             <button 
                                                 onClick={() => handleToggleTodo(t.id)} 
-                                                className={`w-6 h-6 rounded-md flex items-center justify-center border transition-colors flex-shrink-0 ${t.completed ? 'bg-[#3bc987] border-[#3bc987] text-white' : 'border-gray-300 text-transparent hover:border-[#3bc987]'}`}
+                                                className={`w-6 h-6 rounded-md flex items-center justify-center border-2 border-gray-900 transition-colors flex-shrink-0 ${t.completed ? 'bg-[#3bc987] border-[#3bc987] text-white' : 'border-gray-300 text-transparent hover:border-[#3bc987]'}`}
                                             >
                                                 <Check className="w-4 h-4"/>
                                             </button>
@@ -852,7 +832,7 @@ export function StudentDashboardPage() {
                                                     onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit(t.id)}
                                                     onBlur={() => handleSaveEdit(t.id)}
                                                     autoFocus
-                                                    className="flex-1 bg-white border border-gray-200 px-2 py-1 rounded outline-none font-medium text-gray-800"
+                                                    className="flex-1 bg-white border-2 border-gray-900 px-2 py-1 rounded outline-none font-bold text-gray-900"
                                                 />
                                             ) : (
                                                 <span 
@@ -860,7 +840,7 @@ export function StudentDashboardPage() {
                                                         setEditingTodoId(t.id);
                                                         setEditingTodoText(t.text);
                                                     }}
-                                                    className={`font-semibold transition-colors flex-1 cursor-text select-none ${t.completed ? 'opacity-50 line-through text-gray-500' : 'text-gray-800'}`}
+                                                    className={`font-bold transition-colors flex-1 cursor-text select-none ${t.completed ? 'opacity-50 line-through text-gray-400' : 'text-gray-900'}`}
                                                     title="Double-click to edit"
                                                 >
                                                     {t.text}
@@ -884,29 +864,29 @@ export function StudentDashboardPage() {
 
             {/* Notes Modal */}
             {isNotesModalOpen && (
-                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-                    <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl relative flex flex-col h-[70vh] max-h-[600px]">
-                        <button onClick={() => { setIsNotesModalOpen(false); handleSaveNote(); }} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 border border-gray-100 p-1 rounded-lg z-10">
+                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity font-mono">
+                    <div className="bg-[#FAF9F6] border-2 border-gray-900 rounded-3xl p-6 w-full max-w-md shadow-[4px_4px_0px_rgba(0,0,0,1)] relative flex flex-col h-[70vh] max-h-[600px]">
+                        <button onClick={() => { setIsNotesModalOpen(false); handleSaveNote(); }} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 border-2 border-gray-900 p-1.5 rounded-lg bg-white shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] z-10">
                             <X className="w-5 h-5"/>
                         </button>
 
                         {activeNoteId ? (
                             <>
                                 <div className="flex items-center gap-3 mb-4">
-                                    <button onClick={handleSaveNote} className="w-10 h-10 bg-gray-50 hover:bg-gray-100 rounded-xl flex items-center justify-center transition-colors">
+                                    <button onClick={handleSaveNote} className="w-10 h-10 bg-white hover:bg-gray-100 rounded-xl border-2 border-gray-900 flex items-center justify-center shadow-[1px_1px_0px_rgba(0,0,0,1)] transition-colors">
                                         <ChevronLeft className="w-5 h-5 text-gray-600" />
                                     </button>
-                                    <h2 className="text-xl font-bold text-gray-900">Editing Note</h2>
+                                    <h2 className="text-xl font-black text-gray-900 uppercase">Editing Note</h2>
                                 </div>
                                 <textarea
                                     value={activeNoteText}
                                     onChange={(e) => setActiveNoteText(e.target.value)}
                                     placeholder="Write your note here..."
-                                    className="flex-1 w-full bg-yellow-50/50 border border-yellow-100 rounded-2xl p-4 outline-none focus:border-yellow-300 focus:ring-4 focus:ring-yellow-50 resize-none font-medium text-gray-800 leading-relaxed shadow-inner transition-all"
+                                    className="flex-1 w-full bg-yellow-50/50 border-2 border-gray-900 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-indigo-150 resize-none font-bold text-gray-900 leading-relaxed shadow-inner transition-all"
                                     autoFocus
                                 />
                                 <div className="mt-4 flex justify-end">
-                                    <button onClick={handleSaveNote} className="bg-[#efdc4d] text-yellow-900 font-bold px-6 py-2.5 rounded-xl hover:bg-yellow-400 transition-colors shadow-md">
+                                    <button onClick={handleSaveNote} className="bg-[#efdc4d] text-yellow-900 font-extrabold px-6 py-2.5 rounded-xl border-2 border-gray-900 hover:bg-yellow-400 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
                                         Save Note
                                     </button>
                                 </div>
@@ -914,11 +894,11 @@ export function StudentDashboardPage() {
                         ) : (
                             <>
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 bg-[#fffdf0] rounded-xl flex items-center justify-center">
+                                    <div className="w-10 h-10 bg-[#fffdf0] border-2 border-gray-900 rounded-xl flex items-center justify-center shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
                                         <FileText className="w-5 h-5 text-[#efdc4d]" />
                                     </div>
-                                    <h2 className="text-2xl font-bold text-gray-900">Personal Notes</h2>
-                                    <button onClick={handleCreateNote} className="ml-auto bg-[#efdc4d] text-yellow-900 p-2 rounded-xl hover:bg-yellow-400 transition-colors shadow-sm mr-10">
+                                    <h2 className="text-2xl font-black text-gray-900 uppercase">Notes</h2>
+                                    <button onClick={handleCreateNote} className="ml-auto bg-[#efdc4d] text-yellow-900 p-2.5 rounded-xl border-2 border-gray-900 hover:bg-yellow-400 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all mr-10">
                                         <Plus className="w-5 h-5"/>
                                     </button>
                                 </div>
@@ -926,21 +906,21 @@ export function StudentDashboardPage() {
                                 <div className="flex-1 overflow-y-auto space-y-3 pr-2 hide-scrollbar">
                                     {notes.length === 0 ? (
                                         <div className="text-center mt-12">
-                                            <div className="w-16 h-16 bg-yellow-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                                <FileText className="w-8 h-8 text-yellow-300"/>
+                                            <div className="w-16 h-16 bg-white border-2 border-gray-900 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+                                                <FileText className="w-8 h-8 text-yellow-500"/>
                                             </div>
-                                            <p className="text-gray-400 font-medium tracking-wide">No notes yet. Create one!</p>
+                                            <p className="text-gray-400 font-bold tracking-wide italic">No notes yet. Create one!</p>
                                         </div>
                                     ) : (
                                         notes.map(n => (
                                             <div 
                                                 key={n.id} 
                                                 onClick={() => handleOpenNote(n.id, n.text)}
-                                                className="p-4 rounded-2xl border border-gray-100 hover:border-yellow-200 hover:bg-yellow-50/50 transition-all cursor-pointer group flex gap-3 h-[100px] shadow-sm hover:shadow-md"
+                                                className="p-4 rounded-2xl border-2 border-gray-900 bg-white hover:bg-gray-50/50 transition-all cursor-pointer group flex gap-3 h-[100px] shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
                                             >
                                                 <div className="flex-1 overflow-hidden relative">
-                                                    <p className="font-semibold text-gray-800 text-sm whitespace-pre-wrap line-clamp-3">
-                                                        {n.text || <span className="text-gray-400 italic">Empty note...</span>}
+                                                    <p className="font-bold text-gray-800 text-sm whitespace-pre-wrap line-clamp-3">
+                                                        {n.text || <span className="text-gray-450 italic">Empty note...</span>}
                                                     </p>
                                                 </div>
                                                 <div className="flex flex-col justify-between items-end">
@@ -964,19 +944,19 @@ export function StudentDashboardPage() {
 
             {/* Projects Modal */}
             {isProjectsModalOpen && (
-                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-                    <div className="bg-white rounded-3xl p-6 w-full max-w-3xl shadow-2xl relative flex flex-col md:flex-row h-[85vh] max-h-[700px] overflow-hidden gap-6">
-                        <button onClick={() => setIsProjectsModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 border border-gray-100 p-1 rounded-lg z-10 bg-white">
+                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity font-mono">
+                    <div className="bg-[#FAF9F6] border-2 border-gray-900 rounded-3xl p-6 w-full max-w-3xl shadow-[4px_4px_0px_rgba(0,0,0,1)] relative flex flex-col md:flex-row h-[85vh] max-h-[700px] overflow-hidden gap-6">
+                        <button onClick={() => setIsProjectsModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 border-2 border-gray-900 p-1.5 rounded-lg bg-white shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] z-10">
                             <X className="w-5 h-5"/>
                         </button>
                         
                         {/* Form Column */}
                         <div className="w-full md:w-1/2 flex flex-col pt-2 hide-scrollbar overflow-y-auto pr-2">
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 bg-[#fff1f5] rounded-xl flex items-center justify-center flex-shrink-0">
+                                <div className="w-10 h-10 bg-[#fff1f5] border-2 border-gray-900 rounded-xl flex items-center justify-center flex-shrink-0 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
                                     <Code className="w-5 h-5 text-[#ff6896]" />
                                 </div>
-                                <h2 className="text-2xl font-bold text-gray-900">{editingProjectId ? "Edit Project" : "Add Project"}</h2>
+                                <h2 className="text-2xl font-black text-gray-900 uppercase">{editingProjectId ? "Edit Project" : "Add Project"}</h2>
                             </div>
                             
                             <div className="space-y-4 flex-1">
@@ -987,7 +967,7 @@ export function StudentDashboardPage() {
                                         value={projectForm.title}
                                         onChange={e => setProjectForm({...projectForm, title: e.target.value})}
                                         placeholder="e.g. E-Commerce Dashboard"
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#ff6896] focus:ring-2 focus:ring-pink-50 transition-all font-medium text-gray-700"
+                                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-900 outline-none focus:ring-2 focus:ring-pink-50 transition-all font-bold text-gray-900 bg-white"
                                     />
                                 </div>
                                 <div>
@@ -999,7 +979,7 @@ export function StudentDashboardPage() {
                                             value={projectForm.github}
                                             onChange={e => setProjectForm({...projectForm, github: e.target.value})}
                                             placeholder="https://github.com/..."
-                                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#ff6896] focus:ring-2 focus:ring-pink-50 transition-all font-medium text-gray-700"
+                                            className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-900 outline-none focus:ring-2 focus:ring-pink-50 transition-all font-bold text-gray-900 bg-white"
                                         />
                                     </div>
                                 </div>
@@ -1012,7 +992,7 @@ export function StudentDashboardPage() {
                                             value={projectForm.deployed}
                                             onChange={e => setProjectForm({...projectForm, deployed: e.target.value})}
                                             placeholder="https://my-app.vercel.app"
-                                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#ff6896] focus:ring-2 focus:ring-pink-50 transition-all font-medium text-gray-700"
+                                            className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-900 outline-none focus:ring-2 focus:ring-pink-50 transition-all font-bold text-gray-900 bg-white"
                                         />
                                     </div>
                                 </div>
@@ -1025,7 +1005,7 @@ export function StudentDashboardPage() {
                                             value={projectForm.doc}
                                             onChange={e => setProjectForm({...projectForm, doc: e.target.value})}
                                             placeholder="Figma / Notion / Doc URL"
-                                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#ff6896] focus:ring-2 focus:ring-pink-50 transition-all font-medium text-gray-700"
+                                            className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-900 outline-none focus:ring-2 focus:ring-pink-50 transition-all font-bold text-gray-900 bg-white"
                                         />
                                     </div>
                                 </div>
@@ -1035,7 +1015,7 @@ export function StudentDashboardPage() {
                                 {editingProjectId && (
                                     <button 
                                         onClick={() => { setEditingProjectId(null); setProjectForm({ title: '', github: '', deployed: '', doc: '' }); }}
-                                        className="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors"
+                                        className="px-6 py-3 rounded-xl border-2 border-gray-900 font-bold text-gray-700 bg-white hover:bg-gray-50 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
                                     >
                                         Cancel
                                     </button>
@@ -1043,7 +1023,7 @@ export function StudentDashboardPage() {
                                 <button 
                                     onClick={handleSaveProject}
                                     disabled={!projectForm.title.trim()}
-                                    className={`flex-1 px-6 py-3 rounded-xl font-bold transition-all shadow-md ${projectForm.title.trim() ? 'bg-[#ff6896] text-white hover:bg-pink-500 hover:shadow-lg' : 'bg-gray-100 text-gray-400'}`}
+                                    className={`flex-1 px-6 py-3 rounded-xl font-bold border-2 border-gray-900 transition-all shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none ${projectForm.title.trim() ? 'bg-[#ff6896] text-white hover:bg-pink-500' : 'bg-gray-100 text-gray-400 opacity-50'}`}
                                 >
                                     {editingProjectId ? 'Save Changes' : 'Add Project'}
                                 </button>
@@ -1051,25 +1031,25 @@ export function StudentDashboardPage() {
                         </div>
 
                         {/* Divider */}
-                        <div className="hidden md:block w-px bg-gray-100 mx-2"></div>
-                        <div className="md:hidden h-px bg-gray-100 my-4"></div>
+                        <div className="hidden md:block w-px bg-gray-300 mx-2"></div>
+                        <div className="md:hidden h-px bg-gray-300 my-4"></div>
 
                         {/* View Column */}
                         <div className="w-full md:w-1/2 flex flex-col hide-scrollbar overflow-y-auto pr-2">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4 pt-2">Saved Projects</h3>
+                            <h3 className="text-lg font-black text-gray-900 mb-4 pt-2 uppercase">Saved Projects</h3>
                             <div className="flex-1 space-y-4 pb-12">
                                 {projects.length === 0 ? (
                                     <div className="text-center mt-16 px-4">
-                                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-dashed border-gray-200">
+                                        <div className="w-16 h-16 bg-white border-2 border-gray-900 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] border-dashed">
                                             <Code className="w-8 h-8 text-gray-300"/>
                                         </div>
-                                        <p className="text-gray-400 font-medium text-sm">No projects yet. <br/>Add your portfolio highlights here!</p>
+                                        <p className="text-gray-400 font-bold text-sm italic">No projects yet. <br/>Add your portfolio highlights here!</p>
                                     </div>
                                 ) : (
                                     projects.map(p => (
-                                        <div key={p.id} className={`p-4 rounded-2xl border transition-all ${editingProjectId === p.id ? 'border-[#ff6896] bg-pink-50/20' : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50 shadow-sm'}`}>
+                                        <div key={p.id} className={`p-4 rounded-2xl border-2 border-gray-900 bg-white transition-all shadow-[2px_2px_0px_rgba(0,0,0,1)] ${editingProjectId === p.id ? 'border-[#ff6896] bg-pink-50/20' : 'hover:bg-gray-50'}`}>
                                             <div className="flex justify-between items-start mb-2 group">
-                                                <h4 className="font-bold text-gray-900 leading-tight pr-8">{p.title}</h4>
+                                                <h4 className="font-extrabold text-gray-900 leading-tight pr-8">{p.title}</h4>
                                                 <div className="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button onClick={() => handleEditProject(p)} className="p-1.5 text-gray-400 hover:text-[#ff6896] rounded-md transition-colors"><Settings className="w-4 h-4"/></button>
                                                     <button onClick={(e) => handleDeleteProject(p.id, e)} className="p-1.5 text-gray-400 hover:text-red-500 rounded-md transition-colors"><Trash2 className="w-4 h-4"/></button>
@@ -1077,17 +1057,17 @@ export function StudentDashboardPage() {
                                             </div>
                                             <div className="flex flex-col gap-2 mt-3">
                                                 {p.github && (
-                                                    <a href={p.github} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs font-semibold text-gray-600 hover:text-[#ff6896] transition-colors bg-white/50 border border-gray-100 rounded-lg p-2 truncate">
+                                                    <a href={p.github} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs font-bold text-gray-650 hover:text-[#ff6896] transition-colors bg-white border border-gray-200 rounded-lg p-2 truncate">
                                                         <Github className="w-3.5 h-3.5 flex-shrink-0"/> <span className="truncate">{p.github.replace('https://github.com/','')}</span>
                                                     </a>
                                                 )}
                                                 {p.deployed && (
-                                                    <a href={p.deployed} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs font-semibold text-gray-600 hover:text-[#ff6896] transition-colors bg-white/50 border border-gray-100 rounded-lg p-2 truncate">
+                                                    <a href={p.deployed} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs font-bold text-gray-650 hover:text-[#ff6896] transition-colors bg-white border border-gray-200 rounded-lg p-2 truncate">
                                                         <Link2 className="w-3.5 h-3.5 flex-shrink-0"/> <span className="truncate">Live Demo</span>
                                                     </a>
                                                 )}
                                                 {p.doc && (
-                                                    <a href={p.doc} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs font-semibold text-gray-600 hover:text-[#ff6896] transition-colors bg-white/50 border border-gray-100 rounded-lg p-2 truncate">
+                                                    <a href={p.doc} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs font-bold text-gray-650 hover:text-[#ff6896] transition-colors bg-white border border-gray-200 rounded-lg p-2 truncate">
                                                         <FileText className="w-3.5 h-3.5 flex-shrink-0"/> <span className="truncate">Documentation</span>
                                                     </a>
                                                 )}
@@ -1103,25 +1083,25 @@ export function StudentDashboardPage() {
 
             {/* New Category Modal */}
             {isCategoryModalOpen && (
-                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-                    <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative flex flex-col">
-                        <button onClick={() => setIsCategoryModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 border border-gray-100 p-1 rounded-lg">
+                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity font-mono">
+                    <div className="bg-[#FAF9F6] border-2 border-gray-900 rounded-3xl p-6 w-full max-w-sm shadow-[4px_4px_0px_rgba(0,0,0,1)] relative flex flex-col">
+                        <button onClick={() => setIsCategoryModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 border-2 border-gray-900 p-1.5 rounded-lg bg-white shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
                             <X className="w-5 h-5"/>
                         </button>
-                        <h2 className="text-xl font-bold text-gray-900 mb-6">Create Goal List</h2>
+                        <h2 className="text-xl font-black text-gray-900 mb-6 uppercase">Create Goal List</h2>
                         <input 
                             type="text"
                             value={newCategoryName}
                             onChange={(e) => setNewCategoryName(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
                             placeholder="e.g. Dream Vacations"
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#5763f6] focus:ring-2 focus:ring-indigo-50 transition-all font-medium text-gray-700 mb-4"
+                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-900 outline-none focus:ring-2 focus:ring-indigo-150 transition-all font-bold text-gray-905 bg-white mb-4"
                             autoFocus
                         />
                         <button 
                             onClick={handleAddCategory}
                             disabled={!newCategoryName.trim()}
-                            className={`w-full py-3 rounded-xl font-bold transition-all ${newCategoryName.trim() ? 'bg-[#5763f6] text-white hover:bg-indigo-600' : 'bg-gray-100 text-gray-400'}`}
+                            className={`w-full py-3 rounded-xl border-2 border-gray-900 font-bold transition-all shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none ${newCategoryName.trim() ? 'bg-[#5763f6] text-white hover:bg-indigo-600' : 'bg-gray-100 text-gray-400 opacity-50'}`}
                         >
                             Create List
                         </button>
@@ -1131,17 +1111,17 @@ export function StudentDashboardPage() {
 
             {/* Goal Items Modal */}
             {isGoalItemModalOpen && activeGoalCategoryId && (
-                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-                    <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl relative flex flex-col max-h-[80vh]">
-                        <button onClick={() => setIsGoalItemModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 border border-gray-100 p-1 rounded-lg">
+                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity font-mono">
+                    <div className="bg-[#FAF9F6] border-2 border-gray-900 rounded-3xl p-6 w-full max-w-md shadow-[4px_4px_0px_rgba(0,0,0,1)] relative flex flex-col max-h-[80vh]">
+                        <button onClick={() => setIsGoalItemModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 border-2 border-gray-900 p-1.5 rounded-lg bg-white shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
                             <X className="w-5 h-5"/>
                         </button>
                         
                         <div className="flex items-center gap-3 mb-6 pr-8">
-                            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
+                            <div className="w-10 h-10 bg-indigo-50 border-2 border-gray-900 rounded-xl flex items-center justify-center shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
                                 <Target className="w-5 h-5 text-indigo-500" />
                             </div>
-                            <h2 className="text-xl font-bold text-gray-900 truncate">{goalCategories.find(c => c.id === activeGoalCategoryId)?.name}</h2>
+                            <h2 className="text-xl font-black text-gray-900 truncate uppercase">{goalCategories.find(c => c.id === activeGoalCategoryId)?.name}</h2>
                         </div>
 
                         {/* Input Area */}
@@ -1152,11 +1132,11 @@ export function StudentDashboardPage() {
                                 onChange={(e) => setNewGoalText(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleAddGoalItem()}
                                 placeholder="Add a new goal..."
-                                className="flex-1 px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#5763f6] focus:ring-2 focus:ring-indigo-50 transition-all font-medium text-gray-700"
+                                className="flex-1 px-4 py-3 rounded-xl border-2 border-gray-900 outline-none focus:ring-2 focus:ring-indigo-150 transition-all font-bold text-gray-900 bg-white"
                             />
                             <button 
                                 onClick={handleAddGoalItem}
-                                className="bg-[#5763f6] text-white p-3 rounded-xl hover:bg-indigo-600 transition-colors shadow-md flex-shrink-0"
+                                className="bg-[#5763f6] text-white p-3 rounded-xl border-2 border-gray-900 hover:bg-indigo-600 shadow-[2px_2px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all flex-shrink-0"
                             >
                                 <Plus className="w-5 h-5"/>
                             </button>
@@ -1165,10 +1145,10 @@ export function StudentDashboardPage() {
                         {/* List Area */}
                         <div className="flex-1 overflow-y-auto space-y-2 pr-2 hide-scrollbar min-h-[200px]">
                             {goalCategories.find(c => c.id === activeGoalCategoryId)?.items.length === 0 ? (
-                                <p className="text-center text-gray-400 mt-10 font-medium">No goals here yet!</p>
+                                <p className="text-center text-gray-400 mt-10 font-bold italic">No goals here yet!</p>
                             ) : (
                                 goalCategories.find(c => c.id === activeGoalCategoryId)?.items.map((i) => (
-                                    <div key={i.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 hover:border-gray-200 hover:bg-gray-50/50 transition-colors group">
+                                    <div key={i.id} className="flex items-center justify-between p-3 rounded-xl border-2 border-gray-900 bg-white shadow-[1px_1px_0px_rgba(0,0,0,1)] hover:bg-gray-50/50 transition-colors group">
                                         <div className="flex items-center gap-3 flex-1">
                                             <Target className="w-4 h-4 text-[#5763f6] flex-shrink-0"/>
                                             {editingGoalId === i.id ? (
@@ -1179,7 +1159,7 @@ export function StudentDashboardPage() {
                                                     onKeyDown={(e) => e.key === 'Enter' && handleSaveEditGoal(i.id)}
                                                     onBlur={() => handleSaveEditGoal(i.id)}
                                                     autoFocus
-                                                    className="flex-1 bg-white border border-gray-200 px-2 py-1 rounded outline-none font-medium text-gray-800"
+                                                    className="flex-1 bg-white border-2 border-gray-900 px-2 py-1 rounded outline-none font-bold text-gray-900"
                                                 />
                                             ) : (
                                                 <span 
@@ -1187,7 +1167,7 @@ export function StudentDashboardPage() {
                                                         setEditingGoalId(i.id);
                                                         setEditingGoalText(i.text);
                                                     }}
-                                                    className="font-semibold transition-colors flex-1 cursor-text select-none text-gray-800"
+                                                    className="font-bold transition-colors flex-1 cursor-text select-none text-gray-805"
                                                     title="Double-click to edit"
                                                 >
                                                     {i.text}
@@ -1210,17 +1190,17 @@ export function StudentDashboardPage() {
 
             {/* Active Project Form Modal */}
             {isActiveProjectModalOpen && (
-                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-                    <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl relative flex flex-col max-h-[90vh]">
-                        <button onClick={() => setIsActiveProjectModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 border border-gray-100 p-1 rounded-lg">
+                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity font-mono">
+                    <div className="bg-[#FAF9F6] border-2 border-gray-900 rounded-3xl p-6 w-full max-w-md shadow-[4px_4px_0px_rgba(0,0,0,1)] relative flex flex-col max-h-[90vh]">
+                        <button onClick={() => setIsActiveProjectModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 border-2 border-gray-900 p-1.5 rounded-lg bg-white shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
                             <X className="w-5 h-5"/>
                         </button>
                         
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 bg-[#fffdf0] rounded-xl flex items-center justify-center">
+                            <div className="w-10 h-10 bg-[#fffdf0] border-2 border-gray-900 rounded-xl flex items-center justify-center shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
                                 <Target className="w-5 h-5 text-[#efdc4d]" />
                             </div>
-                            <h2 className="text-xl font-bold text-gray-900">{editingActiveProjectId ? "Edit Project" : "New Active Project"}</h2>
+                            <h2 className="text-xl font-black text-gray-900 uppercase">{editingActiveProjectId ? "Edit Project" : "New Active Project"}</h2>
                         </div>
 
                         <div className="flex-1 overflow-y-auto space-y-4 pr-2 hide-scrollbar">
@@ -1231,7 +1211,7 @@ export function StudentDashboardPage() {
                                     value={activeProjectForm.name}
                                     onChange={e => setActiveProjectForm({...activeProjectForm, name: e.target.value})}
                                     placeholder="e.g. Ignite Hackathon"
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#5763f6] focus:ring-2 focus:ring-indigo-50 transition-all font-medium text-gray-700"
+                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-900 outline-none focus:ring-2 focus:ring-indigo-150 transition-all font-bold text-gray-900 bg-white"
                                 />
                            </div>
                            <div className="grid grid-cols-2 gap-4">
@@ -1242,7 +1222,7 @@ export function StudentDashboardPage() {
                                         value={activeProjectForm.deadline}
                                         onChange={e => setActiveProjectForm({...activeProjectForm, deadline: e.target.value})}
                                         placeholder="e.g. Wed, 25 Nov"
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#5763f6] transition-all font-medium text-gray-700"
+                                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-900 outline-none focus:ring-2 focus:ring-indigo-150 transition-all font-bold text-gray-900 bg-white"
                                     />
                                </div>
                                <div>
@@ -1252,7 +1232,7 @@ export function StudentDashboardPage() {
                                         value={activeProjectForm.theme}
                                         onChange={e => setActiveProjectForm({...activeProjectForm, theme: e.target.value})}
                                         placeholder="e.g. AI Dev"
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#5763f6] transition-all font-medium text-gray-700"
+                                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-900 outline-none focus:ring-2 focus:ring-indigo-150 transition-all font-bold text-gray-900 bg-white"
                                     />
                                </div>
                            </div>
@@ -1264,7 +1244,7 @@ export function StudentDashboardPage() {
                                         value={activeProjectForm.workLeft}
                                         onChange={e => setActiveProjectForm({...activeProjectForm, workLeft: e.target.value})}
                                         placeholder="e.g. 3/5 Tasks"
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#5763f6] transition-all font-medium text-gray-700"
+                                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-900 outline-none focus:ring-2 focus:ring-indigo-150 transition-all font-bold text-gray-900 bg-white"
                                     />
                                </div>
                                <div>
@@ -1273,7 +1253,7 @@ export function StudentDashboardPage() {
                                          <select 
                                              value={activeProjectForm.teamType} 
                                              onChange={e => setActiveProjectForm({...activeProjectForm, teamType: e.target.value as any})}
-                                             className="w-1/2 px-2 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#5763f6] font-medium text-gray-700"
+                                             className="w-1/2 px-2 py-3 rounded-xl border-2 border-gray-900 bg-white outline-none focus:ring-2 focus:ring-indigo-150 font-bold text-gray-900"
                                          >
                                              <option value="solo">Solo</option>
                                              <option value="team">Team</option>
@@ -1284,15 +1264,15 @@ export function StudentDashboardPage() {
                                              min="1"
                                              onChange={e => setActiveProjectForm({...activeProjectForm, teamCount: Number(e.target.value)})}
                                              disabled={activeProjectForm.teamType === 'solo'}
-                                             className={`w-1/2 px-2 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#5763f6] font-medium text-gray-700 ${activeProjectForm.teamType === 'solo' ? 'bg-gray-100 opacity-50' : ''}`}
+                                             className={`w-1/2 px-2 py-3 rounded-xl border-2 border-gray-900 bg-white outline-none focus:ring-2 focus:ring-indigo-150 font-bold text-gray-900 ${activeProjectForm.teamType === 'solo' ? 'bg-gray-100 opacity-50' : ''}`}
                                          />
                                     </div>
-                               </div>
+                                </div>
                            </div>
                            <div>
                                 <label className="flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 pl-1">
                                     <span>Progress</span>
-                                    <span className="text-[#5763f6] bg-indigo-50 px-2 py-0.5 rounded">{activeProjectForm.progress}%</span>
+                                    <span className="text-[#5763f6] bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded">{activeProjectForm.progress}%</span>
                                 </label>
                                 <input 
                                     type="range"
@@ -1307,13 +1287,14 @@ export function StudentDashboardPage() {
                         <button 
                             onClick={handleSaveActiveProject}
                             disabled={!activeProjectForm.name.trim()}
-                            className={`w-full mt-6 py-3 rounded-xl font-bold transition-all shadow-md ${activeProjectForm.name.trim() ? 'bg-[#5763f6] text-white hover:bg-indigo-600 hover:shadow-lg' : 'bg-gray-100 text-gray-400'}`}
+                            className={`w-full mt-6 py-3 rounded-xl border-2 border-gray-900 font-bold transition-all shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none ${activeProjectForm.name.trim() ? 'bg-[#5763f6] text-white hover:bg-indigo-650' : 'bg-gray-100 text-gray-400 opacity-50'}`}
                         >
                             {editingActiveProjectId ? 'Save Changes' : 'Create Project'}
                         </button>
                     </div>
                 </div>
             )}
+            </div>
         </DashboardLayout>
     );
-};
+}
