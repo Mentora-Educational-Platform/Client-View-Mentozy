@@ -49,40 +49,72 @@ export function OrgSubmissionsPage() {
 
             // 1. Fetch current logged-in org user details
             const { data: { user: currentUser } } = await client.auth.getUser();
+            if (!currentUser) {
+                setLoading(false);
+                return;
+            }
 
-            // 2. Query submissions directly from Supabase Table
+            // 2. Query tasks to map IDs, titles, and owners
+            const { data: dbTasks, error: taskError } = await client
+                .from('org_tasks')
+                .select('id, title, org_id');
+
+            if (taskError) throw taskError;
+
+            const tasksMap: Record<string, { title: string; org_id: string }> = {};
+            if (dbTasks) {
+                dbTasks.forEach(t => {
+                    tasksMap[t.id] = { title: t.title, org_id: t.org_id };
+                });
+            }
+
+            // 3. Query submissions using flat select (no joins to prevent schema cache errors)
             const { data: dbSubs, error: subError } = await client
                 .from('org_task_submissions')
-                .select(`
-                    id,
-                    task_id,
-                    student_id,
-                    files,
-                    status,
-                    grade,
-                    feedback,
-                    created_at,
-                    graded_at,
-                    profiles:student_id (full_name, avatar_url, email),
-                    org_tasks:task_id (title, org_id)
-                `);
+                .select('*');
 
             if (subError) throw subError;
 
             const mappedSubs: Submission[] = [];
 
-            if (dbSubs) {
+            if (dbSubs && dbSubs.length > 0) {
+                // Fetch student profiles for these submissions in a flat select
+                const studentIds = Array.from(new Set(dbSubs.map((s: any) => s.student_id)));
+                const profilesMap: Record<string, { full_name: string; email: string; avatar_url: string }> = {};
+                
+                if (studentIds.length > 0) {
+                    const { data: dbProfiles, error: profileError } = await client
+                        .from('profiles')
+                        .select('id, full_name, email, avatar_url')
+                        .in('id', studentIds);
+
+                    if (!profileError && dbProfiles) {
+                        dbProfiles.forEach(p => {
+                            profilesMap[p.id] = {
+                                full_name: p.full_name || 'Student',
+                                email: p.email || '',
+                                avatar_url: p.avatar_url || ''
+                            };
+                        });
+                    }
+                }
+
                 // Filter only submissions corresponding to tasks belonging to the logged-in host
                 dbSubs
-                    .filter((sub: any) => sub.org_tasks?.org_id === currentUser?.id)
+                    .filter((sub: any) => {
+                        const taskInfo = tasksMap[sub.task_id];
+                        return taskInfo?.org_id === currentUser?.id;
+                    })
                     .forEach((sub: any) => {
+                        const taskInfo = tasksMap[sub.task_id];
+                        const studentInfo = profilesMap[sub.student_id];
                         mappedSubs.push({
                             id: sub.id,
                             taskId: sub.task_id,
-                            taskTitle: sub.org_tasks?.title || 'Active Task',
-                            studentName: sub.profiles?.full_name || 'Student User',
-                            studentEmail: sub.profiles?.email || 'student@krishnaite.dev',
-                            studentAvatar: sub.profiles?.avatar_url,
+                            taskTitle: taskInfo?.title || 'Active Task',
+                            studentName: studentInfo?.full_name || 'Student User',
+                            studentEmail: studentInfo?.email || 'student@krishnaite.dev',
+                            studentAvatar: studentInfo?.avatar_url,
                             submittedAt: new Date(sub.created_at).toLocaleString(),
                             files: sub.files || [],
                             status: sub.status,
@@ -97,9 +129,9 @@ export function OrgSubmissionsPage() {
             mappedSubs.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
             
             setSubmissions(mappedSubs);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to load submissions from database:', error);
-            toast.error('Could not load student submissions. Make sure database table is active.');
+            toast.error(error.message || 'Could not load student submissions. Make sure database table is active.');
         } finally {
             setLoading(false);
         }
