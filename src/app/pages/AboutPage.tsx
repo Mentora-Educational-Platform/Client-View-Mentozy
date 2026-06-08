@@ -4,6 +4,7 @@ import {
   CheckCircle2, TrendingUp, Layers
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Link } from 'react-router-dom';
 
 export function AboutPage() {
   return (
