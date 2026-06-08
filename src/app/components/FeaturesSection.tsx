@@ -51,8 +51,8 @@ export function FeaturesSection() {
   };
 
   return (
-    <section className="py-16 md:py-24 bg-gray-50/50 dark:bg-slate-900/50 transition-colors duration-300 overflow-hidden">
-      <div className="container mx-auto px-4 md:px-6">
+    <section className="py-16 md:py-24 bg-[#FAF9F6] border-t-4 border-gray-900 overflow-hidden font-mono text-gray-900">
+      <div className="container mx-auto px-6">
 
         {/* Header */}
         <motion.div 
@@ -62,14 +62,14 @@ export function FeaturesSection() {
           transition={{ duration: 0.6 }}
           className="text-center max-w-3xl mx-auto mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 text-amber-700 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 border-2 border-gray-900 bg-[#eff3ff] text-gray-900 text-xs font-black uppercase tracking-wider mb-6 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
             Why Mentozy?
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight">
-            Why <span className="text-amber-600 dark:text-amber-500">Mentozy</span>?
+          <h2 className="text-3xl md:text-5xl font-black text-gray-900 uppercase tracking-tight mb-6">
+            Why <span className="text-[#f39c12]">Mentozy</span>?
           </h2>
-          <p className="text-base md:text-lg text-gray-600 dark:text-gray-400 leading-relaxed max-w-2xl mx-auto">
-            We bridge the gap between academic education and professional success by connecting you with the right people and the right resources.
+          <p className="text-sm md:text-base text-gray-700 font-bold max-w-2xl mx-auto leading-relaxed uppercase">
+            We bridge the gap between academic education and professional success by connecting you with the right people and resources.
           </p>
         </motion.div>
 
@@ -85,17 +85,17 @@ export function FeaturesSection() {
             <motion.div
               key={index}
               variants={itemVariants}
-              className="group bg-white dark:bg-slate-800 rounded-2xl p-6 md:p-8 border border-gray-100 dark:border-slate-700 hover:border-amber-200 dark:hover:border-amber-500/50 hover:shadow-xl hover:shadow-amber-100/10 dark:hover:shadow-amber-500/5 transition-all duration-300"
+              className="group bg-white border-4 border-gray-900 p-6 md:p-8 hover:bg-[#eff3ff]/10 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shadow-[4px_4px_0px_rgba(0,0,0,1)] transition-all duration-300 flex flex-col"
             >
-              <div className="w-12 h-12 bg-gray-50 dark:bg-slate-700 rounded-xl flex items-center justify-center text-gray-600 dark:text-gray-400 mb-6 group-hover:bg-amber-50 dark:group-hover:bg-amber-500 group-hover:text-amber-600 dark:group-hover:text-slate-900 transition-colors duration-300">
+              <div className="w-12 h-12 bg-[#eff3ff] border-2 border-gray-900 flex items-center justify-center text-gray-900 mb-6 shadow-[2px_2px_0px_rgba(0,0,0,1)] group-hover:bg-[#f39c12] group-hover:text-gray-900 transition-colors duration-300">
                 {feature.icon}
               </div>
 
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
+              <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-4">
                 {feature.title}
               </h3>
 
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
+              <p className="text-gray-700 font-bold leading-relaxed text-xs flex-1 uppercase">
                 {feature.description}
               </p>
             </motion.div>
@@ -105,4 +105,6 @@ export function FeaturesSection() {
       </div>
     </section>
   );
-}
+}
+export default FeaturesSection;
+

@@ -59,8 +59,6 @@ export function OrgSettingsPage() {
         if (!user?.id || !supabase) return;
 
         try {
-            // Update auth email if changed (not implemented fully here, requires extra steps)
-
             // Update Profile
             await supabase.from('profiles').update({
                 full_name: formData.orgName,
@@ -90,104 +88,184 @@ export function OrgSettingsPage() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-4xl mx-auto space-y-8">
+            <div className="max-w-4xl mx-auto space-y-8 font-mono text-gray-900">
                 {/* Header */}
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Organisation Settings</h1>
-                    <p className="text-gray-500 mt-2">Manage your institution profile, billing, and team security.</p>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-[#eff3ff] border-4 border-gray-900 p-6 rounded-none shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                    <div>
+                        <h1 className="text-3xl font-black tracking-tight text-gray-900">ORGANISATION SETTINGS</h1>
+                        <p className="text-sm font-bold text-gray-700 mt-2">Manage your institution profile, billing, and security.</p>
+                    </div>
                 </div>
 
                 {/* Navigation Tabs */}
-                <div className="flex overflow-x-auto border-b border-gray-200 hide-scrollbar pb-px">
-                    <button onClick={() => setActiveTab('profile')} className={`px-4 py-3 text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-colors border-b-2 ${activeTab === 'profile' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
-                        <Building className="w-4 h-4" /> Institute Profile
+                <div className="flex overflow-x-auto border-b-4 border-gray-900 gap-2 pb-0">
+                    <button 
+                        onClick={() => setActiveTab('profile')} 
+                        className={`px-5 py-3 text-sm font-black flex items-center gap-2 whitespace-nowrap transition-colors border-2 border-b-0 border-gray-900 ${
+                            activeTab === 'profile' 
+                                ? 'bg-[#eff3ff] text-gray-900 translate-y-[4px]' 
+                                : 'bg-white text-gray-500 hover:text-gray-900'
+                        }`}
+                        style={{ borderBottom: activeTab === 'profile' ? '4px solid #FAF9F6' : undefined }}
+                    >
+                        <Building className="w-4 h-4" /> PROFILE
                     </button>
-                    <button onClick={() => setActiveTab('security')} className={`px-4 py-3 text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-colors border-b-2 ${activeTab === 'security' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
-                        <Lock className="w-4 h-4" /> Security & Passwords
+                    <button 
+                        onClick={() => setActiveTab('security')} 
+                        className={`px-5 py-3 text-sm font-black flex items-center gap-2 whitespace-nowrap transition-colors border-2 border-b-0 border-gray-900 ${
+                            activeTab === 'security' 
+                                ? 'bg-[#eff3ff] text-gray-900 translate-y-[4px]' 
+                                : 'bg-white text-gray-500 hover:text-gray-900'
+                        }`}
+                        style={{ borderBottom: activeTab === 'security' ? '4px solid #FAF9F6' : undefined }}
+                    >
+                        <Lock className="w-4 h-4" /> SECURITY
                     </button>
-                    <button onClick={() => setActiveTab('billing')} className={`px-4 py-3 text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-colors border-b-2 ${activeTab === 'billing' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
-                        <CreditCard className="w-4 h-4" /> Billing & Plans
+                    <button 
+                        onClick={() => setActiveTab('billing')} 
+                        className={`px-5 py-3 text-sm font-black flex items-center gap-2 whitespace-nowrap transition-colors border-2 border-b-0 border-gray-900 ${
+                            activeTab === 'billing' 
+                                ? 'bg-[#eff3ff] text-gray-900 translate-y-[4px]' 
+                                : 'bg-white text-gray-500 hover:text-gray-900'
+                        }`}
+                        style={{ borderBottom: activeTab === 'billing' ? '4px solid #FAF9F6' : undefined }}
+                    >
+                        <CreditCard className="w-4 h-4" /> BILLING
                     </button>
-                    <button onClick={() => setActiveTab('notifications')} className={`px-4 py-3 text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-colors border-b-2 ${activeTab === 'notifications' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
-                        <Bell className="w-4 h-4" /> Notifications
+                    <button 
+                        onClick={() => setActiveTab('notifications')} 
+                        className={`px-5 py-3 text-sm font-black flex items-center gap-2 whitespace-nowrap transition-colors border-2 border-b-0 border-gray-900 ${
+                            activeTab === 'notifications' 
+                                ? 'bg-[#eff3ff] text-gray-900 translate-y-[4px]' 
+                                : 'bg-white text-gray-500 hover:text-gray-900'
+                        }`}
+                        style={{ borderBottom: activeTab === 'notifications' ? '4px solid #FAF9F6' : undefined }}
+                    >
+                        <Bell className="w-4 h-4" /> NOTIFICATIONS
                     </button>
                 </div>
 
                 {/* Tab Contents */}
-                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-6 md:p-8">
+                <div className="bg-white border-4 border-gray-900 shadow-[4px_4px_0px_rgba(0,0,0,1)] p-6 md:p-8">
 
                     {/* TAB: PROFILE */}
                     {activeTab === 'profile' && (
-                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                        <div className="space-y-8">
 
                             {/* Logo Section */}
-                            <div className="flex flex-col sm:flex-row items-center gap-6 pb-8 border-b border-gray-100">
+                            <div className="flex flex-col sm:flex-row items-center gap-6 pb-8 border-b-4 border-gray-900">
                                 <div className="relative group">
-                                    <div className="w-24 h-24 rounded-2xl bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+                                    <div className="w-24 h-24 bg-[#FAF9F6] border-4 border-gray-900 flex items-center justify-center overflow-hidden shadow-[2px_2px_0px_rgba(0,0,0,1)]">
                                         {formData.logoUrl ? (
                                             <img src={formData.logoUrl} alt="Org Logo" className="w-full h-full object-cover" />
                                         ) : (
-                                            <Building className="w-8 h-8 text-gray-400" />
+                                            <Building className="w-8 h-8 text-gray-900" />
                                         )}
                                     </div>
-                                    <button className="absolute -bottom-3 -right-3 p-2 bg-indigo-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-indigo-700">
+                                    <button className="absolute -bottom-3 -right-3 p-2 bg-[#eff3ff] border-2 border-gray-900 text-gray-900 rounded-none shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff]/80 transition-colors">
                                         <Camera className="w-4 h-4" />
                                     </button>
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-gray-900">Institute Logo</h3>
-                                    <p className="text-sm text-gray-500 max-w-sm mt-1">This will be displayed on teacher profiles, student dashboards, and your public landing page. Recommended 500x500px.</p>
+                                    <h3 className="font-black text-lg text-gray-900 uppercase">Institute Logo</h3>
+                                    <p className="text-xs text-gray-600 font-bold max-w-sm mt-2 leading-relaxed">This will be displayed on teacher profiles, student dashboards, and your public landing page. Recommended 500x500px.</p>
                                 </div>
                             </div>
 
                             {/* Form Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-bold text-gray-700">Organisation Name</label>
-                                    <input type="text" name="orgName" value={formData.orgName} onChange={handleChange} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none" placeholder="e.g. Springfield Academy" />
+                                    <label className="text-sm font-black text-gray-900 uppercase">Organisation Name</label>
+                                    <input 
+                                        type="text" 
+                                        name="orgName" 
+                                        value={formData.orgName} 
+                                        onChange={handleChange} 
+                                        className="w-full p-3 border-2 border-gray-900 focus:outline-none focus:bg-[#eff3ff] font-bold text-gray-900 bg-[#FAF9F6] shadow-[2px_2px_0px_rgba(0,0,0,1)]" 
+                                        placeholder="e.g. Springfield Academy" 
+                                    />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-bold text-gray-700">Founder/Admin Name</label>
+                                    <label className="text-sm font-black text-gray-900 uppercase">Founder/Admin Name</label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <User className="h-4 w-4 text-gray-400" />
+                                            <User className="h-4 w-4 text-gray-900" />
                                         </div>
-                                        <input type="text" name="founderName" value={formData.founderName} onChange={handleChange} className="w-full pl-10 p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none" placeholder="Primary Contact" />
+                                        <input 
+                                            type="text" 
+                                            name="founderName" 
+                                            value={formData.founderName} 
+                                            onChange={handleChange} 
+                                            className="w-full pl-10 p-3 border-2 border-gray-900 focus:outline-none focus:bg-[#eff3ff] font-bold text-gray-900 bg-[#FAF9F6] shadow-[2px_2px_0px_rgba(0,0,0,1)]" 
+                                            placeholder="Primary Contact" 
+                                        />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-bold text-gray-700">Official Email</label>
+                                    <label className="text-sm font-black text-gray-900 uppercase">Official Email</label>
                                     <div className="relative">
-                                        <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none" placeholder="contact@institute.com" disabled />
-                                        <p className="text-xs text-amber-600 mt-1">To change your primary email, contact support.</p>
+                                        <input 
+                                            type="email" 
+                                            name="email" 
+                                            value={formData.email} 
+                                            onChange={handleChange} 
+                                            className="w-full p-3 border-2 border-gray-900 bg-gray-100 font-bold text-gray-500 shadow-[2px_2px_0px_rgba(0,0,0,1)]" 
+                                            placeholder="contact@institute.com" 
+                                            disabled 
+                                        />
+                                        <p className="text-[10px] text-rose-600 font-black mt-2 uppercase">To change your primary email, contact support.</p>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-bold text-gray-700">Website</label>
+                                    <label className="text-sm font-black text-gray-900 uppercase">Website</label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <Globe className="h-4 w-4 text-gray-400" />
+                                            <Globe className="h-4 w-4 text-gray-900" />
                                         </div>
-                                        <input type="text" name="website" value={formData.website} onChange={handleChange} className="w-full pl-10 p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none" placeholder="https://..." />
+                                        <input 
+                                            type="text" 
+                                            name="website" 
+                                            value={formData.website} 
+                                            onChange={handleChange} 
+                                            className="w-full pl-10 p-3 border-2 border-gray-900 focus:outline-none focus:bg-[#eff3ff] font-bold text-gray-900 bg-[#FAF9F6] shadow-[2px_2px_0px_rgba(0,0,0,1)]" 
+                                            placeholder="https://..." 
+                                        />
                                     </div>
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-sm font-bold text-gray-700">Physical Address / Headquarters</label>
-                                    <input type="text" name="address" value={formData.address} onChange={handleChange} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none" placeholder="123 Education Lane..." />
+                                    <label className="text-sm font-black text-gray-900 uppercase">Physical Address / Headquarters</label>
+                                    <input 
+                                        type="text" 
+                                        name="address" 
+                                        value={formData.address} 
+                                        onChange={handleChange} 
+                                        className="w-full p-3 border-2 border-gray-900 focus:outline-none focus:bg-[#eff3ff] font-bold text-gray-900 bg-[#FAF9F6] shadow-[2px_2px_0px_rgba(0,0,0,1)]" 
+                                        placeholder="123 Education Lane..." 
+                                    />
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-sm font-bold text-gray-700">Teaching Domain</label>
-                                    <input type="text" name="domain" value={formData.domain} onChange={handleChange} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none" placeholder="e.g. Higher Education, Coding, K-12" />
+                                    <label className="text-sm font-black text-gray-900 uppercase">Teaching Domain</label>
+                                    <input 
+                                        type="text" 
+                                        name="domain" 
+                                        value={formData.domain} 
+                                        onChange={handleChange} 
+                                        className="w-full p-3 border-2 border-gray-900 focus:outline-none focus:bg-[#eff3ff] font-bold text-gray-900 bg-[#FAF9F6] shadow-[2px_2px_0px_rgba(0,0,0,1)]" 
+                                        placeholder="e.g. Higher Education, Coding, K-12" 
+                                    />
                                 </div>
                             </div>
 
-                            <div className="pt-6 border-t border-gray-100 flex justify-end gap-3">
-                                <button className="px-6 py-2.5 bg-gray-50 border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-100 transition-colors">
-                                    Cancel
+                            <div className="pt-6 border-t-4 border-gray-900 flex justify-end gap-3">
+                                <button className="px-6 py-2.5 border-2 border-gray-900 bg-white text-gray-900 font-black hover:bg-gray-100 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+                                    CANCEL
                                 </button>
-                                <button onClick={handleSave} className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-colors">
+                                <button 
+                                    onClick={handleSave} 
+                                    className="flex items-center gap-2 px-6 py-2.5 bg-[#eff3ff] border-2 border-gray-900 text-gray-900 font-black hover:bg-[#eff3ff]/80 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]"
+                                >
                                     <Save className="w-4 h-4" />
-                                    Save Changes
+                                    SAVE CHANGES
                                 </button>
                             </div>
                         </div>
@@ -195,14 +273,14 @@ export function OrgSettingsPage() {
 
                     {/* Placeholder for other tabs */}
                     {activeTab !== 'profile' && (
-                        <div className="py-20 flex flex-col items-center justify-center text-center animate-in fade-in duration-300">
-                            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 mb-6">
+                        <div className="py-20 flex flex-col items-center justify-center text-center">
+                            <div className="w-20 h-20 bg-[#eff3ff] border-4 border-gray-900 flex items-center justify-center text-gray-900 mb-6 shadow-[3px_3px_0px_rgba(0,0,0,1)]">
                                 {activeTab === 'security' && <Lock className="w-8 h-8" />}
                                 {activeTab === 'billing' && <CreditCard className="w-8 h-8" />}
                                 {activeTab === 'notifications' && <Bell className="w-8 h-8" />}
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Coming Soon</h3>
-                            <p className="text-gray-500 max-w-md">The {activeTab} settings panel is currently under construction and will be available in the next Mentozy update.</p>
+                            <h3 className="text-2xl font-black text-gray-900 mb-2 uppercase">Coming Soon</h3>
+                            <p className="text-sm font-bold text-gray-600 max-w-md uppercase">The {activeTab} settings panel is currently under construction.</p>
                         </div>
                     )}
 
@@ -213,3 +291,4 @@ export function OrgSettingsPage() {
 }
 
 export default OrgSettingsPage;
+

@@ -181,62 +181,61 @@ export function OrgCalendarPage() {
             );
         }
         return days;
-    };
-
-    return (
+    };    return (
         <DashboardLayout>
-            <div className="space-y-6">
+            <div className="font-mono text-gray-900 min-h-screen bg-[#FAF9F6] p-4 sm:p-8 rounded-3xl border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] select-none">
+                
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-gray-900 pb-6 mb-6">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Organisation Calendar</h1>
-                        <p className="text-gray-500">Schedule classes, staff meetings, and track academic events.</p>
+                        <h1 className="text-3xl font-black uppercase tracking-tight text-gray-900">Organisation Calendar</h1>
+                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-1">Schedule classes, staff meetings, and track academic events.</p>
                     </div>
                     <button 
                         onClick={() => setIsModalOpen(true)}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200"
+                        className="flex items-center gap-2 px-5 py-3 bg-[#818CF8] text-white border-2 border-gray-900 rounded-xl font-extrabold text-xs shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
                     >
-                        <Plus className="w-5 h-5" />
+                        <Plus className="w-4 h-4" />
                         New Event
                     </button>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     {/* Left: Calendar View */}
-                    <div className="lg:col-span-3 bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-                        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white">
-                            <h2 className="text-xl font-bold text-gray-900">
+                    <div className="lg:col-span-3 bg-white rounded-3xl border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] overflow-hidden flex flex-col">
+                        <div className="p-6 border-b-2 border-gray-900 flex items-center justify-between bg-[#FAF9F6]">
+                            <h2 className="text-xl font-black uppercase tracking-tight text-gray-900">
                                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
                             </h2>
                             <div className="flex items-center gap-2">
-                                <button onClick={prevMonth} className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600">
+                                <button onClick={prevMonth} className="p-2 border-2 border-gray-900 rounded-lg hover:bg-gray-50 text-gray-600 bg-white shadow-[1px_1px_0px_rgba(0,0,0,1)] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none transition-all">
                                     <ChevronLeft className="w-5 h-5" />
                                 </button>
-                                <button onClick={() => setCurrentDate(new Date())} className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-bold text-gray-700">
+                                <button onClick={() => setCurrentDate(new Date())} className="px-4 py-2 border-2 border-gray-900 rounded-lg hover:bg-gray-50 text-xs font-bold text-gray-700 bg-white shadow-[1px_1px_0px_rgba(0,0,0,1)] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none transition-all">
                                     Today
                                 </button>
-                                <button onClick={nextMonth} className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600">
+                                <button onClick={nextMonth} className="p-2 border-2 border-gray-900 rounded-lg hover:bg-gray-50 text-gray-600 bg-white shadow-[1px_1px_0px_rgba(0,0,0,1)] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none transition-all">
                                     <ChevronRight className="w-5 h-5" />
                                 </button>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-7 bg-gray-50 border-b border-gray-100">
+                        <div className="grid grid-cols-7 bg-[#FAF9F6] border-b-2 border-gray-900">
                             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                                <div key={day} className="py-3 text-center text-xs font-bold tracking-wider text-gray-500 uppercase">
+                                <div key={day} className="py-3 text-center text-xs font-black tracking-widest text-gray-400 uppercase">
                                     {day}
                                 </div>
                             ))}
                         </div>
 
-                        <div className="grid grid-cols-7 bg-gray-200 gap-[1px] flex-1">
+                        <div className="grid grid-cols-7 bg-gray-900 gap-[2px] flex-1">
                             {renderCalendarDays()}
                         </div>
                     </div>
 
                     {/* Right: Upcoming Events Sidebar */}
-                    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 overflow-hidden flex flex-col max-h-[600px]">
-                        <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <div className="bg-white rounded-3xl border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] p-6 overflow-hidden flex flex-col max-h-[600px]">
+                        <h2 className="text-md font-black uppercase tracking-tight text-gray-900 mb-6 flex items-center gap-2">
                             <Clock className="w-5 h-5 text-indigo-500" />
                             Upcoming Events
                         </h2>
@@ -247,32 +246,31 @@ export function OrgCalendarPage() {
                                     <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
                                 </div>
                             ) : events.length === 0 ? (
-                                <div className="text-sm text-gray-500 text-center py-4 border border-dashed border-gray-200 rounded-xl bg-gray-50">
+                                <div className="text-xs text-gray-400 font-bold italic text-center py-4 border-2 border-dashed border-gray-300 rounded-xl bg-[#FAF9F6]">
                                     No upcoming events scheduled.
                                 </div>
                             ) : (
-                                // Filter to show only future events logic could go here; just showing all fetched for now
                                 events.map(event => (
-                                    <div key={event.id} className="relative pl-6 before:absolute before:left-0 before:top-1.5 before:w-2 before:h-2 before:rounded-full before:bg-indigo-500 pb-6 border-l-2 border-dashed border-gray-100 last:border-0 last:pb-0 font-sans">
-                                        <h4 className="font-bold text-gray-900 text-sm mb-1">{event.title}</h4>
-                                        <div className="flex items-center gap-2 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded inline-flex mb-2">
+                                    <div key={event.id} className="relative pl-6 before:absolute before:left-0 before:top-1.5 before:w-2.5 before:h-2.5 before:rounded-full before:bg-indigo-500 pb-6 border-l-2 border-dashed border-gray-200 last:border-0 last:pb-0 font-mono">
+                                        <h4 className="font-extrabold text-gray-900 text-xs mb-1.5 leading-tight">{event.title}</h4>
+                                        <div className="flex items-center gap-2 text-[10px] font-black text-amber-900 bg-[#FEF3C7] border border-amber-300 px-2 py-0.5 rounded shadow-[1px_1px_0px_rgba(0,0,0,1)] inline-flex mb-2">
                                             {event.date === new Date().toISOString().split('T')[0] ? 'Today' : event.date} • {event.time.substring(0, 5)}
                                         </div>
-                                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                                        <div className="flex items-center gap-2 text-[10px] text-gray-500 font-bold">
                                             {event.isLiveSession || event.location.includes('Zoom') || event.location.includes('Online') || event.location.includes('live') ? (
                                                 <Video className="w-3.5 h-3.5 text-indigo-500 animate-pulse" />
                                             ) : (
                                                 <MapPin className="w-3.5 h-3.5" />
                                             )}
                                             {event.isLiveSession ? (
-                                                <Link to={`/live/${event.roomId}`} className="text-indigo-600 hover:text-indigo-700 font-bold underline">
+                                                <Link to={`/live/${event.roomId}`} className="text-indigo-650 hover:text-indigo-800 font-bold underline">
                                                     Join Live Session
                                                 </Link>
                                             ) : (
                                                 event.location
                                             )}
                                         </div>
-                                        <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                                        <div className="flex items-center gap-2 text-[10px] text-gray-500 font-bold mt-1">
                                             <Users className="w-3.5 h-3.5" />
                                             {event.type}
                                         </div>
@@ -286,69 +284,76 @@ export function OrgCalendarPage() {
 
             {/* Modal for New Event */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-                            <h2 className="text-xl font-bold text-gray-900">Create New Event</h2>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-700 bg-white rounded-full p-2 border border-gray-200">
-                                <X className="w-5 h-5" />
-                            </button>
+                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity font-mono">
+                    <div className="bg-[#FAF9F6] border-2 border-gray-900 rounded-3xl p-6 w-full max-w-lg shadow-[4px_4px_0px_rgba(0,0,0,1)] relative flex flex-col text-left">
+                        <button 
+                            onClick={() => setIsModalOpen(false)} 
+                            className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 border-2 border-gray-900 p-1.5 rounded-lg bg-white shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                        
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 bg-[#eff3ff] border-2 border-gray-900 rounded-xl flex items-center justify-center shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+                                <Plus className="w-5 h-5 text-[#5763f6]" />
+                            </div>
+                            <h2 className="text-2xl font-black text-gray-900 uppercase">New Event</h2>
                         </div>
                         
-                        <form onSubmit={handleCreateEvent} className="p-6 overflow-y-auto space-y-5">
+                        <form onSubmit={handleCreateEvent} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">Event Title *</label>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Event Title *</label>
                                 <input
                                     type="text"
                                     required
                                     value={newEvent.title}
                                     onChange={e => setNewEvent({...newEvent, title: e.target.value})}
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50"
+                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-900 outline-none focus:ring-2 focus:ring-indigo-150 font-bold text-gray-900 bg-white"
                                     placeholder="e.g. Weekly Staff Meeting"
                                 />
                             </div>
                             
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">Date *</label>
+                                    <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Date *</label>
                                     <input
                                         type="date"
                                         required
                                         value={newEvent.date}
                                         onChange={e => setNewEvent({...newEvent, date: e.target.value})}
-                                        className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 text-gray-700"
+                                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-900 outline-none focus:ring-2 focus:ring-indigo-150 font-bold text-gray-900 bg-white"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">Time *</label>
+                                    <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Time *</label>
                                     <input
                                         type="time"
                                         required
                                         value={newEvent.time}
                                         onChange={e => setNewEvent({...newEvent, time: e.target.value})}
-                                        className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 text-gray-700"
+                                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-900 outline-none focus:ring-2 focus:ring-indigo-150 font-bold text-gray-900 bg-white"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">Location / Link *</label>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Location / Link *</label>
                                 <input
                                     type="text"
                                     required
                                     value={newEvent.location}
                                     onChange={e => setNewEvent({...newEvent, location: e.target.value})}
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50"
+                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-900 outline-none focus:ring-2 focus:ring-indigo-150 font-bold text-gray-900 bg-white"
                                     placeholder="Zoom Link or Room Name"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">Event Type *</label>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Event Type *</label>
                                 <select
                                     value={newEvent.type}
                                     onChange={e => setNewEvent({...newEvent, type: e.target.value})}
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 text-gray-700"
+                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-900 outline-none font-bold text-gray-900 bg-white"
                                 >
                                     <option value="Meeting">Meeting</option>
                                     <option value="Class">Class</option>
@@ -359,12 +364,12 @@ export function OrgCalendarPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">Description (Optional)</label>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Description (Optional)</label>
                                 <textarea
                                     value={newEvent.description}
                                     onChange={e => setNewEvent({...newEvent, description: e.target.value})}
                                     rows={3}
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 resize-none"
+                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-900 outline-none font-bold text-gray-900 bg-white resize-none"
                                     placeholder="Add any extra details..."
                                 />
                             </div>
@@ -372,7 +377,7 @@ export function OrgCalendarPage() {
                             <button 
                                 type="submit" 
                                 disabled={isSubmitting}
-                                className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-md shadow-indigo-200 hover:bg-indigo-700 transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
+                                className="w-full py-3.5 bg-[#818CF8] text-white border-2 border-gray-900 rounded-xl font-bold transition-all shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none flex items-center justify-center gap-2"
                             >
                                 {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save Event"}
                             </button>

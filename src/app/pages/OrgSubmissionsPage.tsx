@@ -215,80 +215,80 @@ export function OrgSubmissionsPage() {
 
     return (
         <DashboardLayout>
-            <div className="space-y-6">
+            <div className="space-y-8 font-mono text-gray-900">
                 
                 {/* Header Row */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-[#eff3ff] border-4 border-gray-900 p-6 rounded-none shadow-[4px_4px_0px_rgba(0,0,0,1)]">
                     <div>
-                        <h1 className="text-2xl font-black text-gray-900 tracking-tight">Student Submissions</h1>
-                        <p className="text-sm text-gray-500">View, evaluate, and grade tasks submitted by students.</p>
+                        <h1 className="text-3xl font-black tracking-tight text-gray-900">STUDENT SUBMISSIONS</h1>
+                        <p className="text-sm font-bold text-gray-700 mt-2">View, evaluate, and grade tasks submitted by students.</p>
                     </div>
                     <button
                         onClick={loadSubmissions}
                         disabled={loading}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-60"
+                        className="inline-flex items-center gap-2 px-5 py-3 border-2 border-gray-900 text-sm font-black text-gray-900 bg-white hover:bg-[#eff3ff] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-60"
                     >
                         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                        Refresh Submissions
+                        REFRESH SUBMISSIONS
                     </button>
                 </div>
 
                 {/* Dashboard Stats Row */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="bg-white p-5 border-4 border-gray-900 shadow-[4px_4px_0px_rgba(0,0,0,1)] flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Received</p>
-                            <p className="text-3xl font-black text-gray-900 mt-1">{stats.total}</p>
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-wider">Total Received</p>
+                            <p className="text-4xl font-black text-gray-900 mt-2">{stats.total}</p>
                         </div>
-                        <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
-                            <FileText className="w-5 h-5" />
+                        <div className="w-12 h-12 bg-[#eff3ff] border-2 border-gray-900 flex items-center justify-center text-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                            <FileText className="w-6 h-6" />
                         </div>
                     </div>
-                    <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
+                    <div className="bg-white p-5 border-4 border-gray-900 shadow-[4px_4px_0px_rgba(0,0,0,1)] flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Pending Review</p>
-                            <p className="text-3xl font-black text-amber-600 mt-1">{stats.pending}</p>
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-wider">Pending Review</p>
+                            <p className="text-4xl font-black text-[#f39c12] mt-2">{stats.pending}</p>
                         </div>
-                        <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600">
-                            <Clock className="w-5 h-5 animate-pulse" />
+                        <div className="w-12 h-12 bg-[#fcf3cf] border-2 border-gray-900 flex items-center justify-center text-[#f39c12] shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                            <Clock className="w-6 h-6 animate-pulse" />
                         </div>
                     </div>
-                    <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
+                    <div className="bg-white p-5 border-4 border-gray-900 shadow-[4px_4px_0px_rgba(0,0,0,1)] flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Approved / Passed</p>
-                            <p className="text-3xl font-black text-emerald-600 mt-1">{stats.passed}</p>
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-wider">Approved / Passed</p>
+                            <p className="text-4xl font-black text-[#2ecc71] mt-2">{stats.passed}</p>
                         </div>
-                        <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
-                            <CheckCircle2 className="w-5 h-5" />
+                        <div className="w-12 h-12 bg-[#e8f8f5] border-2 border-gray-900 flex items-center justify-center text-[#2ecc71] shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                            <CheckCircle2 className="w-6 h-6" />
                         </div>
                     </div>
-                    <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
+                    <div className="bg-white p-5 border-4 border-gray-900 shadow-[4px_4px_0px_rgba(0,0,0,1)] flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Redos Requested</p>
-                            <p className="text-3xl font-black text-rose-600 mt-1">{stats.redo}</p>
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-wider">Redos Requested</p>
+                            <p className="text-4xl font-black text-[#e74c3c] mt-2">{stats.redo}</p>
                         </div>
-                        <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center text-rose-600">
-                            <AlertCircle className="w-5 h-5" />
+                        <div className="w-12 h-12 bg-[#fdebd0] border-2 border-gray-900 flex items-center justify-center text-[#e74c3c] shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                            <AlertCircle className="w-6 h-6" />
                         </div>
                     </div>
                 </div>
 
                 {/* Submissions Section */}
-                <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="bg-white border-4 border-gray-900 shadow-[4px_4px_0px_rgba(0,0,0,1)] overflow-hidden">
                     
                     {/* Search & Filter Header */}
-                    <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="p-5 border-b-4 border-gray-900 bg-[#eff3ff] flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div className="relative w-full sm:max-w-sm">
-                            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3.5" />
+                            <Search className="w-5 h-5 text-gray-900 absolute left-3 top-3.5" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search by student, task, or status..."
-                                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                                className="w-full pl-10 pr-4 py-3 border-2 border-gray-900 bg-[#FAF9F6] focus:outline-none focus:bg-[#eff3ff] text-sm font-bold shadow-[2px_2px_0px_rgba(0,0,0,1)]"
                             />
                         </div>
-                        <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">
+                        <div className="text-xs font-black uppercase tracking-wider bg-white border-2 border-gray-900 px-3 py-1.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
                             Showing {filteredSubmissions.length} submissions
                         </div>
                     </div>
@@ -296,75 +296,75 @@ export function OrgSubmissionsPage() {
                     {/* Table View */}
                     {loading ? (
                         <div className="py-20 text-center">
-                            <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-                            <p className="text-sm text-gray-500 font-semibold">Loading student work...</p>
+                            <RefreshCw className="w-10 h-10 animate-spin text-gray-900 mx-auto mb-4" />
+                            <p className="text-sm font-black uppercase">Loading student work...</p>
                         </div>
                     ) : filteredSubmissions.length === 0 ? (
                         <div className="py-20 text-center text-gray-500">
-                            <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                            <p className="font-bold text-gray-900">No submissions found</p>
-                            <p className="text-xs text-gray-400 mt-1">Ready for student submissions to come in.</p>
+                            <AlertCircle className="w-12 h-12 text-gray-900 mx-auto mb-3" />
+                            <p className="font-black text-gray-900 uppercase">No submissions found</p>
+                            <p className="text-xs font-bold text-gray-500 mt-1">Ready for student submissions to come in.</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-400 uppercase tracking-widest">
-                                        <th className="p-4 pl-6">Student</th>
-                                        <th className="p-4">Task</th>
-                                        <th className="p-4">Submitted At</th>
-                                        <th className="p-4">Files</th>
-                                        <th className="p-4">Status</th>
+                                    <tr className="bg-[#eff3ff] border-b-4 border-gray-900 text-xs font-black text-gray-900 uppercase tracking-widest">
+                                        <th className="p-4 pl-6 border-r-2 border-gray-900">Student</th>
+                                        <th className="p-4 border-r-2 border-gray-900">Task</th>
+                                        <th className="p-4 border-r-2 border-gray-900">Submitted At</th>
+                                        <th className="p-4 border-r-2 border-gray-900">Files</th>
+                                        <th className="p-4 border-r-2 border-gray-900">Status</th>
                                         <th className="p-4 pr-6 text-right">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100 text-sm">
+                                <tbody className="divide-y-2 divide-gray-900 text-sm font-bold">
                                     {filteredSubmissions.map((sub) => (
-                                        <tr key={sub.id} className="hover:bg-gray-50/50 transition-colors">
+                                        <tr key={sub.id} className="hover:bg-[#eff3ff]/10 transition-colors">
                                             {/* Student Card */}
-                                            <td className="p-4 pl-6">
+                                            <td className="p-4 pl-6 border-r-2 border-gray-900">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-bold overflow-hidden">
+                                                    <div className="w-10 h-10 bg-[#eff3ff] border-2 border-gray-900 flex items-center justify-center text-gray-900 font-bold overflow-hidden shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
                                                         {sub.studentAvatar ? (
                                                             <img src={sub.studentAvatar} className="w-full h-full object-cover" />
                                                         ) : (
-                                                            <User className="w-5 h-5 text-indigo-500" />
+                                                            <User className="w-5 h-5 text-gray-900" />
                                                         )}
                                                     </div>
                                                     <div>
-                                                        <p className="font-bold text-gray-950">{sub.studentName}</p>
+                                                        <p className="font-black text-gray-950 uppercase">{sub.studentName}</p>
                                                         <p className="text-[10px] text-gray-500 mt-0.5">{sub.studentEmail}</p>
                                                     </div>
                                                 </div>
                                             </td>
 
                                             {/* Task Name */}
-                                            <td className="p-4">
+                                            <td className="p-4 border-r-2 border-gray-900">
                                                 <div className="max-w-[240px] truncate">
-                                                    <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-md block w-fit mb-1 max-w-[150px] truncate">
+                                                    <span className="text-[10px] font-black text-gray-700 bg-[#eff3ff] border border-gray-900 px-2 py-0.5 shadow-[1px_1px_0px_rgba(0,0,0,1)] block w-fit mb-2.5 max-w-[150px] truncate uppercase">
                                                         Task Space
                                                     </span>
-                                                    <span className="font-bold text-gray-900 truncate" title={sub.taskTitle}>
+                                                    <span className="font-black text-gray-900 truncate uppercase" title={sub.taskTitle}>
                                                         {sub.taskTitle}
                                                     </span>
                                                 </div>
                                             </td>
 
                                             {/* Submitted At */}
-                                            <td className="p-4 text-gray-600 font-medium text-xs">
+                                            <td className="p-4 text-gray-700 font-bold text-xs border-r-2 border-gray-900">
                                                 {sub.submittedAt}
                                             </td>
 
                                             {/* Files list */}
-                                            <td className="p-4">
-                                                <div className="flex items-center gap-1.5 flex-wrap">
+                                            <td className="p-4 border-r-2 border-gray-900">
+                                                <div className="flex items-center gap-2 flex-wrap">
                                                     {sub.files.map((file, i) => (
                                                         <span 
                                                             key={i} 
-                                                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 border ${
+                                                            className={`text-[10px] font-black px-2.5 py-1 flex items-center gap-1.5 border-2 border-gray-900 shadow-[1px_1px_0px_rgba(0,0,0,1)] ${
                                                                 file.type === 'pdf' 
-                                                                    ? 'bg-rose-50 text-rose-600 border-rose-100' 
-                                                                    : 'bg-indigo-50 text-indigo-600 border-indigo-100'
+                                                                    ? 'bg-rose-100 text-rose-900' 
+                                                                    : 'bg-indigo-100 text-indigo-900'
                                                             }`}
                                                         >
                                                             {file.type === 'pdf' ? <FileText className="w-3 h-3" /> : <Image className="w-3 h-3" />}
@@ -375,23 +375,23 @@ export function OrgSubmissionsPage() {
                                             </td>
 
                                             {/* Status Badge */}
-                                            <td className="p-4">
+                                            <td className="p-4 border-r-2 border-gray-900">
                                                 {sub.status === 'pending' && (
-                                                    <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-                                                        <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
-                                                        Needs Grading
+                                                    <span className="text-xs font-black text-[#f39c12] bg-[#fcf3cf] border-2 border-[#f39c12] px-3 py-1 flex items-center gap-1.5 w-fit shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+                                                        <span className="w-2 h-2 bg-[#f39c12] rounded-full animate-pulse" />
+                                                        NEEDS GRADING
                                                     </span>
                                                 )}
                                                 {sub.status === 'passed' && (
-                                                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-                                                        <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                                        Passed {sub.grade ? `(${sub.grade})` : ''}
+                                                    <span className="text-xs font-black text-[#2ecc71] bg-[#e8f8f5] border-2 border-[#2ecc71] px-3 py-1 flex items-center gap-1.5 w-fit shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+                                                        <Check className="w-4 h-4 text-[#2ecc71]" />
+                                                        PASSED {sub.grade ? `(${sub.grade})` : ''}
                                                     </span>
                                                 )}
                                                 {sub.status === 'redo' && (
-                                                    <span className="text-xs font-bold text-rose-700 bg-rose-50 border border-rose-100 px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-                                                        <X className="w-3.5 h-3.5 text-rose-600" />
-                                                        Redo Required
+                                                    <span className="text-xs font-black text-[#e74c3c] bg-[#fdebd0] border-2 border-[#e74c3c] px-3 py-1 flex items-center gap-1.5 w-fit shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+                                                        <X className="w-4 h-4 text-[#e74c3c]" />
+                                                        REDO REQUIRED
                                                     </span>
                                                 )}
                                             </td>
@@ -400,10 +400,10 @@ export function OrgSubmissionsPage() {
                                             <td className="p-4 pr-6 text-right">
                                                 <button
                                                     onClick={() => openReview(sub)}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-900 hover:bg-indigo-600 text-white font-bold text-xs transition-all shadow-sm"
+                                                    className="inline-flex items-center gap-1.5 px-3.5 py-2 border-2 border-gray-900 bg-[#eff3ff] hover:bg-[#eff3ff]/80 text-gray-900 font-black text-xs transition-all active:translate-x-[1.5px] active:translate-y-[1.5px] active:shadow-none shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]"
                                                 >
                                                     <Eye className="w-3.5 h-3.5" />
-                                                    Grade Sub
+                                                    GRADE
                                                 </button>
                                             </td>
                                         </tr>
@@ -417,14 +417,14 @@ export function OrgSubmissionsPage() {
 
             {/* Submissions Review / Grader Modal */}
             {reviewModalOpen && selectedSubmission && (
-                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl border border-gray-200 max-w-2xl w-full overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 font-mono">
+                    <div className="bg-white border-4 border-gray-900 max-w-2xl w-full overflow-hidden shadow-[6px_6px_0px_rgba(0,0,0,1)] flex flex-col max-h-[90vh]">
                         
                         {/* Header */}
-                        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                        <div className="p-6 border-b-4 border-gray-900 bg-[#eff3ff] flex items-center justify-between">
                             <div>
-                                <h3 className="text-lg font-black text-gray-900">Review Student Submission</h3>
-                                <p className="text-xs text-gray-500">Student: {selectedSubmission.studentName}</p>
+                                <h3 className="text-xl font-black text-gray-900">REVIEW STUDENT SUBMISSION</h3>
+                                <p className="text-xs font-bold text-gray-700 mt-1">Student: {selectedSubmission.studentName}</p>
                             </div>
                             <button 
                                 onClick={() => {
@@ -432,33 +432,33 @@ export function OrgSubmissionsPage() {
                                     setSelectedSubmission(null);
                                     setActiveScreenshotPreview(null);
                                 }}
-                                className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-150 rounded-lg transition-colors"
+                                className="p-2 text-gray-900 hover:bg-white border-2 border-gray-900 transition-colors shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] bg-white active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         {/* Modal Body (Scrollable) */}
-                        <div className="p-6 overflow-y-auto space-y-6 flex-1">
+                        <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-[#FAF9F6]">
                             
                             {/* Task details bar */}
-                            <div className="p-4 bg-gray-50 rounded-2xl border border-gray-150">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Grading Task</span>
-                                <h4 className="text-base font-extrabold text-gray-900 mt-1">{selectedSubmission.taskTitle}</h4>
-                                <div className="flex items-center gap-2 mt-2 text-xs text-gray-500 font-semibold">
-                                    <Clock className="w-3.5 h-3.5" />
+                            <div className="p-4 bg-white border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Grading Task</span>
+                                <h4 className="text-lg font-black text-gray-900 mt-1 uppercase">{selectedSubmission.taskTitle}</h4>
+                                <div className="flex items-center gap-2 mt-2 text-xs text-gray-500 font-bold">
+                                    <Clock className="w-4 h-4 text-gray-900" />
                                     <span>Submitted on: {selectedSubmission.submittedAt}</span>
                                 </div>
                             </div>
 
                             {/* Files Section */}
                             <div className="space-y-3">
-                                <h5 className="text-xs font-bold text-gray-600 uppercase tracking-wider">Submitted Attachments</h5>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <h5 className="text-xs font-black text-gray-700 bg-white border-2 border-gray-900 px-3 py-1 w-fit uppercase tracking-wider shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">Submitted Attachments</h5>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {selectedSubmission.files.map((file, i) => (
                                         <div 
                                             key={i}
-                                            className="p-3.5 border border-gray-150 rounded-2xl flex items-center gap-3 bg-white hover:border-indigo-300 transition-all cursor-pointer group"
+                                            className="p-3.5 border-2 border-gray-900 flex items-center gap-3 bg-white hover:bg-[#eff3ff]/10 transition-all cursor-pointer shadow-[2px_2px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
                                             onClick={() => {
                                                 if (file.type === 'image') {
                                                     setActiveScreenshotPreview(file.name);
@@ -473,8 +473,8 @@ export function OrgSubmissionsPage() {
                                                 <Image className="w-8 h-8 text-indigo-500 flex-shrink-0" />
                                             )}
                                             <div className="min-w-0 flex-1">
-                                                <p className="text-xs font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">{file.name}</p>
-                                                <p className="text-[10px] text-gray-400 mt-0.5">{file.size} • Click to {file.type === 'image' ? 'Preview' : 'Open'}</p>
+                                                <p className="text-xs font-black text-gray-900 truncate uppercase">{file.name}</p>
+                                                <p className="text-[10px] text-gray-400 font-bold mt-0.5">{file.size} • Click to {file.type === 'image' ? 'Preview' : 'Open'}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -483,17 +483,17 @@ export function OrgSubmissionsPage() {
 
                             {/* Screenshot Lightbox Preview Area */}
                             {activeScreenshotPreview && (
-                                <div className="p-3 border border-indigo-100 bg-indigo-50/20 rounded-2xl relative space-y-2">
-                                    <div className="flex items-center justify-between text-xs font-bold text-indigo-600">
+                                <div className="p-4 border-2 border-gray-900 bg-[#eff3ff]/10 rounded-none relative space-y-3 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                                    <div className="flex items-center justify-between text-xs font-black text-gray-900 uppercase">
                                         <span>Image Preview: {activeScreenshotPreview}</span>
                                         <button 
                                             onClick={() => setActiveScreenshotPreview(null)}
-                                            className="text-gray-400 hover:text-rose-600 font-extrabold uppercase text-[10px]"
+                                            className="text-gray-500 hover:text-rose-600 font-black uppercase text-[10px] border border-gray-900 px-2 py-0.5 bg-white shadow-[1px_1px_0px_rgba(0,0,0,1)]"
                                         >
                                             Close Preview
                                         </button>
                                     </div>
-                                    <div className="w-full h-48 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center text-slate-500 text-xs border border-indigo-100 flex-col gap-2 relative">
+                                    <div className="w-full h-48 bg-slate-900 border-2 border-gray-900 flex items-center justify-center text-slate-500 text-xs flex-col gap-2 relative">
                                         <Image className="w-10 h-10 text-indigo-400 opacity-60 animate-bounce" />
                                         <span className="font-mono font-bold text-slate-400">Mock student workspace screenshot</span>
                                         <span className="text-[10px] text-slate-600">Slack workspace verification & confirmation message</span>
@@ -503,16 +503,16 @@ export function OrgSubmissionsPage() {
                             )}
 
                             {/* Grading Input Box */}
-                            <div className="space-y-4 pt-4 border-t border-gray-150">
-                                <h5 className="text-xs font-bold text-gray-600 uppercase tracking-wider">Evaluate Task</h5>
+                            <div className="space-y-4 pt-4 border-t-2 border-gray-900">
+                                <h5 className="text-xs font-black text-gray-700 bg-white border-2 border-gray-900 px-3 py-1 w-fit uppercase tracking-wider shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">Evaluate Task</h5>
                                 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="block text-xs font-bold text-gray-700">Set Grade / Status</label>
+                                        <label className="block text-xs font-black text-gray-700 uppercase">Set Grade / Status</label>
                                         <select
                                             value={gradeValue}
                                             onChange={(e) => setGradeValue(e.target.value)}
-                                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 font-semibold text-sm bg-white"
+                                            className="w-full px-3.5 py-3 border-2 border-gray-900 focus:outline-none focus:bg-[#eff3ff] font-bold text-sm bg-white shadow-[2px_2px_0px_rgba(0,0,0,1)]"
                                         >
                                             <option value="Pass">Pass</option>
                                             <option value="A+">A+ (Exceptional)</option>
@@ -524,35 +524,35 @@ export function OrgSubmissionsPage() {
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="block text-xs font-bold text-gray-700">Feedback Notes</label>
+                                    <label className="block text-xs font-black text-gray-700 uppercase">Feedback Notes</label>
                                     <textarea
                                         value={feedbackText}
                                         onChange={(e) => setFeedbackText(e.target.value)}
                                         rows={3}
                                         placeholder="Add encouragement, recommendations, or explain why correction is required..."
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 text-sm resize-y"
+                                        className="w-full px-4 py-3 border-2 border-gray-900 focus:outline-none focus:bg-[#eff3ff] text-sm font-bold bg-white shadow-[2px_2px_0px_rgba(0,0,0,1)] resize-y"
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {/* Footer Buttons */}
-                        <div className="p-6 border-t border-gray-100 bg-gray-50 flex items-center justify-end gap-3">
+                        <div className="p-6 border-t-4 border-gray-900 bg-[#eff3ff] flex items-center justify-end gap-3">
                             <button
                                 onClick={() => {
                                     setReviewModalOpen(false);
                                     setSelectedSubmission(null);
                                     setActiveScreenshotPreview(null);
                                 }}
-                                className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 bg-white hover:bg-gray-100 transition-all"
+                                className="px-5 py-2.5 border-2 border-gray-900 text-sm font-black text-gray-900 bg-white hover:bg-[#eff3ff] transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]"
                             >
-                                Close
+                                CLOSE
                             </button>
                             <button
                                 onClick={submitGrade}
-                                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-600/20"
+                                className="px-5 py-2.5 bg-[#eff3ff] border-2 border-gray-900 text-gray-900 text-sm font-black hover:bg-[#eff3ff]/80 transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]"
                             >
-                                Submit Evaluation
+                                SUBMIT EVALUATION
                             </button>
                         </div>
 
@@ -564,3 +564,4 @@ export function OrgSubmissionsPage() {
 }
 
 export default OrgSubmissionsPage;
+

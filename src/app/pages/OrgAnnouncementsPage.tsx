@@ -118,7 +118,7 @@ export function OrgAnnouncementsPage() {
 
             if (error) throw error;
 
-            toast.success('Announcement shared with students successfully.');
+            toast.success('Announcement shared successfully.');
             setTitle('');
             setContent('');
             await loadAnnouncements();
@@ -132,11 +132,12 @@ export function OrgAnnouncementsPage() {
 
     return (
         <DashboardLayout>
-            <div className="space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-8 font-mono text-gray-900">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-[#eff3ff] border-4 border-gray-900 p-6 rounded-none shadow-[4px_4px_0px_rgba(0,0,0,1)]">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Announcements</h1>
-                        <p className="text-gray-500">
+                        <h1 className="text-3xl font-black tracking-tight text-gray-900">ANNOUNCEMENTS</h1>
+                        <p className="text-sm font-bold mt-2 text-gray-700">
                             {isOrgAdmin
                                 ? 'Create and publish updates for your students.'
                                 : 'Latest updates from your organization.'}
@@ -145,82 +146,88 @@ export function OrgAnnouncementsPage() {
                     <button
                         onClick={loadAnnouncements}
                         disabled={isLoading}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+                        className="inline-flex items-center gap-2 px-5 py-3 border-2 border-gray-900 text-sm font-black text-gray-900 bg-white hover:bg-[#eff3ff] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-60"
                     >
                         <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                        Refresh
+                        REFRESH
                     </button>
                 </div>
 
+                {/* Create Form */}
                 {isOrgAdmin && (
-                    <form onSubmit={handleSubmitAnnouncement} className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-4">
-                        <div className="flex items-center gap-2 text-gray-900 font-bold">
-                            <Megaphone className="w-5 h-5 text-blue-600" />
-                            Share Announcement
+                    <form onSubmit={handleSubmitAnnouncement} className="bg-white border-4 border-gray-900 p-6 shadow-[4px_4px_0px_rgba(0,0,0,1)] space-y-6">
+                        <div className="flex items-center gap-3 text-lg font-black text-gray-900 border-b-4 border-gray-900 pb-4">
+                            <div className="w-10 h-10 bg-[#eff3ff] border-2 border-gray-900 flex items-center justify-center shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                                <Megaphone className="w-5 h-5 text-gray-900" />
+                            </div>
+                            SHARE NEW ANNOUNCEMENT
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-gray-700">Title</label>
+                            <label className="block text-sm font-black text-gray-900 uppercase">Title</label>
                             <input
                                 type="text"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 placeholder="e.g. Mock test schedule for this week"
-                                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-4 py-3 border-2 border-gray-900 focus:outline-none focus:bg-[#eff3ff] font-bold text-gray-900 bg-[#FAF9F6] shadow-[2px_2px_0px_rgba(0,0,0,1)]"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-gray-700">Message</label>
+                            <label className="block text-sm font-black text-gray-900 uppercase">Message</label>
                             <textarea
                                 value={content}
                                 onChange={(e) => setContent(e.target.value)}
                                 rows={4}
                                 placeholder="Write the announcement for your students..."
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
+                                className="w-full px-4 py-3 border-2 border-gray-900 focus:outline-none focus:bg-[#eff3ff] font-bold text-gray-900 bg-[#FAF9F6] shadow-[2px_2px_0px_rgba(0,0,0,1)] resize-y"
                             />
                         </div>
 
                         <button
                             type="submit"
                             disabled={isSaving}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-60"
+                            className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#eff3ff] text-gray-900 font-black border-2 border-gray-900 hover:bg-[#eff3ff]/85 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-60"
                         >
                             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                            Publish Announcement
+                            PUBLISH ANNOUNCEMENT
                         </button>
                     </form>
                 )}
 
-                <section className="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-                        <Bell className="w-4 h-4 text-indigo-600" />
-                        <h2 className="font-bold text-gray-900">Recent Announcements</h2>
+                {/* Announcements List */}
+                <section className="bg-white border-4 border-gray-900 shadow-[4px_4px_0px_rgba(0,0,0,1)] overflow-hidden">
+                    <div className="px-6 py-4 border-b-4 border-gray-900 bg-[#eff3ff] flex items-center gap-3">
+                        <div className="w-8 h-8 bg-white border-2 border-gray-900 flex items-center justify-center shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+                            <Bell className="w-4 h-4 text-gray-900" />
+                        </div>
+                        <h2 className="font-black text-gray-900 uppercase">Recent Announcements</h2>
                     </div>
 
                     {isAnnouncementsBackendUnavailable && (
-                        <div className="mx-6 mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                        <div className="mx-6 mt-6 border-2 border-gray-900 bg-[#eff3ff] p-4 text-sm font-bold shadow-[2px_2px_0px_rgba(0,0,0,1)]">
                             Announcements backend is not configured yet. Showing an empty state for now.
                         </div>
                     )}
 
                     {isLoading ? (
-                        <div className="py-12 flex justify-center">
-                            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                        <div className="py-16 flex justify-center">
+                            <Loader2 className="w-10 h-10 animate-spin text-gray-900" />
                         </div>
                     ) : announcements.length === 0 ? (
-                        <div className="py-12 text-center text-gray-500">No announcements yet.</div>
+                        <div className="py-16 text-center text-gray-500 font-bold uppercase">No announcements yet.</div>
                     ) : (
-                        <div className="divide-y divide-gray-100">
+                        <div className="divide-y-4 divide-gray-900">
                             {announcements.map((announcement) => (
-                                <article key={announcement.id} className="p-6">
-                                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
-                                        <h3 className="text-lg font-bold text-gray-900">{announcement.title}</h3>
-                                        <span className="text-xs font-medium text-gray-500">
+                                <article key={announcement.id} className="p-6 hover:bg-[#eff3ff]/10 transition-colors">
+                                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+                                        <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">{announcement.title}</h3>
+                                        <span className="text-xs font-black text-gray-500 border-2 border-gray-900 bg-[#FAF9F6] px-2 py-1 shadow-[1px_1px_0px_rgba(0,0,0,1)] self-start sm:self-auto">
                                             {new Date(announcement.created_at).toLocaleString()}
                                         </span>
                                     </div>
-                                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{announcement.content}</p>
+                                    <p className="text-sm font-bold text-gray-800 whitespace-pre-wrap leading-relaxed">{announcement.content}</p>
                                 </article>
                             ))}
                         </div>
@@ -232,3 +239,4 @@ export function OrgAnnouncementsPage() {
 }
 
 export default OrgAnnouncementsPage;
+

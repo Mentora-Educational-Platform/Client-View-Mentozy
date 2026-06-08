@@ -3,7 +3,6 @@ import { Twitter, Linkedin, Instagram, Send, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SiCrunchbase, SiProducthunt } from 'react-icons/si';
 
-
 export const Footer = memo(function Footer() {
   const links = {
     platform: [
@@ -29,21 +28,21 @@ export const Footer = memo(function Footer() {
   };
 
   return (
-    <footer className="bg-gray-50 dark:bg-slate-900 pt-12 md:pt-20 pb-10 border-t border-gray-100 dark:border-slate-800 transition-colors duration-300">
+    <footer className="bg-[#FAF9F6] pt-12 md:pt-20 pb-10 border-t-4 border-gray-900 font-mono select-none">
       <div className="container mx-auto px-4 md:px-6">
 
         <div className="grid lg:grid-cols-4 gap-8 md:gap-12 mb-12 md:mb-16">
           <div className="lg:col-span-1">
             <Link
               to="/"
-              className="flex items-center gap-2 mb-6 cursor-pointer hover:opacity-80 transition-opacity"
+              className="inline-flex items-center gap-2 mb-6 cursor-pointer border-2 border-gray-900 bg-white px-2 py-1 shadow-[2px_2px_0px_rgba(0,0,0,1)]"
             >
-              <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+              <div className="w-6 h-6 bg-[#f39c12] border border-gray-900 flex items-center justify-center text-gray-900 font-black text-sm">
                 M
               </div>
-              <span className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Mentozy</span>
+              <span className="text-lg font-black text-gray-900 tracking-tight uppercase">Mentozy</span>
             </Link>
-            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-6">
+            <p className="text-gray-700 text-xs font-bold uppercase leading-relaxed mb-6">
               Democratizing mentorship for everyone. We connect ambitious learners with world-class experts.
             </p>
 
@@ -51,26 +50,26 @@ export const Footer = memo(function Footer() {
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="w-full pl-4 pr-12 py-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-amber-400 dark:focus:border-amber-500 focus:ring-2 focus:ring-amber-100 dark:focus:ring-amber-900/30 transition-all dark:text-white"
+                className="w-full pl-4 pr-12 py-3 border-4 border-gray-900 bg-white text-gray-900 placeholder-gray-500 text-xs font-bold uppercase focus:outline-none"
               />
-              <button className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-amber-50 dark:bg-amber-900/30 rounded-lg text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors">
-                <Send className="w-4 h-4" />
+              <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-[#f39c12] border-2 border-gray-900 text-gray-900 hover:bg-[#e08e0b] shadow-[1px_1px_0px_rgba(0,0,0,1)] transition-all">
+                <Send className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-500 transition-colors">
-              <Mail className="w-4 h-4" />
-              <a href="mailto:hello@mentozy.app">hello@mentozy.app</a>
+            <div className="flex items-center gap-2 text-xs font-black uppercase text-gray-900 hover:text-[#f39c12] transition-colors">
+              <Mail className="w-4 h-4 text-gray-900" />
+              <a href="mailto:hello@mentozy.app" className="underline decoration-2 decoration-gray-900">hello@mentozy.app</a>
             </div>
           </div>
 
           <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-8 text-center sm:text-left">
             <div>
-              <h4 className="font-bold text-gray-900 dark:text-white mb-6">Platform</h4>
-              <ul className="space-y-4 text-sm text-gray-500 dark:text-gray-400">
+              <h4 className="font-black text-gray-900 uppercase text-sm tracking-wider mb-6">Platform</h4>
+              <ul className="space-y-4 text-xs font-bold uppercase text-gray-700">
                 {links.platform.map((link, i) => (
                   <li key={i}>
-                    <Link to={link.path} className="hover:text-amber-600 dark:hover:text-amber-500 transition-colors text-left w-full sm:w-auto block">
+                    <Link to={link.path} className="hover:text-[#f39c12] hover:underline decoration-2 transition-all block">
                       {link.label}
                     </Link>
                   </li>
@@ -78,11 +77,11 @@ export const Footer = memo(function Footer() {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold text-gray-900 dark:text-white mb-6">Company</h4>
-              <ul className="space-y-4 text-sm text-gray-500 dark:text-gray-400">
+              <h4 className="font-black text-gray-900 uppercase text-sm tracking-wider mb-6">Company</h4>
+              <ul className="space-y-4 text-xs font-bold uppercase text-gray-700">
                 {links.company.map((link, i) => (
                   <li key={i}>
-                    <Link to={link.path} className="hover:text-amber-600 dark:hover:text-amber-500 transition-colors text-left w-full sm:w-auto block">
+                    <Link to={link.path} className="hover:text-[#f39c12] hover:underline decoration-2 transition-all block">
                       {link.label}
                     </Link>
                   </li>
@@ -90,11 +89,11 @@ export const Footer = memo(function Footer() {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold text-gray-900 dark:text-white mb-6">Legal</h4>
-              <ul className="space-y-4 text-sm text-gray-500 dark:text-gray-400">
+              <h4 className="font-black text-gray-900 uppercase text-sm tracking-wider mb-6">Legal</h4>
+              <ul className="space-y-4 text-xs font-bold uppercase text-gray-700">
                 {links.legal.map((link, i) => (
                   <li key={i}>
-                    <Link to={link.path} className="hover:text-amber-600 dark:hover:text-amber-500 transition-colors block w-full sm:w-auto">
+                    <Link to={link.path} className="hover:text-[#f39c12] hover:underline decoration-2 transition-all block">
                       {link.label}
                     </Link>
                   </li>
@@ -104,26 +103,26 @@ export const Footer = memo(function Footer() {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-gray-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-4">
-          <p className="text-sm text-gray-400 dark:text-gray-500 text-center md:text-left">
+        <div className="pt-8 border-t-4 border-gray-900 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-4">
+          <p className="text-xs font-black uppercase text-gray-900 text-center md:text-left">
             © {new Date().getFullYear()} Mentozy Inc. All rights reserved.
           </p>
 
-          <div className="flex items-center gap-6">
-            <a href="https://x.com/wearementozy" className="text-gray-400 dark:text-gray-500 hover:text-amber-600 dark:hover:text-amber-500 transition-colors hover:scale-110 transform">
-              <Twitter className="w-5 h-5" />
+          <div className="flex items-center gap-3">
+            <a href="https://x.com/wearementozy" className="p-2 bg-white border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] text-gray-900 transition-all">
+              <Twitter className="w-4 h-4" />
             </a>
-            <a href="https://www.linkedin.com/company/mentozy?trk=public_jobs_topcard_logo" className="text-gray-400 dark:text-gray-500 hover:text-amber-600 dark:hover:text-amber-500 transition-colors hover:scale-110 transform">
-              <Linkedin className="w-5 h-5" />
+            <a href="https://www.linkedin.com/company/mentozy?trk=public_jobs_topcard_logo" className="p-2 bg-white border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] text-gray-900 transition-all">
+              <Linkedin className="w-4 h-4" />
             </a>
-            <a href="https://www.crunchbase.com/organization/mentozy" className="text-gray-400 dark:text-gray-500 hover:text-amber-600 dark:hover:text-amber-500 transition-colors hover:scale-110 transform" target="_blank" rel="noopener noreferrer">
-              <SiCrunchbase className="w-5 h-5" />
+            <a href="https://www.crunchbase.com/organization/mentozy" className="p-2 bg-white border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] text-gray-900 transition-all" target="_blank" rel="noopener noreferrer">
+              <SiCrunchbase className="w-4 h-4" />
             </a>
-            <a href="https://www.producthunt.com/products/mentozy" className="text-gray-400 dark:text-gray-500 hover:text-amber-600 dark:hover:text-amber-500 transition-colors hover:scale-110 transform" target="_blank" rel="noopener noreferrer">
-              <SiProducthunt className="w-5 h-5" />
+            <a href="https://www.producthunt.com/products/mentozy" className="p-2 bg-white border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] text-gray-900 transition-all" target="_blank" rel="noopener noreferrer">
+              <SiProducthunt className="w-4 h-4" />
             </a>
-            <a href="#" className="text-gray-400 dark:text-gray-500 hover:text-amber-600 dark:hover:text-amber-500 transition-colors hover:scale-110 transform">
-              <Instagram className="w-5 h-5" />
+            <a href="#" className="p-2 bg-white border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] text-gray-900 transition-all">
+              <Instagram className="w-4 h-4" />
             </a>
           </div>
         </div>

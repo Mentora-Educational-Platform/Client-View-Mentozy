@@ -14,21 +14,21 @@ export function LearningTracks() {
     {
       title: 'Software Engineering',
       tag: 'Most Popular',
-      icon: <Code2 className="w-6 h-6 text-amber-600 dark:text-amber-400" />,
+      icon: <Code2 className="w-6 h-6 text-gray-900" />,
       desc: 'From coding basics to system design. Master the stack used by top tech companies.',
       includes: ['Full Stack Web Dev', 'Data Structures', 'System Design'],
     },
     {
       title: 'Competitive Exams',
       tag: 'Structured',
-      icon: <Trophy className="w-6 h-6 text-amber-600 dark:text-amber-400" />,
+      icon: <Trophy className="w-6 h-6 text-gray-900" />,
       desc: 'Rigorous preparation paths for JEE, NEET, and UPSC with rank-holder strategies.',
       includes: ['Daily Mock Tests', 'Performance Analytics', 'Exam Strategy'],
     },
     {
       title: 'Career Growth',
       tag: 'Professional',
-      icon: <TrendingUp className="w-6 h-6 text-amber-600 dark:text-amber-400" />,
+      icon: <TrendingUp className="w-6 h-6 text-gray-900" />,
       desc: 'For working professionals looking to switch domains or accelerate promotion.',
       includes: ['Resume Reviews', 'Salary Negotiation', 'Leadership Skills'],
     }
@@ -50,7 +50,7 @@ export function LearningTracks() {
   };
 
   return (
-    <section className="py-24 bg-white dark:bg-slate-900 transition-colors duration-300 overflow-hidden">
+    <section className="py-24 bg-[#FAF9F6] border-t-4 border-gray-900 overflow-hidden font-mono text-gray-900">
       <div className="container mx-auto px-6">
 
         {/* Header */}
@@ -61,36 +61,36 @@ export function LearningTracks() {
           transition={{ duration: 0.6 }}
           className="mb-20 text-center max-w-2xl mx-auto"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-900/30 border border-amber-100 dark:border-amber-800 text-amber-700 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-4">
-            <Target className="w-3 h-3" /> Learning Pathways
+          <div className="inline-flex items-center gap-2 px-4 py-2 border-2 border-gray-900 bg-[#eff3ff] text-gray-900 text-xs font-black uppercase tracking-wider mb-6 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+            <Target className="w-4 h-4" /> Learning Pathways
           </div>
-          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
-            Designed for <span className="text-amber-600 dark:text-amber-400">Outcome</span>
+          <h2 className="text-3xl md:text-5xl font-black text-gray-900 uppercase tracking-tight mb-6">
+            Designed for <span className="text-[#f39c12]">Outcome</span>
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 text-lg">
+          <p className="text-sm md:text-base text-gray-700 font-bold max-w-2xl mx-auto leading-relaxed uppercase">
             We don't just sell courses. We provide structured roadmaps to take you from beginner to expert.
           </p>
         </motion.div>
 
-        {/* Roadmap Steps - Simplified */}
+        {/* Roadmap Steps */}
         <motion.div 
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-20"
+          className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20"
         >
           {roadmapSteps.map((step, idx) => (
             <motion.div 
               key={idx} 
               variants={itemVariants}
-              className="relative p-6 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 text-center group hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:border-amber-100 dark:hover:border-amber-500 transition-all shadow-sm"
+              className="relative p-6 bg-white border-4 border-gray-900 text-center shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff]/10 transition-all duration-300"
             >
-              <div className="text-4xl font-black text-gray-200 dark:text-slate-700 group-hover:text-amber-200 dark:group-hover:text-amber-900/50 mb-2 transition-colors">
+              <div className="text-4xl font-black text-gray-900 mb-2">
                 {step.number}
               </div>
-              <h3 className="font-bold text-gray-900 dark:text-white">{step.title}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{step.desc}</p>
+              <h3 className="font-black text-gray-900 uppercase tracking-tight text-sm mb-1">{step.title}</h3>
+              <p className="text-xs text-gray-600 font-bold uppercase">{step.desc}</p>
             </motion.div>
           ))}
         </motion.div>
@@ -107,33 +107,32 @@ export function LearningTracks() {
             <motion.div 
               key={i} 
               variants={itemVariants}
-              whileHover={{ y: -8 }}
-              className="flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 hover:border-amber-300 dark:hover:border-amber-500/50 hover:shadow-xl hover:shadow-amber-100/20 dark:hover:shadow-amber-900/20 transition-all duration-300 p-8 group"
+              className="flex flex-col bg-white border-4 border-gray-900 hover:bg-[#eff3ff]/10 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-300 p-8 shadow-[4px_4px_0px_rgba(0,0,0,1)] group"
             >
               <div className="flex justify-between items-start mb-6">
-                <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center group-hover:bg-amber-100 dark:group-hover:bg-amber-500 transition-colors">
+                <div className="w-12 h-12 bg-[#eff3ff] border-2 border-gray-900 flex items-center justify-center shadow-[2px_2px_0px_rgba(0,0,0,1)]">
                   {track.icon}
                 </div>
-                <span className="px-3 py-1 rounded-full bg-gray-100 dark:bg-slate-700 text-xs font-semibold text-gray-600 dark:text-gray-400 group-hover:bg-amber-50 dark:group-hover:bg-amber-400 dark:group-hover:text-slate-900 transition-colors">
+                <span className="px-3 py-1 border-2 border-gray-900 bg-white text-[10px] font-black text-gray-900 shadow-[1px_1px_0px_rgba(0,0,0,1)] uppercase">
                   {track.tag}
                 </span>
               </div>
 
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{track.title}</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
+              <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tight mb-4">{track.title}</h3>
+              <p className="text-gray-700 font-bold leading-relaxed text-xs mb-8 uppercase flex-1">
                 {track.desc}
               </p>
 
               <div className="mt-auto">
-                <ul className="space-y-3 mb-8">
+                <ul className="space-y-3 mb-8 border-t-2 border-gray-900 pt-6">
                   {track.includes.map((item, idx) => (
-                    <li key={idx} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                      <CheckCircle2 className="w-4 h-4 text-amber-500" /> {item}
+                    <li key={idx} className="flex items-center gap-2 text-xs text-gray-700 font-bold uppercase">
+                      <CheckCircle2 className="w-4 h-4 text-gray-950" /> {item}
                     </li>
                   ))}
                 </ul>
 
-                <Link to="/tracks" className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-200 dark:border-slate-700 font-semibold text-gray-700 dark:text-gray-300 hover:border-amber-600 dark:hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-white dark:hover:bg-slate-900 transition-all">
+                <Link to="/tracks" className="w-full flex items-center justify-center gap-2 py-3.5 border-2 border-gray-900 bg-[#eff3ff] hover:bg-[#eff3ff]/80 font-black text-xs text-gray-900 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none shadow-[2px_2px_0px_rgba(0,0,0,1)] uppercase">
                   Explore Track <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
@@ -143,4 +142,6 @@ export function LearningTracks() {
       </div>
     </section>
   );
-}
+}
+export default LearningTracks;
+

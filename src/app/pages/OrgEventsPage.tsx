@@ -10,81 +10,84 @@ export function OrgEventsPage() {
 
     return (
         <DashboardLayout>
-            <div className="space-y-6">
+            <div className="font-mono text-gray-900 space-y-8">
+                
                 {/* Header */}
-                <div className="flex flex-col flex-wrap md:flex-nowrap md:items-center justify-between gap-4">
-                    <div className="w-full md:w-auto">
-                        <h1 className="text-2xl font-bold text-gray-900">Events Directory</h1>
-                        <p className="text-gray-500">View and manage all upcoming conferences, trainings, and physical events.</p>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-[#eff3ff] border-4 border-gray-900 p-6 rounded-none shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                    <div>
+                        <h1 className="text-3xl font-black uppercase tracking-tight text-gray-900">Events Directory</h1>
+                        <p className="text-sm font-bold text-gray-700 mt-2">View and manage all upcoming conferences, trainings, and physical events.</p>
                     </div>
                 </div>
 
                 {/* Toolbar */}
-                <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-4 justify-between items-center">
-                    <div className="relative w-full sm:w-96">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Search className="h-5 w-5 text-gray-400" />
-                        </div>
+                <div className="bg-white p-5 border-4 border-gray-900 shadow-[4px_4px_0px_rgba(0,0,0,1)] flex flex-col sm:flex-row gap-4 justify-between items-center">
+                    <div className="relative w-full sm:max-w-sm">
+                        <Search className="w-5 h-5 text-gray-900 absolute left-3 top-3.5" />
                         <input
                             type="text"
                             placeholder="Search events by title..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                            className="w-full pl-10 pr-4 py-3 border-2 border-gray-900 bg-[#FAF9F6] focus:outline-none focus:bg-[#eff3ff] text-sm font-bold shadow-[2px_2px_0px_rgba(0,0,0,1)]"
                         />
                     </div>
-                    <div className="flex gap-2 text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 font-medium items-center">
+                    <button className="flex gap-2 text-xs font-black text-gray-900 bg-[#eff3ff] border-2 border-gray-900 px-4 py-2.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] items-center uppercase active:translate-x-[1px] active:translate-y-[1px] active:shadow-none">
                         <Filter className="w-4 h-4" /> Filter Events
-                    </div>
+                    </button>
                 </div>
 
-                <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm">
+                {/* Events List */}
+                <div className="bg-white border-4 border-gray-900 shadow-[4px_4px_0px_rgba(0,0,0,1)] overflow-hidden">
                     {filteredEvents.length === 0 ? (
-                        <div className="py-12 text-center text-gray-500">
+                        <div className="py-20 text-center text-gray-500 font-bold uppercase tracking-wider">
                             No events currently scheduled.
                         </div>
                     ) : (
-                        filteredEvents.map((event, i) => (
-                            <div key={event.id} className={`p-6 border-b border-gray-100 flex flex-col lg:flex-row lg:items-center justify-between gap-6 hover:bg-gray-50 transition-colors ${i === filteredEvents.length - 1 ? 'border-b-0' : ''}`}>
+                        <div className="divide-y-4 divide-gray-900">
+                            {filteredEvents.map((event) => (
+                                <div key={event.id} className="p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6 hover:bg-[#eff3ff]/10 transition-colors">
 
-                                <div className="flex gap-6 w-full lg:w-2/3">
-                                    <div className="hidden sm:flex flex-col items-center justify-center p-4 bg-indigo-50 rounded-2xl text-indigo-700 min-w-[80px]">
-                                        <span className="text-xs font-bold uppercase tracking-wider">{new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}</span>
-                                        <span className="text-2xl font-black">{new Date(event.date).getDate()}</span>
-                                    </div>
-                                    <div className="space-y-3 flex-1">
-                                        <h3 className="text-xl font-bold text-gray-900">{event.title}</h3>
-                                        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">{event.description}</p>
+                                    <div className="flex gap-6 w-full lg:w-2/3">
+                                        <div className="hidden sm:flex flex-col items-center justify-center p-4 bg-[#eff3ff] border-2 border-gray-900 text-gray-900 min-w-[90px] shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                                            <span className="text-[10px] font-black uppercase tracking-widest">{new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}</span>
+                                            <span className="text-3xl font-black mt-1">{new Date(event.date).getDate()}</span>
+                                        </div>
+                                        <div className="space-y-3 flex-1">
+                                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">{event.title}</h3>
+                                            <p className="text-xs text-gray-700 font-bold leading-relaxed">{event.description}</p>
 
-                                        <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-gray-500 pt-2">
-                                            <div className="flex items-center gap-1.5 bg-gray-100 px-2 py-1 rounded-md">
-                                                <Calendar className="w-3.5 h-3.5" /> {event.date}
-                                            </div>
-                                            <div className="flex items-center gap-1.5 bg-gray-100 px-2 py-1 rounded-md">
-                                                <Users className="w-3.5 h-3.5" /> {event.type.toUpperCase()}
-                                            </div>
-                                            <div className="flex items-center gap-1.5 bg-gray-100 px-2 py-1 rounded-md">
-                                                {event.location.includes('Online') || event.location.includes('Zoom') ? <Video className="w-3.5 h-3.5" /> : <MapPin className="w-3.5 h-3.5" />}
-                                                {event.location}
+                                            <div className="flex flex-wrap items-center gap-4 text-[10px] font-black tracking-wider uppercase text-gray-900 pt-2">
+                                                <div className="flex items-center gap-1.5 bg-[#FAF9F6] border-2 border-gray-900 px-3 py-1 shadow-[1px_1px_0px_rgba(0,0,0,1)]">
+                                                    <Calendar className="w-3.5 h-3.5" /> {event.date}
+                                                </div>
+                                                <div className="flex items-center gap-1.5 bg-[#FAF9F6] border-2 border-gray-900 px-3 py-1 shadow-[1px_1px_0px_rgba(0,0,0,1)]">
+                                                    <Users className="w-3.5 h-3.5" /> {event.type}
+                                                </div>
+                                                <div className="flex items-center gap-1.5 bg-[#FAF9F6] border-2 border-gray-900 px-3 py-1 shadow-[1px_1px_0px_rgba(0,0,0,1)]">
+                                                    {event.location.includes('Online') || event.location.includes('Zoom') ? <Video className="w-3.5 h-3.5" /> : <MapPin className="w-3.5 h-3.5" />}
+                                                    {event.location}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div className="flex flex-col items-start lg:items-end gap-3 lg:w-1/3">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${event.status === 'Completed' ? 'bg-gray-100 text-gray-600' :
-                                        event.status === 'Scheduled' || event.status === 'Upcoming' ? 'bg-green-100 text-green-700' :
-                                            'bg-amber-100 text-amber-700'
+                                    <div className="flex flex-col items-start lg:items-end gap-3 lg:w-1/3">
+                                        <span className={`px-3 py-1 border-2 border-gray-900 text-[10px] font-black uppercase tracking-widest shadow-[1px_1px_0px_rgba(0,0,0,1)] ${
+                                            event.status === 'Completed' ? 'bg-gray-100 text-gray-600' :
+                                            event.status === 'Scheduled' || event.status === 'Upcoming' ? 'bg-[#DCFCE7] text-green-800 border-green-900' :
+                                            'bg-[#FEF3C7] text-amber-800 border-amber-900'
                                         }`}>
-                                        {event.status}
-                                    </span>
-                                    <button className="px-5 py-2 w-full lg:w-auto border border-gray-200 text-gray-700 bg-white font-bold rounded-xl text-sm hover:bg-gray-50 transition-colors">
-                                        Manage Event
-                                    </button>
-                                </div>
+                                            {event.status}
+                                        </span>
+                                        <button className="px-5 py-2.5 w-full lg:w-auto border-2 border-gray-900 text-gray-900 bg-white font-black text-xs hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+                                            MANAGE EVENT
+                                        </button>
+                                    </div>
 
-                            </div>
-                        ))
+                                </div>
+                            ))}
+                        </div>
                     )}
                 </div>
 
@@ -94,3 +97,4 @@ export function OrgEventsPage() {
 }
 
 export default OrgEventsPage;
+

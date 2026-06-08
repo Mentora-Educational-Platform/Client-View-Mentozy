@@ -28,31 +28,25 @@ export function StudentAuthPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#FAFAFA] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-            {/* Background Decorations */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-50 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2"></div>
-                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-50 rounded-full blur-3xl opacity-50 translate-y-1/2 -translate-x-1/2"></div>
-            </div>
-
-            <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+        <div className="min-h-screen bg-[#FAF9F6] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden font-mono">
+            <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4">
                 <div className="text-center mb-10">
-                    <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-200 transform rotate-12">
-                        <span className="text-white font-black text-2xl -rotate-12">M</span>
+                    <div className="w-16 h-16 bg-[#f39c12] border-4 border-gray-900 flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0px_rgba(0,0,0,1)] transform rotate-3">
+                        <span className="text-gray-900 font-black text-2xl uppercase">M</span>
                     </div>
-                    <h2 className="text-4xl font-black text-gray-900 tracking-tight mb-2">Student Portal</h2>
-                    <p className="text-gray-500 font-medium">Start your learning journey today</p>
+                    <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-2 uppercase">Student Portal</h2>
+                    <p className="text-gray-700 font-bold uppercase text-sm">Start your learning journey today</p>
                 </div>
 
-                <div className="bg-white py-10 px-10 shadow-2xl shadow-gray-200/[0.5] rounded-[2.5rem] border border-gray-100">
-                    <div className="space-y-4">
+                <div className="bg-white py-10 px-8 sm:px-10 border-4 border-gray-900 shadow-[8px_8px_0px_rgba(0,0,0,1)]">
+                    <div className="space-y-6">
                         <button
                             onClick={handleGoogleLogin}
                             disabled={loading}
-                            className="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 p-4 rounded-2xl text-gray-700 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group"
+                            className="w-full flex items-center justify-center gap-3 bg-white border-4 border-gray-900 p-4 text-gray-900 font-black hover:bg-[#eff3ff] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] shadow-[4px_4px_0px_rgba(0,0,0,1)] transition-all uppercase"
                         >
                             {loading ? (
-                                <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                                <Loader2 className="w-5 h-5 animate-spin text-gray-900" />
                             ) : (
                                 <>
                                     <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -80,33 +74,33 @@ export function StudentAuthPage() {
 
                         <div className="relative py-2">
                             <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-100"></div>
+                                <div className="w-full border-t-4 border-gray-900"></div>
                             </div>
                             <div className="relative flex justify-center text-sm">
-                                <span className="px-4 bg-white text-gray-400 font-medium">Or</span>
+                                <span className="px-4 bg-white text-gray-900 font-black uppercase">Or</span>
                             </div>
                         </div>
 
-                        <Link to="/signup?role=student" className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white p-4 rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">
+                        <Link to="/signup?role=student" className="w-full flex items-center justify-center gap-2 bg-[#f39c12] border-4 border-gray-900 text-gray-900 p-4 font-black hover:bg-[#e08e0b] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] shadow-[4px_4px_0px_rgba(0,0,0,1)] transition-all uppercase">
                             Create New Account
                         </Link>
 
-                        <Link to="/login" className="w-full flex items-center justify-center gap-2 bg-indigo-50 text-indigo-600 p-4 rounded-2xl font-bold hover:bg-indigo-100 transition-all">
+                        <Link to="/login" className="w-full flex items-center justify-center gap-2 bg-[#eff3ff] border-4 border-gray-900 text-gray-900 p-4 font-black hover:bg-[#dbe4ff] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] shadow-[4px_4px_0px_rgba(0,0,0,1)] transition-all uppercase">
                             Log In
                         </Link>
                     </div>
 
-                    <div className="mt-8 text-center text-sm">
-                        <p className="text-gray-400">
+                    <div className="mt-8 text-center text-xs">
+                        <p className="text-gray-700 font-bold uppercase leading-relaxed">
                             By continuing, you agree to our{' '}
-                            <Link to="/terms-of-service" className="font-medium text-gray-600 hover:text-gray-900 underline">Terms</Link>{' '}
+                            <Link to="/terms-of-service" className="font-black text-gray-900 underline underline-offset-2 hover:text-[#f39c12]">Terms</Link>{' '}
                             and{' '}
-                            <Link to="/privacy-policy" className="font-medium text-gray-600 hover:text-gray-900 underline">Privacy Policy</Link>
+                            <Link to="/privacy-policy" className="font-black text-gray-900 underline underline-offset-2 hover:text-[#f39c12]">Privacy Policy</Link>
                         </p>
                     </div>
 
                     <div className="mt-8 text-center">
-                        <Link to="/signup" className="text-sm font-bold text-gray-400 hover:text-gray-600 transition-colors">
+                        <Link to="/signup" className="text-sm font-black text-gray-700 hover:text-gray-900 transition-colors uppercase underline decoration-2 decoration-gray-900">
                             ← Back to role selection
                         </Link>
                     </div>

@@ -36,27 +36,10 @@ function RazorpayPaymentButton({ buttonId, planName, isPopular, color }: { butto
     };
   }, [buttonId]);
 
-  // Determine button colors based on plan
-  const getButtonStyles = () => {
-    if (isPopular) {
-      return 'from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 shadow-amber-500/25';
-    }
-    if (color === 'indigo') {
-      return 'from-indigo-600 to-violet-700 hover:from-indigo-700 hover:to-violet-800 shadow-indigo-500/25';
-    }
-    return 'from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black shadow-gray-500/15';
-  };
-
   return (
     <div ref={containerRef} className="relative w-full">
-      {/* Custom styled overlay button */}
-      <div className={`relative w-full py-4 px-6 rounded-2xl font-bold text-white bg-gradient-to-r ${getButtonStyles()} 
-        shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 cursor-pointer
-        flex items-center justify-center gap-3 group overflow-hidden`}
+      <div className={`relative w-full py-4 px-6 border-4 border-gray-900 font-black text-gray-900 text-sm uppercase shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] cursor-pointer flex items-center justify-center gap-3 transition-all ${isPopular ? 'bg-[#f39c12]' : 'bg-[#eff3ff]'}`}
       >
-        {/* Shimmer effect */}
-        <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-        
         {isLoading ? (
           <Loader2 className="w-5 h-5 animate-spin" />
         ) : (
@@ -66,12 +49,11 @@ function RazorpayPaymentButton({ buttonId, planName, isPopular, color }: { butto
             ) : (
               <CreditCard className="w-5 h-5" />
             )}
-            <span className="relative">Subscribe to {planName}</span>
+            <span>Subscribe to {planName}</span>
           </>
         )}
       </div>
       
-      {/* Hidden Razorpay form - positioned to capture clicks */}
       <form 
         ref={formRef} 
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer [&_.razorpay-payment-button]:!w-full [&_.razorpay-payment-button]:!h-full [&_.razorpay-payment-button]:!opacity-0"
@@ -108,8 +90,8 @@ const studentPlans = [
     features: [
       { name: 'Priority Booking (48-Hour Head Start on Mentor Calendars)', included: true },
       { name: '10% Off All 1-on-1 Mentor Sessions', included: true },
-      { name: '1x Monthly Asynchronous Resume or Code Review', included: true },
-      { name: 'Access to 1 Live Group Masterclass per Month', included: true },
+      { name: '1x Asynchronous Resume/Code Review', included: true },
+      { name: 'Access to 1 Live Group Masterclass/Month', included: true },
     ],
     cta: 'Subscribe Now',
     razorpayButtonId: 'pl_Sc2vq7uLAFgdgR',
@@ -124,7 +106,7 @@ const studentPlans = [
     description: 'The VIP pipeline. Maximum access to top-tier engineers and referrals.',
     features: [
       { name: 'Exclusive Access to the FAANG Opportunity & Referral Board', included: true },
-      { name: 'First-In-Line Booking (72-Hour Head Start on Mentor Calendars)', included: true },
+      { name: 'First-In-Line Booking (72-Hour Head Start)', included: true },
       { name: '20% Off All 1-on-1 Mentor Sessions', included: true },
       { name: 'Unlimited Live Group Masterclass Access', included: true },
       { name: 'Fast-Track Priority for Mentozy Hackathons', included: true },
@@ -182,7 +164,7 @@ const teacherPlans = [
     features: [
       { name: '8 Staff Dashboards', included: true },
       { name: '8% Commission on Sessions & Courses', included: true },
-      { name: 'Priority Algorithmic Placement (Rank higher in Mentozy student search)', included: true },
+      { name: 'Priority Algorithmic Placement', included: true },
       { name: 'Advanced Agency Revenue Analytics', included: true },
       { name: 'Everything in Premium Squad', included: true },
     ],
@@ -230,36 +212,36 @@ export function PlansPage() {
   };
 
   return (
-    <div className="pt-24 pb-20 bg-gray-50 min-h-screen font-sans">
+    <div className="pt-32 pb-20 bg-[#FAF9F6] min-h-screen font-mono">
       <div className="container mx-auto px-6">
 
         {/* Header */}
         <div className="max-w-3xl mx-auto text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            Simple Plans for <span className="text-amber-600">Big Dreams</span>
+          <h1 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 uppercase tracking-tight leading-none">
+            Simple Plans for <span className="bg-[#f39c12] border-4 border-gray-900 px-2 py-1 rotate-1 inline-block">Big Dreams</span>
           </h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-base md:text-lg text-gray-700 font-bold uppercase leading-relaxed max-w-xl mx-auto">
             Choose the plan that fits your learning journey. Upgrade or cancel anytime.
           </p>
         </div>
 
         {/* Toggle Student / Teacher */}
         <div className="flex justify-center mb-16">
-          <div className="bg-white p-1.5 rounded-full border border-gray-200 inline-flex shadow-sm">
+          <div className="bg-white p-2 border-4 border-gray-900 inline-flex shadow-[4px_4px_0px_rgba(0,0,0,1)]">
             <button
               onClick={() => setPlanType('student')}
-              className={`px-8 py-3 rounded-full text-sm font-bold transition-all ${planType === 'student'
-                ? 'bg-amber-600 text-white shadow-md'
-                : 'text-gray-600 hover:text-amber-600'
+              className={`px-8 py-3 text-xs font-black uppercase tracking-wider transition-all border-2 ${planType === 'student'
+                ? 'bg-[#f39c12] border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] text-gray-900'
+                : 'text-gray-900 border-transparent hover:bg-gray-100'
                 }`}
             >
               For Students
             </button>
             <button
               onClick={() => setPlanType('teacher')}
-              className={`px-8 py-3 rounded-full text-sm font-bold transition-all ${planType === 'teacher'
-                ? 'bg-amber-600 text-white shadow-md'
-                : 'text-gray-600 hover:text-amber-600'
+              className={`px-8 py-3 text-xs font-black uppercase tracking-wider transition-all border-2 ${planType === 'teacher'
+                ? 'bg-[#f39c12] border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] text-gray-900'
+                : 'text-gray-900 border-transparent hover:bg-gray-100'
                 }`}
             >
               For Teachers
@@ -268,60 +250,49 @@ export function PlansPage() {
         </div>
 
         {/* Plans Grid */}
-        <div className={`grid md:grid-cols-2 ${activePlans.length === 3 ? 'lg:grid-cols-3 max-w-6xl' : 'lg:grid-cols-4 max-w-7xl'} gap-6 mx-auto`}>
+        <div className={`grid md:grid-cols-2 ${activePlans.length === 3 ? 'lg:grid-cols-3 max-w-6xl' : 'lg:grid-cols-4 max-w-7xl'} gap-8 mx-auto`}>
           {activePlans.map((plan) => {
-            // Get color classes based on plan
             const getColorClasses = () => {
-              if (plan.color === 'amber') return { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200', check: 'bg-amber-100 text-amber-600' };
-              if (plan.color === 'indigo') return { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-200', check: 'bg-indigo-100 text-indigo-600' };
-              if (plan.color === 'rose') return { bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-200', check: 'bg-rose-100 text-rose-600' };
-              return { bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200', check: 'bg-emerald-100 text-emerald-600' };
+              if (plan.color === 'amber') return { bg: 'bg-[#FAF9F6]', text: 'text-gray-900', border: 'border-gray-900', check: 'bg-[#f39c12]' };
+              if (plan.color === 'indigo') return { bg: 'bg-[#eff3ff]', text: 'text-gray-900', border: 'border-gray-900', check: 'bg-[#f39c12]' };
+              if (plan.color === 'rose') return { bg: 'bg-white', text: 'text-gray-900', border: 'border-gray-900', check: 'bg-[#f39c12]' };
+              return { bg: 'bg-white', text: 'text-gray-900', border: 'border-gray-900', check: 'bg-[#eff3ff]' };
             };
             const colors = getColorClasses();
 
             return (
               <div
                 key={plan.name}
-                className={`group relative bg-white rounded-3xl p-8 border-2 hover:shadow-2xl transition-all duration-500 flex flex-col
-                  ${plan.popular 
-                    ? 'border-amber-400 shadow-xl shadow-amber-500/10 scale-[1.02] z-10 ring-1 ring-amber-400/50' 
-                    : 'border-gray-100 shadow-lg hover:border-gray-200 hover:-translate-y-1'}
-                `}
+                className={`group relative p-8 border-4 border-gray-900 flex flex-col transition-all duration-300 ${colors.bg} ${plan.popular ? 'shadow-[8px_8px_0px_rgba(0,0,0,1)] translate-y-[-4px]' : 'shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]'}`}
               >
-                {/* Background gradient for popular */}
                 {plan.popular && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 via-transparent to-orange-50/30 rounded-3xl pointer-events-none" />
-                )}
-
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-5 py-2 rounded-full uppercase tracking-wider shadow-lg shadow-amber-500/30 flex items-center gap-1.5">
+                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#f39c12] border-4 border-gray-900 text-gray-900 text-[10px] font-black px-4 py-1.5 uppercase tracking-wider shadow-[3px_3px_0px_rgba(0,0,0,1)] flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5" />
                     Most Popular
                   </div>
                 )}
 
                 <div className="relative mb-8">
-                  {/* Plan icon */}
-                  <div className={`w-12 h-12 ${colors.bg} ${colors.text} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                    {plan.color === 'gray' && <span className="text-xl font-bold">S</span>}
-                    {plan.color === 'amber' && <Sparkles className="w-6 h-6" />}
-                    {plan.color === 'indigo' && <CreditCard className="w-6 h-6" />}
-                    {plan.color === 'rose' && <span className="text-xl font-bold">E</span>}
+                  <div className="w-12 h-12 border-4 border-gray-900 bg-white flex items-center justify-center mb-4 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                    {plan.color === 'gray' && <span className="text-sm font-black">S</span>}
+                    {plan.color === 'amber' && <Sparkles className="w-5 h-5 text-gray-900" />}
+                    {plan.color === 'indigo' && <CreditCard className="w-5 h-5 text-gray-900" />}
+                    {plan.color === 'rose' && <span className="text-sm font-black">E</span>}
                   </div>
 
-                  <h3 className={`text-2xl font-bold mb-2 ${colors.text}`}>
+                  <h3 className="text-2xl font-black text-gray-900 mb-2 uppercase">
                     {plan.name}
                   </h3>
-                  <p className="text-gray-500 text-sm leading-relaxed">{plan.description}</p>
+                  <p className="text-gray-700 text-xs font-bold uppercase leading-relaxed mb-6">{plan.description}</p>
                   
-                  <div className="mt-6 pb-6 border-b border-gray-100">
+                  <div className="mt-6 pb-6 border-b-4 border-gray-900">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-black text-gray-900 tracking-tight">{plan.price}</span>
-                      <span className="text-gray-400 font-medium">{plan.period}</span>
+                      <span className="text-4xl font-black text-gray-900 tracking-tight uppercase">{plan.price}</span>
+                      <span className="text-gray-500 font-bold uppercase text-xs">{plan.period}</span>
                     </div>
                     {plan.amountINR ? (
-                      <p className="text-sm text-gray-400 mt-2 font-medium">
-                        <span className="inline-flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded-md">
+                      <p className="text-xs text-gray-700 mt-2 font-black uppercase">
+                        <span className="inline-flex items-center gap-1 bg-white border-2 border-gray-900 px-2 py-0.5">
                           ₹{plan.amountINR.toLocaleString('en-IN')} INR
                         </span>
                       </p>
@@ -329,19 +300,19 @@ export function PlansPage() {
                   </div>
                 </div>
 
-                <ul className="space-y-4 mb-8 flex-1">
+                <ul className="space-y-4 mb-8 flex-grow">
                   {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-3 group/item">
+                    <li key={i} className="flex items-start gap-3">
                       {feature.included ? (
-                        <div className={`mt-0.5 w-6 h-6 rounded-full ${colors.check} flex items-center justify-center flex-shrink-0 group-hover/item:scale-110 transition-transform`}>
-                          <Check className="w-3.5 h-3.5" />
+                        <div className={`mt-0.5 w-5 h-5 border-2 border-gray-900 ${colors.check} flex items-center justify-center flex-shrink-0`}>
+                          <Check className="w-3 h-3 text-gray-900 stroke-[3]" />
                         </div>
                       ) : (
-                        <div className="mt-0.5 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                          <X className="w-3.5 h-3.5 text-gray-300" />
+                        <div className="mt-0.5 w-5 h-5 border-2 border-gray-300 flex items-center justify-center flex-shrink-0">
+                          <X className="w-3 h-3 text-gray-300" />
                         </div>
                       )}
-                      <span className={`text-sm leading-relaxed ${feature.included ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>
+                      <span className={`text-xs font-bold uppercase leading-relaxed ${feature.included ? 'text-gray-900' : 'text-gray-400'}`}>
                         {feature.name}
                       </span>
                     </li>
@@ -358,16 +329,9 @@ export function PlansPage() {
                 ) : (
                   <button
                     onClick={() => handlePlanClick(plan)}
-                    className={`relative w-full py-4 px-6 rounded-2xl font-bold transition-all duration-300 flex items-center justify-center gap-2 group overflow-hidden
-                      ${plan.popular
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:shadow-xl hover:shadow-amber-500/25 hover:-translate-y-0.5'
-                        : plan.color === 'rose'
-                        ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white hover:shadow-xl hover:shadow-rose-500/25 hover:-translate-y-0.5'
-                        : 'bg-gradient-to-r from-gray-800 to-gray-900 text-white hover:shadow-xl hover:shadow-gray-500/15 hover:-translate-y-0.5'}
-                    `}
+                    className={`relative w-full py-4 px-6 border-4 border-gray-900 font-black text-sm uppercase shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all ${plan.popular ? 'bg-[#f39c12] text-gray-900 hover:bg-[#e08e0b]' : 'bg-[#eff3ff] text-gray-900 hover:bg-[#dbe4ff]'}`}
                   >
-                    <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                    <span className="relative">{plan.cta}</span>
+                    <span>{plan.cta}</span>
                   </button>
                 )}
               </div>
@@ -377,10 +341,10 @@ export function PlansPage() {
 
         {/* Trust note */}
         <div className="mt-20 text-center space-y-2">
-          <p className="text-gray-400 text-sm">🔒 Secure payments powered by Razorpay</p>
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-900 text-xs font-black uppercase">🔒 Secure payments powered by Razorpay</p>
+          <p className="text-gray-700 text-xs font-bold uppercase max-w-xl mx-auto leading-relaxed">
             *Unlimited plans are subject to reasonable use policy. Need a custom team plan?{' '}
-            <Link to="/contact" className="text-amber-600 font-bold hover:underline">Contact us</Link>
+            <Link to="/contact" className="text-[#f39c12] font-black underline decoration-2 decoration-gray-900">Contact us</Link>
           </p>
         </div>
 

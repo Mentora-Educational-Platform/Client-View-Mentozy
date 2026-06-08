@@ -4,7 +4,6 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { motion, AnimatePresence } from 'motion/react';
 
-
 export function Header() {
   const { theme, setTheme, isDarkMode } = useTheme();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -33,28 +32,28 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-100/50 dark:border-slate-800/50 bg-white/70 dark:bg-slate-950/70 backdrop-blur-2xl transition-all duration-500">
-      {/* Soft Maintenance Banner */}
-      <div className="bg-amber-50/80 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 px-4 py-2.5 text-center text-[11px] font-bold uppercase tracking-[0.15em] border-b border-amber-100/50 dark:border-amber-900/30">
+    <header className="sticky top-0 z-50 border-b-4 border-gray-900 bg-[#FAF9F6] font-mono select-none">
+      {/* Neo-brutalist Maintenance Banner */}
+      <div className="bg-[#f39c12] text-gray-900 px-4 py-2 text-center text-xs font-black uppercase tracking-wider border-b-4 border-gray-900">
         🚀 Our mentor onboarding is currently being upgraded. Student accounts are fully active.
       </div>
-      <div className="container mx-auto px-6 py-4 md:py-6">
+      <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <Link
             to="/"
-            className="flex items-center gap-3 cursor-pointer group select-none"
+            className="flex items-center gap-3 cursor-pointer group border-4 border-gray-900 bg-white px-3 py-1.5 shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all"
           >
-            <span className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">Mentozy</span>
-            <div className="w-2.5 h-2.5 bg-amber-500 rounded-full group-hover:scale-125 transition-transform duration-500"></div>
+            <span className="text-xl font-black tracking-tight text-gray-900 uppercase">Mentozy</span>
+            <div className="w-3.5 h-3.5 bg-[#f39c12] border-2 border-gray-900"></div>
           </Link>
 
-          <nav className="hidden xl:flex items-center gap-10">
+          <nav className="hidden xl:flex items-center gap-6">
             {navItems.map((item) => (
               <NavLink
                 key={item.label}
                 to={item.path}
                 className={({ isActive }) =>
-                  `text-[13px] font-bold uppercase tracking-[0.1em] transition-all hover:translate-y-[-1px] ${isActive ? 'text-amber-600 dark:text-amber-500' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`
+                  `text-xs font-black uppercase tracking-wider px-3 py-1.5 border-2 border-transparent transition-all hover:bg-white hover:border-gray-900 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] ${isActive ? 'bg-[#f39c12] border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] text-gray-900' : 'text-gray-900'}`
                 }
               >
                 {item.label}
@@ -62,39 +61,39 @@ export function Header() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-4">
-            {/* Theme Toggle (Soft) */}
+          <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
             <button
               onClick={() => setTheme(isDarkMode ? 'light' : 'dark')}
-              className="p-3 hover:bg-gray-100/50 dark:hover:bg-slate-800/50 text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-500 rounded-2xl transition-all duration-300"
+              className="p-2.5 bg-white border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] transition-all text-gray-900"
               title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             >
               {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
 
-            <div className={`hidden sm:flex items-center transition-all duration-500 ${isSearchOpen ? 'w-72' : 'w-auto'}`}>
+            <div className={`hidden sm:flex items-center transition-all duration-300 ${isSearchOpen ? 'w-64' : 'w-auto'}`}>
               {isSearchOpen ? (
                 <form onSubmit={handleSearch} className="relative w-full flex items-center">
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search anything..."
-                    className="w-full pl-5 pr-12 py-3 bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-4 focus:ring-amber-500/5 focus:border-amber-500 transition-all text-sm dark:text-white"
+                    placeholder="Search..."
+                    className="w-full pl-4 pr-10 py-2 border-2 border-gray-900 bg-white text-gray-900 placeholder-gray-500 focus:outline-none text-xs font-bold uppercase"
                     autoFocus
                   />
                   <button
                     type="button"
                     onClick={() => setIsSearchOpen(false)}
-                    className="absolute right-3 p-2 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-400 dark:text-gray-500 rounded-xl transition-colors"
+                    className="absolute right-2 p-1 hover:bg-gray-100 border border-gray-900 rounded text-gray-900"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </form>
               ) : (
                 <button
                   onClick={() => setIsSearchOpen(true)}
-                  className="flex items-center justify-center p-3 hover:bg-amber-50/50 dark:hover:bg-amber-900/20 text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-500 rounded-2xl transition-all duration-300"
+                  className="p-2.5 bg-white border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] transition-all text-gray-900"
                 >
                   <Search className="w-5 h-5" />
                 </button>
@@ -103,21 +102,21 @@ export function Header() {
 
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="xl:hidden p-3 hover:bg-gray-100/50 dark:hover:bg-slate-800/50 rounded-2xl transition-colors text-gray-600 dark:text-gray-400"
+              className="xl:hidden p-2.5 bg-white border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] text-gray-900"
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
 
             <Link
               to="/login"
-              className="hidden md:block px-5 py-3 text-gray-500 dark:text-gray-400 text-sm font-bold hover:text-gray-900 dark:hover:text-white transition-colors"
+              className="hidden md:block px-4 py-2 border-2 border-gray-900 bg-white text-gray-900 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] transition-all"
             >
               Log In
             </Link>
 
             <Link
               to="/signup"
-              className="hidden md:block px-7 py-3 bg-gray-900 dark:bg-amber-500 hover:bg-gray-800 dark:hover:bg-amber-400 text-white dark:text-slate-900 text-sm font-bold rounded-2xl transition-all shadow-xl shadow-gray-200/50 dark:shadow-amber-500/10 hover:translate-y-[-2px]"
+              className="hidden md:block px-5 py-2 border-4 border-gray-900 bg-[#f39c12] text-gray-900 text-xs font-black uppercase tracking-wider shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all"
             >
               Join Mentozy
             </Link>
@@ -125,41 +124,40 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile Menu (Refined) */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div 
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="xl:hidden border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-950 absolute w-full inset-x-0 shadow-2xl pb-8"
+            exit={{ opacity: 0, y: -10 }}
+            className="xl:hidden border-t-4 border-gray-900 bg-[#FAF9F6] absolute w-full inset-x-0 shadow-[0_4px_0px_rgba(0,0,0,1)] pb-6"
           >
-            <nav className="flex flex-col p-6 gap-3">
+            <nav className="flex flex-col p-4 gap-2">
               {navItems.map((item) => (
                 <NavLink
                   key={item.label}
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={({ isActive }) =>
-                    `px-5 py-4 rounded-2xl text-sm font-bold tracking-wide transition-colors ${isActive ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-500' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-900'
-                    }`
+                    `px-4 py-3 border-2 border-gray-900 text-xs font-black uppercase tracking-wider transition-colors ${isActive ? 'bg-[#f39c12] text-gray-900' : 'bg-white text-gray-900 hover:bg-[#eff3ff]'}`
                   }
                 >
                   {item.label}
                 </NavLink>
               ))}
-              <div className="flex flex-col gap-4 mt-4 pt-6 border-t border-gray-100 dark:border-slate-800">
+              <div className="flex flex-col gap-2 mt-4 pt-4 border-t-2 border-gray-900">
                 <Link
                   to="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="px-5 py-4 text-center text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-50 dark:hover:bg-slate-900 rounded-2xl transition-colors border border-gray-200 dark:border-slate-700"
+                  className="px-4 py-3 text-center border-2 border-gray-900 bg-white text-gray-900 font-black uppercase tracking-wider hover:bg-[#eff3ff] transition-colors"
                 >
                   Log In
                 </Link>
                 <Link
                   to="/signup"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="px-5 py-4 text-center bg-gray-900 dark:bg-amber-500 text-white dark:text-slate-900 font-bold rounded-2xl hover:bg-gray-800 dark:hover:bg-amber-400 transition-colors shadow-lg"
+                  className="px-4 py-3 text-center border-4 border-gray-900 bg-[#f39c12] text-gray-900 font-black uppercase tracking-wider hover:bg-[#e08e0b] transition-colors shadow-[2px_2px_0px_rgba(0,0,0,1)]"
                 >
                   Join the Community
                 </Link>

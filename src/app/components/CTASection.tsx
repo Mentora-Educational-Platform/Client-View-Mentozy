@@ -4,20 +4,19 @@ import { motion } from 'motion/react';
 
 export function CTASection() {
   return (
-    <section className="py-32 bg-[#fcfcfc] dark:bg-slate-950 relative overflow-hidden transition-colors duration-700">
-      <div className="container mx-auto px-8 relative z-10">
+    <section className="py-24 bg-[#FAF9F6] border-t-4 border-gray-900 relative overflow-hidden font-mono text-gray-900">
+      <div className="container mx-auto px-6 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 1, ease: "easeOut" }}
-          className="relative bg-white dark:bg-slate-900 rounded-[4rem] overflow-hidden px-10 py-24 md:px-24 md:py-32 text-center border border-gray-100 dark:border-slate-800 shadow-[0_40px_100px_rgba(0,0,0,0.03)] dark:shadow-none"
+          className="relative bg-white border-4 border-gray-900 px-6 py-16 md:px-16 md:py-24 text-center shadow-[6px_6px_0px_rgba(0,0,0,1)]"
         >
-
-          {/* Premium Ambient Backgrounds */}
+          {/* Ambient Backgrounds */}
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-[120px] animate-blob" />
-            <div className="absolute bottom-[-20%] left-[-10%] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[100px] animate-blob animation-delay-2000" />
+            <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px]" />
+            <div className="absolute bottom-[-20%] left-[-10%] w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[100px]" />
           </div>
 
           <div className="relative z-10 max-w-4xl mx-auto">
@@ -26,9 +25,9 @@ export function CTASection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 text-amber-600 dark:text-amber-400 text-[11px] font-black uppercase tracking-[0.3em] mb-12 shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-2 border-2 border-gray-900 bg-[#eff3ff] text-gray-900 text-xs font-black uppercase tracking-wider mb-8 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]"
             >
-              <Sparkles className="w-3.5 h-3.5" /> Start your journey
+              <Sparkles className="w-4 h-4 text-gray-900" /> Start your journey
             </motion.div>
 
             <motion.h2 
@@ -36,9 +35,9 @@ export function CTASection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
-              className="text-5xl md:text-7xl font-medium text-gray-900 dark:text-white mb-10 tracking-tight leading-[1.05]"
+              className="text-4xl md:text-6xl font-black text-gray-900 mb-8 uppercase tracking-tight leading-none"
             >
-              Ready to meet your <span className="italic font-serif text-amber-500">mentor?</span>
+              Ready to meet your <span className="text-[#f39c12]">mentor?</span>
             </motion.h2>
 
             <motion.p 
@@ -46,36 +45,36 @@ export function CTASection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.4 }}
-              className="text-xl md:text-2xl text-gray-400 dark:text-gray-500 mb-16 leading-relaxed max-w-2xl mx-auto font-light tracking-tight"
+              className="text-base md:text-lg text-gray-700 font-bold mb-12 leading-relaxed max-w-2xl mx-auto uppercase"
             >
               Join a growing community of builders who are mastering new skills and advancing their careers with real, human-led guidance.
             </motion.p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-8 mb-16">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-12">
               <Link
                 to="/signup"
-                className="w-full sm:w-auto px-16 py-7 bg-amber-500 text-slate-950 rounded-[2rem] font-bold text-lg hover:bg-amber-400 transition-all hover:scale-[1.03] active:scale-95 shadow-[0_20px_50px_rgba(245,158,11,0.25)] flex items-center justify-center gap-4 animate-glow-amber"
+                className="w-full sm:w-auto px-10 py-5 bg-[#eff3ff] text-gray-900 border-4 border-gray-900 font-black text-lg hover:bg-[#eff3ff]/80 transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shadow-[4px_4px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-4 uppercase"
               >
-                Join for Free <ArrowRight className="w-6 h-6" />
+                Join for Free <ArrowRight className="w-5 h-5" />
               </Link>
               <Link
                 to="/tracks"
-                className="w-full sm:w-auto px-16 py-7 bg-white dark:bg-slate-800 text-gray-900 dark:text-white border border-gray-100 dark:border-slate-700 rounded-[2rem] font-bold text-lg hover:bg-gray-50 dark:hover:bg-slate-750 transition-all flex items-center justify-center gap-4 backdrop-blur-xl"
+                className="w-full sm:w-auto px-10 py-5 bg-white text-gray-900 border-4 border-gray-900 font-black text-lg hover:bg-gray-100 transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shadow-[4px_4px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-4 uppercase"
               >
                 Explore Tracks
               </Link>
             </div>
 
-            {/* Trust Badges - Softer Typography */}
-            <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 text-sm text-gray-400 dark:text-gray-600 font-bold uppercase tracking-[0.1em]">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500/50" /> No credit card
+            {/* Trust Badges */}
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-xs text-gray-900 font-black uppercase tracking-wider">
+              <div className="flex items-center gap-2 border-2 border-gray-900 bg-[#FAF9F6] px-3 py-1.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+                <CheckCircle2 className="w-4 h-4 text-gray-900" /> No credit card
               </div>
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500/50" /> Expert Verified
+              <div className="flex items-center gap-2 border-2 border-gray-900 bg-[#FAF9F6] px-3 py-1.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+                <CheckCircle2 className="w-4 h-4 text-gray-900" /> Expert Verified
               </div>
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500/50" /> Cancel anytime
+              <div className="flex items-center gap-2 border-2 border-gray-900 bg-[#FAF9F6] px-3 py-1.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+                <CheckCircle2 className="w-4 h-4 text-gray-900" /> Cancel anytime
               </div>
             </div>
 

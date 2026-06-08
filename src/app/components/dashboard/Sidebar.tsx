@@ -105,6 +105,12 @@ const DoodleIcon = ({ label, className, active }: { label: string, className?: s
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" />
             </svg>
         ),
+        'Study Materials': (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+                <path d="M6 6h10M6 10h10" />
+            </svg>
+        ),
         'LogOut': (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
                 <path d="M10 3H6a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h4M16 17l5-5-5-5M21 12H9" />
@@ -208,6 +214,7 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
         { icon: LayoutDashboard, label: 'Dashboard', path: '/student-dashboard' },
         { icon: BookOpen, label: 'My Courses', path: '/courses' },
         { icon: Calendar, label: 'Sessions', path: '/calendar' },
+        { icon: BookMarked, label: 'Study Materials', path: '/org-materials' },
         { icon: Bell, label: 'Announcements', path: '/org-announcements' },
         { icon: MessageSquare, label: 'Messages', path: '/messages' },
         { icon: Users, label: 'Community', path: '/community' },
@@ -221,6 +228,7 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
         { icon: LayoutDashboard, label: 'Dashboard', path: '/mentor-dashboard' },
         { icon: GraduationCap, label: 'My Students', path: '/org-my-students' },
         { icon: BookOpen, label: 'My Courses', path: '/mentor-courses' },
+        { icon: BookMarked, label: 'Study Materials', path: '/org-materials' },
         { icon: Calendar, label: 'Sessions', path: '/mentor-calendar' },
         { icon: Bell, label: 'Announcements', path: '/org-announcements' },
         { icon: MessageSquare, label: 'Messages', path: '/mentor-messages' },
@@ -398,6 +406,18 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
                                     >
                                         <Calendar className="w-4 h-4" />
                                         Sessions
+                                    </Link>
+                                    <Link 
+                                        to="/org-materials" 
+                                        onClick={() => window.innerWidth < 768 && onClose()}
+                                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl font-bold text-[11px] border transition-all ${
+                                            isActive('/org-materials')
+                                                ? 'bg-indigo-50 dark:bg-indigo-950/10 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30'
+                                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 border-transparent'
+                                        }`}
+                                    >
+                                        <BookMarked className="w-4 h-4" />
+                                        Study Materials
                                     </Link>
                                     <Link 
                                         to="/profile" 

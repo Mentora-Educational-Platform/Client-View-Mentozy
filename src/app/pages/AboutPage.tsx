@@ -6,31 +6,8 @@ import {
 import { motion } from 'motion/react';
 
 export function AboutPage() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
-  };
-
   return (
-    <div className="pt-32 pb-32 bg-[#fafafa] dark:bg-slate-900 min-h-screen font-sans relative overflow-hidden transition-colors duration-300">
-      {/* Decorative Background Blobs */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-amber-200/30 dark:bg-amber-900/10 rounded-full blur-3xl animate-blob" />
-        <div className="absolute top-40 right-10 w-96 h-96 bg-orange-200/20 dark:bg-orange-900/10 rounded-full blur-3xl animate-blob animation-delay-2000" />
-        <div className="absolute bottom-20 left-1/2 w-80 h-80 bg-rose-100/30 dark:bg-rose-900/10 rounded-full blur-3xl animate-blob animation-delay-4000" />
-      </div>
-
+    <div className="pt-32 pb-32 bg-[#FAF9F6] min-h-screen font-mono relative overflow-hidden">
       <div className="container mx-auto px-6 relative z-10">
         {/* Hero Section */}
         <motion.div
@@ -39,11 +16,10 @@ export function AboutPage() {
           transition={{ duration: 0.8 }}
           className="max-w-4xl mx-auto text-center mb-24"
         >
-
-          <h1 className="text-5xl md:text-7xl font-bold text-gray-900 dark:text-white mb-8 tracking-tight">
-            Mentozy: Learning and <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-500">Mentorship</span>
+          <h1 className="text-4xl md:text-6xl font-black text-gray-900 mb-8 tracking-tight uppercase leading-none">
+            Mentozy: Learning and <span className="bg-[#f39c12] border-4 border-gray-900 px-2 py-1 rotate-1 inline-block">Mentorship</span>
           </h1>
-          <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl mx-auto">
+          <p className="text-base md:text-lg text-gray-700 leading-relaxed max-w-3xl mx-auto font-bold uppercase">
             Bridging the gap between education, real-world skills, and meaningful career guidance.
           </p>
         </motion.div>
@@ -57,16 +33,16 @@ export function AboutPage() {
               viewport={{ once: true }}
               className="space-y-6"
             >
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Platform Overview</h2>
-              <div className="prose prose-lg text-gray-600 dark:text-gray-400 space-y-4">
+              <h2 className="text-3xl font-black text-gray-900 uppercase">Platform Overview</h2>
+              <div className="text-gray-700 font-bold uppercase text-xs space-y-4 leading-relaxed">
                 <p>
-                  Mentozy is designed to connect students with senior students, alumni, and professionals who are willing to teach, mentor, and guide based on <strong>real experience</strong> rather than theory alone.
+                  Mentozy is designed to connect students with senior students, alumni, and professionals who are willing to teach, mentor, and guide based on <strong className="text-gray-900 font-black">real experience</strong> rather than theory alone.
                 </p>
                 <p>
                   The core idea is simple: learning becomes powerful when it is accessible, practical, and guided by people who have already walked the path.
                 </p>
                 <p>
-                  Instead of limiting education to expensive institutions or pre-recorded content, Mentozy focuses on <strong>human-led learning</strong> supported by structured systems and technology.
+                  Instead of limiting education to expensive institutions or pre-recorded content, Mentozy focuses on <strong className="text-gray-900 font-black">human-led learning</strong> supported by structured systems and technology.
                 </p>
               </div>
             </motion.div>
@@ -74,14 +50,11 @@ export function AboutPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              className="glass-morphism-heavy p-10 rounded-[3rem] border border-white dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 relative overflow-hidden group shadow-2xl"
+              className="bg-white p-10 border-4 border-gray-900 shadow-[8px_8px_0px_rgba(0,0,0,1)] relative overflow-hidden"
             >
-              <div className="absolute top-0 right-0 p-8">
-                <Target className="w-20 h-20 text-amber-500/10 group-hover:scale-110 transition-transform duration-500" />
-              </div>
               <div className="relative z-10 space-y-6">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Vision and Scope</h3>
-                <p className="text-gray-600 dark:text-gray-400">Supporting learners across all stages, from school-level to professional domains.</p>
+                <h3 className="text-2xl font-black text-gray-900 uppercase">Vision and Scope</h3>
+                <p className="text-gray-755 text-xs font-bold uppercase leading-relaxed">Supporting learners across all stages, from school-level to professional domains.</p>
                 <div className="grid grid-cols-2 gap-4">
                   {[
                     { icon: BookOpen, label: "Academic Subjects" },
@@ -93,9 +66,9 @@ export function AboutPage() {
                     { icon: MessageSquare, label: "Interview Prep" },
                     { icon: TrendingUp, label: "Skill Development" }
                   ].map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-3 p-3 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-white/20 dark:border-slate-700/30">
-                      <item.icon className="w-5 h-5 text-amber-600 dark:text-amber-500" />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{item.label}</span>
+                    <div key={idx} className="flex items-center gap-3 p-3 bg-[#eff3ff] border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                      <item.icon className="w-5 h-5 text-gray-900" />
+                      <span className="text-[10px] font-black text-gray-900 uppercase">{item.label}</span>
                     </div>
                   ))}
                 </div>
@@ -112,8 +85,8 @@ export function AboutPage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Core Pillars</h2>
-            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">The foundation upon which we build the future of mentorship.</p>
+            <h2 className="text-3xl font-black text-gray-900 mb-4 uppercase">Core Pillars</h2>
+            <p className="text-gray-700 text-xs font-bold uppercase max-w-xl mx-auto">The foundation upon which we build the future of mentorship.</p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 gap-10">
@@ -122,13 +95,13 @@ export function AboutPage() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="glass-morphism-heavy p-10 rounded-[3rem] border border-white dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 shadow-xl hover:shadow-amber-100/50 dark:hover:shadow-amber-500/10 transition-all duration-500"
+              className="bg-white p-10 border-4 border-gray-900 shadow-[8px_8px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[4px_4px_0px_rgba(0,0,0,1)] transition-all duration-300"
             >
-              <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-3xl flex items-center justify-center text-amber-600 dark:text-amber-400 mb-8 border border-white dark:border-slate-700">
-                <Heart className="w-8 h-8 fill-amber-500/20" />
+              <div className="w-16 h-16 bg-[#eff3ff] border-4 border-gray-900 flex items-center justify-center text-gray-900 mb-8 shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                <Heart className="w-8 h-8 text-gray-900" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Mentorship at the Center</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-8">Direct interaction through multiple channels, ensuring clarity, accountability, and personalized support.</p>
+              <h3 className="text-2xl font-black text-gray-900 mb-4 uppercase">Mentorship at the Center</h3>
+              <p className="text-gray-755 font-bold uppercase text-xs mb-8 leading-relaxed">Direct interaction through multiple channels, ensuring clarity, accountability, and personalized support.</p>
               <ul className="space-y-3">
                 {[
                   "Recorded courses and content",
@@ -136,8 +109,8 @@ export function AboutPage() {
                   "Live sessions and real-time interaction",
                   "One-on-one personalized appointments"
                 ].map((text, i) => (
-                  <li key={i} className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  <li key={i} className="flex items-center gap-3 text-gray-900 text-xs font-black uppercase">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                     <span>{text}</span>
                   </li>
                 ))}
@@ -150,13 +123,13 @@ export function AboutPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="glass-morphism-heavy p-10 rounded-[3rem] border border-white dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 shadow-xl hover:shadow-orange-100/50 dark:hover:shadow-orange-500/10 transition-all duration-500"
+              className="bg-white p-10 border-4 border-gray-900 shadow-[8px_8px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[4px_4px_0px_rgba(0,0,0,1)] transition-all duration-300"
             >
-              <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-3xl flex items-center justify-center text-orange-600 dark:text-orange-400 mb-8 border border-white dark:border-slate-700">
-                <Rocket className="w-8 h-8 fill-orange-500/20" />
+              <div className="w-16 h-16 bg-[#eff3ff] border-4 border-gray-900 flex items-center justify-center text-gray-900 mb-8 shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                <Rocket className="w-8 h-8 text-gray-900" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Growth Ecosystem</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-8">An integrated network of learning, exposure, guidance, and community for holistic progress.</p>
+              <h3 className="text-2xl font-black text-gray-900 mb-4 uppercase">Growth Ecosystem</h3>
+              <p className="text-gray-755 font-bold uppercase text-xs mb-8 leading-relaxed">An integrated network of learning, exposure, guidance, and community for holistic progress.</p>
               <div className="grid grid-cols-2 gap-6">
                 {[
                   { title: "Practice", desc: "Quizzes, assignments, crash courses" },
@@ -164,9 +137,9 @@ export function AboutPage() {
                   { title: "Guidance", desc: "Direct access and structured paths" },
                   { title: "Community", desc: "Supportive network of builders" }
                 ].map((item, i) => (
-                  <div key={i} className="space-y-1">
-                    <h4 className="font-bold text-gray-900 dark:text-white">{i + 1}. {item.title}</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-tight">{item.desc}</p>
+                  <div key={i} className="space-y-1 bg-[#FAF9F6] border-2 border-gray-900 p-3 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                    <h4 className="font-black text-gray-900 text-xs uppercase">{item.title}</h4>
+                    <p className="text-[10px] font-bold text-gray-700 uppercase leading-tight">{item.desc}</p>
                   </div>
                 ))}
               </div>
@@ -180,21 +153,21 @@ export function AboutPage() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="glass-morphism-heavy rounded-[3rem] border border-white dark:border-slate-700 shadow-2xl overflow-hidden bg-white/30 dark:bg-slate-800/30"
+            className="bg-white border-4 border-gray-900 shadow-[8px_8px_0px_rgba(0,0,0,1)] overflow-hidden"
           >
-            <div className="p-10 border-b border-gray-100 dark:border-slate-700 bg-white/30 dark:bg-slate-800/30">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Platform Features</h2>
-              <p className="text-gray-600 dark:text-gray-400 mt-2 text-lg">Enabling structured learning through a curated feature set.</p>
+            <div className="p-10 border-b-4 border-gray-900 bg-[#eff3ff]">
+              <h2 className="text-2xl font-black text-gray-900 uppercase">Platform Features</h2>
+              <p className="text-gray-755 font-bold uppercase mt-2 text-xs">Enabling structured learning through a curated feature set.</p>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-amber-50/50 dark:bg-amber-900/10">
-                    <th className="p-8 font-bold text-gray-900 dark:text-white uppercase text-xs tracking-widest border-b border-gray-100 dark:border-slate-700">Feature</th>
-                    <th className="p-8 font-bold text-gray-900 dark:text-white uppercase text-xs tracking-widest border-b border-gray-100 dark:border-slate-700">Description</th>
+                  <tr className="bg-[#FAF9F6] border-b-4 border-gray-900">
+                    <th className="p-6 font-black text-gray-900 uppercase text-xs tracking-wider">Feature</th>
+                    <th className="p-6 font-black text-gray-900 uppercase text-xs tracking-wider">Description</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
+                <tbody className="divide-y-2 divide-gray-900">
                   {[
                     ["Recorded Courses", "Asynchronous learning with structured curriculum"],
                     ["Live Sessions", "Real-time interaction and doubt-clearing sessions"],
@@ -205,14 +178,14 @@ export function AboutPage() {
                     ["Opportunity Board", "Internships, competitions, and hackathons"],
                     ["Crash Courses", "Intensive learning tracks for specific skills"]
                   ].map(([title, desc], idx) => (
-                    <tr key={idx} className="hover:bg-white/40 dark:hover:bg-slate-700/40 transition-colors">
-                      <td className="p-8">
+                    <tr key={idx} className="hover:bg-[#eff3ff]/50 transition-colors">
+                      <td className="p-6">
                         <div className="flex items-center gap-3">
-                          <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                          <span className="font-bold text-gray-900 dark:text-white">{title}</span>
+                          <div className="w-2.5 h-2.5 bg-[#f39c12] border border-gray-900" />
+                          <span className="font-black text-gray-900 text-xs uppercase">{title}</span>
                         </div>
                       </td>
-                      <td className="p-8 text-gray-600 dark:text-gray-400">{desc}</td>
+                      <td className="p-6 text-gray-755 font-bold uppercase text-xs">{desc}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -225,20 +198,19 @@ export function AboutPage() {
         <section className="mb-32">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div className="order-2 md:order-1 relative">
-              <div className="absolute inset-0 bg-gradient-to-tr from-rose-100 to-amber-100 dark:from-rose-900/20 dark:to-amber-900/20 rounded-full blur-3xl opacity-30 animate-pulse" />
-              <div className="relative glass-morphism p-12 rounded-[3.5rem] border border-white dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 grid grid-cols-2 gap-8">
+              <div className="bg-white p-8 border-4 border-gray-900 shadow-[8px_8px_0px_rgba(0,0,0,1)] grid grid-cols-2 gap-6">
                 {[
                   { title: "Trust", desc: "Genuine relationships", icon: Globe },
                   { title: "Ethics", desc: "Fairness & Transparency", icon: ShieldCheck },
                   { title: "Value", desc: "Learning over Profit", icon: Award },
                   { title: "Progress", desc: "Shared Success", icon: Zap }
                 ].map((value, i) => (
-                  <div key={i} className="text-center group">
-                    <div className="w-14 h-14 bg-white dark:bg-slate-700 rounded-2xl flex items-center justify-center shadow-lg border border-gray-100 dark:border-slate-600 mx-auto mb-4 group-hover:-translate-y-1 transition-transform duration-300">
-                      <value.icon className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                  <div key={i} className="text-center p-4 border-2 border-gray-900 bg-[#eff3ff] shadow-[3px_3px_0px_rgba(0,0,0,1)] group">
+                    <div className="w-12 h-12 bg-white border-2 border-gray-900 flex items-center justify-center mx-auto mb-4 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                      <value.icon className="w-6 h-6 text-gray-900" />
                     </div>
-                    <h4 className="font-bold text-gray-900 dark:text-white">{value.title}</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{value.desc}</p>
+                    <h4 className="font-black text-gray-900 text-xs uppercase">{value.title}</h4>
+                    <p className="text-[10px] font-bold text-gray-755 uppercase leading-none mt-1">{value.desc}</p>
                   </div>
                 ))}
               </div>
@@ -249,8 +221,8 @@ export function AboutPage() {
               viewport={{ once: true }}
               className="order-1 md:order-2 space-y-6"
             >
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Values & Philosophy</h2>
-              <div className="prose prose-lg text-gray-600 dark:text-gray-400">
+              <h2 className="text-3xl font-black text-gray-900 uppercase">Values & Philosophy</h2>
+              <div className="text-gray-755 font-bold uppercase text-xs leading-relaxed space-y-4">
                 <p>
                   We prioritize genuine learning outcomes, contributor growth, and community-driven progress. Our philosophy centers on building genuine relationships between learners and mentors.
                 </p>
@@ -269,20 +241,17 @@ export function AboutPage() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="bg-slate-900 dark:bg-slate-950 p-12 rounded-[3rem] text-white overflow-hidden relative border border-white/5 dark:border-slate-800"
+              className="bg-white p-12 border-4 border-gray-900 shadow-[8px_8px_0px_rgba(0,0,0,1)] flex flex-col justify-between"
             >
-              <div className="absolute bottom-0 right-0 p-12 opacity-10">
-                <Cpu className="w-40 h-40" />
-              </div>
-              <div className="relative z-10 space-y-6">
-                <div className="px-3 py-1 rounded-full bg-white/10 text-amber-400 text-xs font-bold uppercase tracking-widest inline-block border border-white/10">Supportive Tech</div>
-                <h3 className="text-3xl font-bold">Role of Technology</h3>
-                <p className="text-white/70 dark:text-gray-400 leading-relaxed text-lg">
+              <div className="space-y-6">
+                <div className="px-3 py-1 border-2 border-gray-900 bg-[#eff3ff] text-gray-900 text-[10px] font-black uppercase tracking-wider inline-block">Supportive Tech</div>
+                <h3 className="text-2xl font-black text-gray-900 uppercase">Role of Technology</h3>
+                <p className="text-gray-755 font-bold uppercase text-xs leading-relaxed">
                   AI enhances but does not replace human connection. We use modern architecture and AI-assisted personalization to assist mentorship, keeping humans at the center.
                 </p>
-                <div className="flex flex-wrap gap-3 pt-4">
+                <div className="flex flex-wrap gap-2 pt-4">
                   {["Scalable Architecture", "Data Protection", "AI Recommendation", "Human Interaction"].map(t => (
-                    <span key={t} className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm">{t}</span>
+                    <span key={t} className="px-3 py-1.5 border-2 border-gray-900 bg-[#FAF9F6] text-xs font-black uppercase tracking-wider">{t}</span>
                   ))}
                 </div>
               </div>
@@ -293,25 +262,22 @@ export function AboutPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="bg-amber-600 dark:bg-amber-700 p-12 rounded-[3rem] text-white overflow-hidden relative border border-white/5 dark:border-slate-800"
+              className="bg-[#f39c12] p-12 border-4 border-gray-900 shadow-[8px_8px_0px_rgba(0,0,0,1)] flex flex-col justify-between"
             >
-              <div className="absolute bottom-0 left-0 p-12 opacity-10">
-                <Users className="w-40 h-40" />
-              </div>
-              <div className="relative z-10 space-y-6">
-                <div className="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-bold uppercase tracking-widest inline-block border border-white/10">Team Culture</div>
-                <h3 className="text-3xl font-bold">Ownership & Growth</h3>
-                <p className="text-white/90 leading-relaxed text-lg">
+              <div className="space-y-6">
+                <div className="px-3 py-1 border-2 border-gray-900 bg-white text-gray-900 text-[10px] font-black uppercase tracking-wider inline-block">Team Culture</div>
+                <h3 className="text-2xl font-black text-gray-900 uppercase">Ownership & Growth</h3>
+                <p className="text-gray-900 font-bold uppercase text-xs leading-relaxed">
                   Our early team is structured as an internship-driven environment where contributors gain real startup experience and portfolio-ready work.
                 </p>
                 <div className="grid grid-cols-2 gap-4 pt-4">
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="w-5 h-5 mt-1 shrink-0" />
-                    <span className="text-sm">Practical Startup Knowledge</span>
+                  <div className="flex items-start gap-2 text-gray-900 text-xs font-black uppercase">
+                    <CheckCircle2 className="w-5 h-5 shrink-0" />
+                    <span>Practical Startup Knowledge</span>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="w-5 h-5 mt-1 shrink-0" />
-                    <span className="text-sm">Professional Mentorship</span>
+                  <div className="flex items-start gap-2 text-gray-900 text-xs font-black uppercase">
+                    <CheckCircle2 className="w-5 h-5 shrink-0" />
+                    <span>Professional Mentorship</span>
                   </div>
                 </div>
               </div>
@@ -324,12 +290,11 @@ export function AboutPage() {
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="relative glass-morphism-heavy p-16 rounded-[4rem] text-center border-2 border-white/50 dark:border-slate-700/50 shadow-2xl overflow-hidden mb-32 bg-white/50 dark:bg-slate-800/50"
+          className="bg-white p-12 border-4 border-gray-900 shadow-[8px_8px_0px_rgba(0,0,0,1)] text-center mb-32"
         >
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-br from-amber-200/20 via-rose-100/10 dark:from-amber-900/10 dark:via-rose-900/5 to-transparent blur-3xl pointer-events-none" />
           <div className="relative z-10">
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">Vision for the Future</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed mb-12">
+            <h2 className="text-3xl font-black text-gray-900 mb-6 uppercase">Vision for the Future</h2>
+            <p className="text-base md:text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed mb-12 font-bold uppercase">
               Our long-term goal is a global network where practical education, meaningful mentorship, and career growth are accessible to everyone, regardless of their starting point.
             </p>
             <div className="grid sm:grid-cols-3 gap-8 text-left max-w-4xl mx-auto">
@@ -338,9 +303,9 @@ export function AboutPage() {
                 { title: "Achievable Careers", desc: "Bridge the gap between potential and opportunity." },
                 { title: "Value Contribution", desc: "Skills and mentorship matter more than credentials." }
               ].map((v, i) => (
-                <div key={i} className="p-6 rounded-3xl bg-white/40 dark:bg-slate-900/40 border border-white/50 dark:border-slate-700/50">
-                  <h4 className="font-bold text-gray-900 dark:text-white mb-2">{v.title}</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{v.desc}</p>
+                <div key={i} className="p-6 border-4 border-gray-900 bg-[#FAF9F6] shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                  <h4 className="font-black text-gray-900 text-xs uppercase mb-2">{v.title}</h4>
+                  <p className="text-[10px] font-bold text-gray-700 uppercase leading-relaxed">{v.desc}</p>
                 </div>
               ))}
             </div>
@@ -354,17 +319,16 @@ export function AboutPage() {
           viewport={{ once: true }}
           className="max-w-4xl mx-auto text-center"
         >
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Conclusion</h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400 leading-relaxed mb-12 italic">
+          <h2 className="text-3xl font-black text-gray-900 mb-6 uppercase">Conclusion</h2>
+          <p className="text-base md:text-lg text-gray-700 leading-relaxed mb-12 italic font-bold uppercase">
             "Mentozy represents a fundamental shift in how learning and career guidance can be delivered. It's not just about acquiring knowledge—it's about building skills, gaining confidence, and discovering genuine career pathways through the guidance of people who have walked the same path."
           </p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-10 py-5 rounded-full bg-slate-900 dark:bg-amber-500 text-white dark:text-slate-900 font-bold text-lg shadow-2xl shadow-slate-300 dark:shadow-amber-900/20 hover:shadow-amber-200/50 transition-all duration-300"
+          <Link
+            to="/signup"
+            className="inline-block px-10 py-5 border-4 border-gray-900 bg-[#f39c12] text-gray-900 font-black text-lg shadow-[6px_6px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[3px_3px_0px_rgba(0,0,0,1)] transition-all uppercase"
           >
             Join the Ecosystem
-          </motion.button>
+          </Link>
         </motion.div>
 
       </div>

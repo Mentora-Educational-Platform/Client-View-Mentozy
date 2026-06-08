@@ -1,4 +1,4 @@
-import { Search, BookOpen, TrendingUp, ArrowRight } from 'lucide-react';
+import { Search, BookOpen, TrendingUp } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export function HowItWorks() {
@@ -39,11 +39,10 @@ export function HowItWorks() {
   };
 
   return (
-    <section id="how-it-works" className="py-16 md:py-24 bg-white dark:bg-slate-900 relative overflow-hidden transition-colors duration-300">
-      {/* Decorative background blob - Amber based */}
-      <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-amber-100/40 dark:bg-amber-900/10 rounded-full blur-3xl opacity-50 pointer-events-none animate-blob" />
+    <section id="how-it-works" className="py-16 md:py-24 bg-[#FAF9F6] border-t-4 border-gray-900 relative overflow-hidden font-mono text-gray-900">
+      <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-indigo-150/10 rounded-full blur-3xl opacity-50 pointer-events-none animate-blob" />
 
-      <div className="container mx-auto px-4 md:px-6 relative z-10">
+      <div className="container mx-auto px-6 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -51,13 +50,13 @@ export function HowItWorks() {
           transition={{ duration: 0.6 }}
           className="max-w-3xl mx-auto text-center mb-16 md:mb-20"
         >
-          <span className="text-amber-600 dark:text-amber-400 font-semibold tracking-wider text-sm uppercase bg-amber-50 dark:bg-amber-900/30 px-3 py-1 rounded-full border border-amber-100 dark:border-amber-800 mb-4 inline-block">
+          <span className="inline-flex items-center gap-2 px-4 py-2 border-2 border-gray-900 bg-[#eff3ff] text-gray-900 text-xs font-black uppercase tracking-wider mb-6 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] animate-bounce">
             Process
           </span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight">
+          <h2 className="text-3xl md:text-5xl font-black text-gray-900 uppercase tracking-tight mb-6">
             How It Works
           </h2>
-          <p className="text-base md:text-lg text-gray-600 dark:text-gray-400 leading-relaxed max-w-2xl mx-auto">
+          <p className="text-sm md:text-base text-gray-700 font-bold max-w-2xl mx-auto leading-relaxed uppercase">
             We've simplified the path to professional growth into three actionable steps.
           </p>
         </motion.div>
@@ -70,37 +69,30 @@ export function HowItWorks() {
           className="grid md:grid-cols-3 gap-8 relative"
         >
           {/* Connector Line (Desktop Only) */}
-          <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-gray-200 via-amber-200 dark:via-amber-900 to-gray-200 dark:from-slate-800 dark:to-slate-800 border-t border-dashed border-gray-300 dark:border-slate-700 z-0" />
+          <div className="hidden md:block absolute top-[60px] left-[10%] right-[10%] h-1 bg-gray-900 z-0" />
 
           {steps.map((step, index) => (
             <motion.div key={index} variants={itemVariants} className="relative group">
               {/* Card Container */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100 dark:border-slate-700 h-full relative z-10 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-amber-100/10 dark:hover:shadow-amber-900/20 hover:border-amber-100 dark:hover:border-amber-900/50">
+              <div className="bg-white border-4 border-gray-900 p-6 md:p-8 hover:bg-[#eff3ff]/10 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-300 shadow-[4px_4px_0px_rgba(0,0,0,1)] h-full relative z-10 flex flex-col pt-12">
 
                 {/* Step Number Badge */}
-                <div className="absolute -top-4 left-8 bg-gray-900 dark:bg-amber-500 text-white dark:text-slate-900 text-xs font-bold py-1 px-3 rounded-full border-4 border-gray-50 dark:border-slate-900 group-hover:bg-amber-500 dark:group-hover:bg-amber-400 transition-colors duration-300">
+                <div className="absolute -top-4 left-6 bg-white border-2 border-gray-900 text-gray-900 text-xs font-black py-1.5 px-3.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] uppercase">
                   Step {step.id}
                 </div>
 
                 {/* Icon */}
-                <div className="w-14 h-14 bg-amber-50 dark:bg-amber-900/30 rounded-xl flex items-center justify-center text-amber-600 dark:text-amber-400 mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm group-hover:shadow-amber-100/50">
+                <div className="w-14 h-14 bg-[#eff3ff] border-2 border-gray-900 flex items-center justify-center text-gray-900 mb-6 shadow-[2px_2px_0px_rgba(0,0,0,1)] group-hover:scale-105 transition-transform duration-300">
                   {step.icon}
                 </div>
 
                 {/* Content */}
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-4">
                   {step.title}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p className="text-gray-700 font-bold leading-relaxed text-xs flex-1 uppercase">
                   {step.description}
                 </p>
-
-                {/* Mobile Arrow (Visual cue for flow on mobile) */}
-                {index < steps.length - 1 && (
-                  <div className="md:hidden flex justify-center mt-6 text-gray-300 dark:text-gray-600">
-                    <ArrowRight className="w-6 h-6 rotate-90" />
-                  </div>
-                )}
               </div>
             </motion.div>
           ))}
@@ -108,4 +100,5 @@ export function HowItWorks() {
       </div>
     </section>
   );
-}
+}
+
