@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { BookOpen, Save } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -100,7 +99,7 @@ export function CreateCoursePage() {
                 level: formData.level,
                 duration: formData.duration,
             },
-            modules, // Pass full modules deep object!
+            modules,
             user?.id,
             actionStatus
         );
@@ -109,11 +108,8 @@ export function CreateCoursePage() {
 
         if (success) {
             toast.success(actionStatus === 'draft' ? "Course Saved as Draft!" : "Course Published Successfully!");
-            // Reset state
             setFormData({ title: '', description: '', level: 'Intermediate', duration: '4 Weeks', price: '0' });
             setModules([]);
-
-            // Redirect to mentor courses
             navigate('/mentor-courses');
         } else {
             toast.error("Failed to save course. Please try again.");
@@ -123,8 +119,8 @@ export function CreateCoursePage() {
     if (fetchingDraft) {
         return (
             <DashboardLayout>
-                <div className="flex items-center justify-center min-h-[50vh]">
-                    <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                <div className="flex items-center justify-center min-h-[50vh] font-mono text-gray-900 bg-[#FAF9F6]">
+                    <div className="w-10 h-10 border-4 border-gray-900 border-t-[#f39c12] rounded-full animate-spin"></div>
                 </div>
             </DashboardLayout>
         );
@@ -132,11 +128,14 @@ export function CreateCoursePage() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-6xl mx-auto pb-20">
-                <div className="mb-8 flex justify-between items-end">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">{editingCourseId ? 'Edit Course Draft' : 'Create New Course'}</h1>
-                        <p className="text-gray-500 mt-2">Build a professional, structured learning path for your students.</p>
+            <div className="max-w-6xl mx-auto pb-20 font-mono text-gray-900">
+                <div className="mb-10 flex flex-col md:flex-row md:justify-between md:items-end gap-6">
+                    <div className="text-left">
+                        <span className="inline-flex items-center gap-2 px-3 py-1 border-2 border-gray-900 bg-white text-xs font-black uppercase tracking-wider mb-3 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+                            Course Creator
+                        </span>
+                        <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tight">{editingCourseId ? 'Edit Course Draft' : 'Create New Course'}</h1>
+                        <p className="text-xs text-gray-600 mt-2 uppercase font-bold">Build a professional, structured learning path for your students.</p>
                     </div>
                     <div className="flex items-center gap-3">
                         <button
@@ -146,7 +145,7 @@ export function CreateCoursePage() {
                                 handleSubmit(e as any);
                             }}
                             disabled={loading}
-                            className="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors"
+                            className="px-6 py-3 bg-white border-4 border-gray-900 text-gray-900 font-black text-xs uppercase shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all"
                         >
                             Save Draft
                         </button>
@@ -157,9 +156,9 @@ export function CreateCoursePage() {
                                 handleSubmit(e as any);
                             }}
                             disabled={loading}
-                            className="px-6 py-2.5 bg-gray-900 text-white font-bold rounded-xl hover:bg-amber-600 transition-colors shadow-lg flex items-center gap-2"
+                            className="px-6 py-3 bg-[#f39c12] border-4 border-gray-900 text-gray-900 font-black text-xs uppercase shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-2"
                         >
-                            {loading && actionStatus === 'published' && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                            {loading && actionStatus === 'published' && <div className="w-4 h-4 border-2 border-gray-950 border-t-white rounded-full animate-spin" />}
                             <Save className="w-4 h-4" />
                             Publish Course
                         </button>
@@ -167,73 +166,61 @@ export function CreateCoursePage() {
                 </div>
 
                 <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Coursera-style Left Sidebar */}
+                    {/* Coursera-style Left Sidebar (Neobrutalist) */}
                     <div className="w-full lg:w-64 flex-shrink-0">
-                        <div className="sticky top-24 bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
-                            <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 px-4">Course Setup</h2>
-                            <ul className="space-y-1">
-                                <li>
-                                    <button 
-                                        onClick={() => setActiveTab('basic')} 
-                                        className={`w-full text-left px-4 py-3 rounded-xl font-bold transition-all flex items-center gap-3 ${activeTab === 'basic' ? 'bg-amber-50 text-amber-700' : 'text-gray-600 hover:bg-gray-50'}`}
-                                    >
-                                        <div className={`w-2 h-2 rounded-full ${activeTab === 'basic' ? 'bg-amber-500' : 'bg-transparent'}`} />
-                                        Basic Info
-                                    </button>
-                                </li>
-                                <li>
-                                    <button 
-                                        onClick={() => setActiveTab('curriculum')} 
-                                        className={`w-full text-left px-4 py-3 rounded-xl font-bold transition-all flex items-center gap-3 ${activeTab === 'curriculum' ? 'bg-amber-50 text-amber-700' : 'text-gray-600 hover:bg-gray-50'}`}
-                                    >
-                                        <div className={`w-2 h-2 rounded-full ${activeTab === 'curriculum' ? 'bg-amber-500' : 'bg-transparent'}`} />
-                                        Curriculum
-                                    </button>
-                                </li>
-                                <li>
-                                    <button 
-                                        onClick={() => setActiveTab('pricing')} 
-                                        className={`w-full text-left px-4 py-3 rounded-xl font-bold transition-all flex items-center gap-3 ${activeTab === 'pricing' ? 'bg-amber-50 text-amber-700' : 'text-gray-600 hover:bg-gray-50'}`}
-                                    >
-                                        <div className={`w-2 h-2 rounded-full ${activeTab === 'pricing' ? 'bg-amber-500' : 'bg-transparent'}`} />
-                                        Pricing & Settings
-                                    </button>
-                                </li>
+                        <div className="sticky top-24 bg-white border-4 border-gray-900 p-4 shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                            <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-4 px-2">Course Setup</h2>
+                            <ul className="space-y-2">
+                                {['basic', 'curriculum', 'pricing'].map((tab) => {
+                                    const label = tab === 'basic' ? 'Basic Info' : tab === 'curriculum' ? 'Curriculum' : 'Pricing & Settings';
+                                    const isActive = activeTab === tab;
+                                    return (
+                                        <li key={tab}>
+                                            <button 
+                                                onClick={() => setActiveTab(tab as any)} 
+                                                className={`w-full text-left px-4 py-3 border-2 transition-all flex items-center gap-3 text-xs font-black uppercase ${isActive ? 'bg-[#f39c12] border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] text-gray-900' : 'text-gray-750 border-transparent hover:bg-gray-50'}`}
+                                            >
+                                                <div className={`w-2 h-2 border border-gray-900 ${isActive ? 'bg-black' : 'bg-transparent'}`} />
+                                                {label}
+                                            </button>
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         </div>
                     </div>
 
                     {/* Main Content Area */}
-                    <div className="flex-1">
-                        <form id="course-form" onSubmit={handleSubmit} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 min-h-[600px]">
+                    <div className="flex-1 text-left">
+                        <form id="course-form" onSubmit={handleSubmit} className="bg-white border-4 border-gray-900 shadow-[6px_6px_0px_rgba(0,0,0,1)] p-8 min-h-[600px]">
                             
                             {/* BASIC INFO TAB */}
                             {activeTab === 'basic' && (
                                 <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                                     <div>
-                                        <h2 className="text-2xl font-bold text-gray-900 mb-6 border-b pb-4">Basic Information</h2>
+                                        <h2 className="text-2xl font-black text-gray-900 mb-6 border-b-4 border-gray-900 pb-4 uppercase tracking-tight">Basic Information</h2>
                                     </div>
                                     <div className="space-y-6">
                                         <div>
-                                            <label className="block text-sm font-bold text-gray-700 mb-2">Course Title</label>
+                                            <label className="block text-xs font-black uppercase text-gray-900 mb-1.5">Course Title *</label>
                                             <input
                                                 type="text"
                                                 required
                                                 placeholder="e.g. Advanced System Design & Architecture"
-                                                className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                                                className="w-full px-4 py-3 bg-white border-2 border-gray-900 text-xs font-bold uppercase outline-none focus:bg-[#eff3ff]"
                                                 value={formData.title}
                                                 onChange={e => setFormData({ ...formData, title: e.target.value })}
                                             />
-                                            <p className="text-xs text-gray-500 mt-2">A clear, descriptive title helps students understand what they will learn.</p>
+                                            <p className="text-[10px] text-gray-500 mt-2 uppercase font-bold">A clear, descriptive title helps students understand what they will learn.</p>
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
+                                            <label className="block text-xs font-black uppercase text-gray-900 mb-1.5">Description *</label>
                                             <textarea
                                                 rows={5}
                                                 required
                                                 placeholder="What will students learn in this course? Describe the target audience and core topics."
-                                                className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all resize-none"
+                                                className="w-full px-4 py-3 bg-white border-2 border-gray-900 text-xs font-bold uppercase outline-none focus:bg-[#eff3ff] resize-none"
                                                 value={formData.description}
                                                 onChange={e => setFormData({ ...formData, description: e.target.value })}
                                             />
@@ -241,9 +228,9 @@ export function CreateCoursePage() {
 
                                         <div className="grid md:grid-cols-2 gap-6 pt-4">
                                             <div>
-                                                <label className="block text-sm font-bold text-gray-700 mb-2">Level</label>
+                                                <label className="block text-xs font-black uppercase text-gray-900 mb-1.5">Level *</label>
                                                 <select
-                                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all cursor-pointer"
+                                                    className="w-full px-4 py-3 bg-white border-2 border-gray-900 text-xs font-bold uppercase outline-none cursor-pointer"
                                                     value={formData.level}
                                                     onChange={e => setFormData({ ...formData, level: e.target.value })}
                                                 >
@@ -253,11 +240,11 @@ export function CreateCoursePage() {
                                                 </select>
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-bold text-gray-700 mb-2">Estimated Duration</label>
+                                                <label className="block text-xs font-black uppercase text-gray-900 mb-1.5">Estimated Duration *</label>
                                                 <input
                                                     type="text"
                                                     placeholder="e.g. 4 Weeks"
-                                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                                                    className="w-full px-4 py-3 bg-white border-2 border-gray-900 text-xs font-bold uppercase outline-none"
                                                     value={formData.duration}
                                                     onChange={e => setFormData({ ...formData, duration: e.target.value })}
                                                 />
@@ -265,11 +252,11 @@ export function CreateCoursePage() {
                                         </div>
                                     </div>
 
-                                    <div className="pt-8 flex justify-end">
+                                    <div className="pt-8 flex justify-end border-t-2 border-gray-900">
                                         <button 
                                             type="button" 
                                             onClick={() => setActiveTab('curriculum')}
-                                            className="px-8 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-colors"
+                                            className="px-6 py-3 bg-gray-900 text-white font-black text-xs uppercase hover:bg-gray-800 transition-colors"
                                         >
                                             Save & Continue to Curriculum
                                         </button>
@@ -281,27 +268,27 @@ export function CreateCoursePage() {
                             {activeTab === 'curriculum' && (
                                 <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                                     <div>
-                                        <h2 className="text-2xl font-bold text-gray-900 mb-2 border-b pb-4 flex items-center gap-3">
-                                            <BookOpen className="w-6 h-6 text-amber-500" />
+                                        <h2 className="text-2xl font-black text-gray-900 mb-2 border-b-4 border-gray-900 pb-4 flex items-center gap-3 uppercase tracking-tight">
+                                            <BookOpen className="w-6 h-6 text-[#f39c12]" />
                                             Curriculum Builder
                                         </h2>
-                                        <p className="text-sm text-gray-500 mt-3 mb-6">Start putting together your course by creating sections, lectures and practice activities.</p>
+                                        <p className="text-xs text-gray-500 font-bold uppercase mt-3 mb-6">Start putting together your course syllabus by creating modules (weeks), topics, readings, and practice quizzes.</p>
                                     </div>
                                     
                                     <CourseModulesEditor modules={modules} onChange={setModules} />
 
-                                    <div className="pt-8 flex justify-between border-t border-gray-100">
+                                    <div className="pt-8 flex justify-between border-t-2 border-gray-900">
                                         <button 
                                             type="button" 
                                             onClick={() => setActiveTab('basic')}
-                                            className="px-6 py-3 font-bold text-gray-600 hover:bg-gray-50 rounded-xl transition-colors"
+                                            className="px-5 py-3 border-2 border-gray-900 bg-white font-black text-xs uppercase hover:bg-gray-100 transition-colors"
                                         >
                                             Back to Basic Info
                                         </button>
                                         <button 
                                             type="button" 
                                             onClick={() => setActiveTab('pricing')}
-                                            className="px-8 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-colors"
+                                            className="px-6 py-3 bg-gray-900 text-white font-black text-xs uppercase hover:bg-gray-800 transition-colors"
                                         >
                                             Save & Continue to Pricing
                                         </button>
@@ -313,17 +300,17 @@ export function CreateCoursePage() {
                             {activeTab === 'pricing' && (
                                 <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                                     <div>
-                                        <h2 className="text-2xl font-bold text-gray-900 mb-6 border-b pb-4">Pricing & Settings</h2>
+                                        <h2 className="text-2xl font-black text-gray-900 mb-6 border-b-4 border-gray-900 pb-4 uppercase tracking-tight">Pricing & Settings</h2>
                                     </div>
                                     
-                                    <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6">
-                                        <div className="flex items-center justify-between mb-4">
+                                    <div className="bg-[#FAF9F6] border-4 border-gray-900 p-6 shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                                             <div>
-                                                <h3 className="font-bold text-gray-900 text-lg">Course Price ($)</h3>
-                                                <p className="text-sm text-gray-600 mt-1">Set a price or make it freely available to the global community.</p>
+                                                <h3 className="font-black text-gray-900 text-sm uppercase">Course Price ($)</h3>
+                                                <p className="text-xs text-gray-655 mt-1 font-bold uppercase">Set a price or make it freely available to the global community.</p>
                                             </div>
-                                            <label className="flex items-center cursor-pointer gap-3 bg-white px-4 py-2 border border-gray-200 rounded-lg shadow-sm">
-                                                <span className="text-sm font-bold text-gray-700">Make it Free</span>
+                                            <label className="flex items-center cursor-pointer gap-3 bg-white px-4 py-2 border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                                                <span className="text-xs font-black uppercase text-gray-700">Make it Free</span>
                                                 <div className="relative">
                                                     <input
                                                         type="checkbox"
@@ -333,28 +320,27 @@ export function CreateCoursePage() {
                                                             setFormData({ ...formData, price: e.target.checked ? '0' : '' })
                                                         }}
                                                     />
-                                                    <div className={`block w-10 h-6 rounded-full transition-colors ${formData.price === '0' ? 'bg-amber-500' : 'bg-gray-200'}`}></div>
-                                                    <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formData.price === '0' ? 'transform translate-x-4' : ''}`}></div>
+                                                    <div className={`block w-10 h-6 border-2 border-gray-900 transition-colors ${formData.price === '0' ? 'bg-[#f39c12]' : 'bg-gray-200'}`}></div>
+                                                    <div className={`dot absolute left-1 top-1 bg-white border border-gray-900 w-4 h-4 transition-transform ${formData.price === '0' ? 'transform translate-x-4' : ''}`}></div>
                                                 </div>
                                             </label>
                                         </div>
                                         <input
                                             type="number"
-                                            placeholder="e.g. 49.99"
+                                            placeholder="e.g. 49"
                                             min="0"
-                                            step="0.01"
                                             disabled={formData.price === '0'}
-                                            className={`w-full max-w-sm px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none text-lg font-bold transition-all ${formData.price === '0' ? 'bg-gray-100 opacity-50 cursor-not-allowed' : 'bg-white shadow-inner'}`}
+                                            className={`w-full max-w-sm px-4 py-3 border-2 border-gray-900 outline-none text-sm font-bold transition-all uppercase ${formData.price === '0' ? 'bg-gray-150 opacity-50 cursor-not-allowed' : 'bg-white'}`}
                                             value={formData.price}
                                             onChange={e => setFormData({ ...formData, price: e.target.value })}
                                         />
                                     </div>
 
-                                    <div className="pt-8 flex justify-between border-t border-gray-100">
+                                    <div className="pt-8 flex justify-between border-t-2 border-gray-900">
                                         <button 
                                             type="button" 
                                             onClick={() => setActiveTab('curriculum')}
-                                            className="px-6 py-3 font-bold text-gray-600 hover:bg-gray-50 rounded-xl transition-colors"
+                                            className="px-5 py-3 border-2 border-gray-900 bg-white font-black text-xs uppercase hover:bg-gray-100 transition-colors"
                                         >
                                             Back to Curriculum
                                         </button>
@@ -362,9 +348,9 @@ export function CreateCoursePage() {
                                             type="submit"
                                             onClick={() => setActionStatus('published')}
                                             disabled={loading}
-                                            className="px-8 py-3 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-colors shadow-lg active:scale-95 flex items-center gap-2"
+                                            className="px-6 py-3 bg-[#f39c12] border-4 border-gray-900 text-gray-900 font-black text-xs uppercase shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-2"
                                         >
-                                            {loading && actionStatus === 'published' && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                                            {loading && actionStatus === 'published' && <div className="w-4 h-4 border-2 border-gray-950 border-t-white rounded-full animate-spin" />}
                                             <Save className="w-5 h-5" />
                                             Publish Course Now
                                         </button>
@@ -379,3 +365,5 @@ export function CreateCoursePage() {
         </DashboardLayout>
     );
 }
+
+export default CreateCoursePage;

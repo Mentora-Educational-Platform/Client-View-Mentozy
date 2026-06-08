@@ -1,5 +1,8 @@
-import React from 'react';
-import { Plus, Trash2, GripVertical, FileText, Video, HelpCircle, Loader2, UploadCloud, CheckCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { 
+  Plus, Trash2, GripVertical, FileText, Video, HelpCircle, 
+  Loader2, UploadCloud, CheckCircle, ChevronDown, ChevronUp, BookOpen 
+} from 'lucide-react';
 import { uploadDocument } from '../../../lib/api';
 import { toast } from 'sonner';
 
@@ -47,13 +50,13 @@ interface CourseModulesEditorProps {
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
 export function CourseModulesEditor({ modules, onChange }: CourseModulesEditorProps) {
-
-    const [uploadingFiles, setUploadingFiles] = React.useState<Record<string, boolean>>({});
+    const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
+    const [expandedLessons, setExpandedLessons] = useState<Record<string, boolean>>({});
+    const [expandedWeeks, setExpandedWeeks] = useState<Record<string, boolean>>({});
 
     const handleFileUpload = async (moduleId: string, lessonId: string, file: File) => {
         if (!file) return;
 
-        // Ensure it's a PDF or accessible doc
         const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
         if (!allowedTypes.includes(file.type)) {
             toast.error("Please upload a PDF or Word document.");
@@ -85,10 +88,11 @@ export function CourseModulesEditor({ modules, onChange }: CourseModulesEditorPr
     };
 
     const addModule = () => {
+        const newId = generateId();
         onChange([
             ...modules,
             {
-                id: generateId(),
+                id: newId,
                 title: '',
                 description: '',
                 objectives: [''],
@@ -96,6 +100,7 @@ export function CourseModulesEditor({ modules, onChange }: CourseModulesEditorPr
                 lessons: []
             }
         ]);
+        setExpandedWeeks(prev => ({ ...prev, [newId]: true }));
     };
 
     const updateModule = (moduleId: string, updates: Partial<Module>) => {
@@ -131,16 +136,16 @@ export function CourseModulesEditor({ modules, onChange }: CourseModulesEditorPr
         }
     };
 
-
     // Lesson functions
     const addLesson = (moduleId: string) => {
         const module = modules.find(m => m.id === moduleId);
         if (module) {
+            const newId = generateId();
             updateModule(moduleId, {
                 lessons: [
                     ...module.lessons,
                     {
-                        id: generateId(),
+                        id: newId,
                         title: '',
                         explanation: '',
                         videoLink: '',
@@ -148,6 +153,7 @@ export function CourseModulesEditor({ modules, onChange }: CourseModulesEditorPr
                     }
                 ]
             });
+            setExpandedLessons(prev => ({ ...prev, [newId]: true }));
         }
     };
 
@@ -221,452 +227,489 @@ export function CourseModulesEditor({ modules, onChange }: CourseModulesEditorPr
         updateQuiz(moduleId, lessonId, quizId, { options: newOptions });
     };
 
+    const toggleLessonExpand = (id: string) => {
+        setExpandedLessons(prev => ({ ...prev, [id]: !prev[id] }));
+    };
+
+    const toggleWeekExpand = (id: string) => {
+        setExpandedWeeks(prev => ({ ...prev, [id]: !prev[id] }));
+    };
 
     return (
-        <div className="space-y-6">
-            {modules.map((module, mIndex) => (
-                <div key={module.id} className="bg-white border text-gray-800 border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-                    {/* Module Header */}
-                    <div className="p-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-white rounded-lg border border-gray-200 shadow-sm cursor-grab">
-                                <GripVertical className="w-5 h-5 text-gray-400" />
+        <div className="space-y-8 font-mono">
+            {modules.map((module, mIndex) => {
+                const isWeekExpanded = expandedWeeks[module.id] !== false; // Default expanded
+                return (
+                    <div key={module.id} className="bg-white border-4 border-gray-900 shadow-[6px_6px_0px_rgba(0,0,0,1)] text-gray-900 relative">
+                        {/* Week / Module Title Header */}
+                        <div className="p-6 bg-[#FAF9F6] border-b-4 border-gray-900 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-white border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] cursor-grab">
+                                    <GripVertical className="w-5 h-5 text-gray-900" />
+                                </div>
+                                <div className="text-left">
+                                    <span className="text-xs font-black text-gray-500 uppercase tracking-wider">Week {mIndex + 1}</span>
+                                    <h3 className="font-black text-xl uppercase tracking-tight">
+                                        {module.title || 'Untitled Week Blueprint'}
+                                    </h3>
+                                </div>
                             </div>
-                            <h3 className="font-bold text-lg">Module {mIndex + 1}: {module.title || 'Untitled Module'}</h3>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={() => deleteModule(module.id)}
-                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                            <Trash2 className="w-5 h-5" />
-                        </button>
-                    </div>
-
-                    <div className="p-5 space-y-6">
-                        {/* Module Details */}
-                        <div className="grid md:grid-cols-2 gap-4">
-                            <div className="space-y-2 md:col-span-2">
-                                <label className="text-sm font-bold text-gray-700">Module Title *</label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. Introduction to React Components"
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 transition-all"
-                                    value={module.title}
-                                    onChange={e => updateModule(module.id, { title: e.target.value })}
-                                    required
-                                />
-                            </div>
-
-                            <div className="space-y-2 md:col-span-2">
-                                <label className="text-sm font-bold text-gray-700">Module Description *</label>
-                                <textarea
-                                    placeholder="Short explanation of the module's core focus."
-                                    rows={2}
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 transition-all resize-none"
-                                    value={module.description}
-                                    onChange={e => updateModule(module.id, { description: e.target.value })}
-                                    required
-                                />
-                            </div>
-
-                            <div className="space-y-2 md:col-span-2">
-                                <label className="text-sm font-bold text-gray-700">Learning Objectives * (3-5 points)</label>
-                                {module.objectives.map((obj, i) => (
-                                    <div key={i} className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            placeholder={`Objective ${i + 1}`}
-                                            className="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 transition-all text-sm"
-                                            value={obj}
-                                            onChange={e => updateLearningObjective(module.id, i, e.target.value)}
-                                            required
-                                        />
-                                        {module.objectives.length > 1 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => removeLearningObjective(module.id, i)}
-                                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        )}
-                                    </div>
-                                ))}
-                                {module.objectives.length < 5 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => addLearningObjective(module.id)}
-                                        className="text-sm font-bold text-amber-600 hover:text-amber-700 flex items-center mt-2"
-                                    >
-                                        <Plus className="w-4 h-4 mr-1" /> Add Objective
-                                    </button>
-                                )}
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-gray-700">Duration *</label>
-                                <select
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 transition-all"
-                                    value={module.duration}
-                                    onChange={e => updateModule(module.id, { duration: e.target.value })}
-                                >
-                                    <option>1 Week</option>
-                                    <option>2 Weeks</option>
-                                    <option>3 Weeks</option>
-                                    <option>4 Weeks</option>
-                                    <option>Custom</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        {/* Lessons Section */}
-                        <div className="mt-8">
-                            <h4 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2 border-b pb-2">
-                                <Video className="w-5 h-5 text-amber-500" />
-                                Lessons in this Module
-                            </h4>
-
-                            <div className="space-y-4">
-                                {module.lessons.map((lesson, lIndex) => (
-                                    <div key={lesson.id} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                                        <div className="flex justify-between items-center mb-4">
-                                            <h5 className="font-bold text-gray-700">Lesson {lIndex + 1}</h5>
-                                            <button
-                                                type="button"
-                                                onClick={() => deleteLesson(module.id, lesson.id)}
-                                                className="p-1.5 text-red-500 hover:bg-red-100 rounded-md transition-colors"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-
-                                        <div className="space-y-4">
-                                            <div>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Lesson Title *"
-                                                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 text-sm"
-                                                    value={lesson.title}
-                                                    onChange={e => updateLesson(module.id, lesson.id, { title: e.target.value })}
-                                                    required
-                                                />
-                                            </div>
-                                            <div>
-                                                <textarea
-                                                    placeholder="Short Explanation (Text Editor) *"
-                                                    rows={3}
-                                                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 text-sm resize-none"
-                                                    value={lesson.explanation}
-                                                    onChange={e => updateLesson(module.id, lesson.id, { explanation: e.target.value })}
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="grid md:grid-cols-2 gap-4">
-                                                <div>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="YouTube Video Link (Optional)"
-                                                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 text-sm"
-                                                        value={lesson.videoLink}
-                                                        onChange={e => updateLesson(module.id, lesson.id, { videoLink: e.target.value })}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="text-xs font-bold text-gray-600 block mb-1">Worksheet (PDF/Doc)</label>
-                                                    {lesson.worksheetName && lesson.worksheetUrl ? (
-                                                        <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-100 rounded-lg">
-                                                            <a
-                                                                href={lesson.worksheetUrl}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="text-sm font-bold text-amber-600 hover:text-amber-800 hover:underline flex-1 truncate"
-                                                                title="Download Document"
-                                                                download
-                                                            >
-                                                                📄 {lesson.worksheetName}
-                                                            </a>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => updateLesson(module.id, lesson.id, { worksheetName: '', worksheetUrl: '' })}
-                                                                className="p-1.5 text-red-500 hover:bg-red-100 rounded-md transition-colors flex-shrink-0"
-                                                                title="Remove file"
-                                                            >
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="space-y-3">
-                                                            <div className="relative">
-                                                                <input
-                                                                    type="url"
-                                                                    placeholder="Paste public PDF link here (e.g. from Google Drive or Supabase)"
-                                                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 text-sm bg-gray-50"
-                                                                    value={lesson.worksheetUrl || ''}
-                                                                    onChange={(e) => updateLesson(module.id, lesson.id, { worksheetUrl: e.target.value, worksheetName: 'Lesson Document' })}
-                                                                />
-                                                                <p className="text-xs text-gray-500 mt-1">Make sure the link is publicly accessible to students.</p>
-                                                            </div>
-
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="h-px bg-gray-200 flex-1"></div>
-                                                                <span className="text-xs font-medium text-gray-400">OR</span>
-                                                                <div className="h-px bg-gray-200 flex-1"></div>
-                                                            </div>
-
-                                                            <div className="relative">
-                                                                <input
-                                                                    type="file"
-                                                                    id={`file-${lesson.id}`}
-                                                                    className="hidden"
-                                                                    accept=".pdf,.doc,.docx"
-                                                                    onChange={(e) => {
-                                                                        const file = e.target.files?.[0];
-                                                                        if (file) handleFileUpload(module.id, lesson.id, file);
-                                                                    }}
-                                                                    disabled={uploadingFiles[`${module.id}-${lesson.id}`]}
-                                                                />
-                                                                <label
-                                                                    htmlFor={`file-${lesson.id}`}
-                                                                    className={`w-full flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm font-medium ${uploadingFiles[`${module.id}-${lesson.id}`] ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-600 hover:bg-gray-50 hover:border-amber-500 hover:text-amber-600 cursor-pointer transition-colors'}`}
-                                                                >
-                                                                    {uploadingFiles[`${module.id}-${lesson.id}`] ? (
-                                                                        <>
-                                                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                                                            Uploading...
-                                                                        </>
-                                                                    ) : (
-                                                                        <>
-                                                                            <UploadCloud className="w-4 h-4" />
-                                                                            Click to Upload PDF/Doc (Max 10MB)
-                                                                        </>
-                                                                    )}
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            {/* Quizzes Section */}
-                                            <div className="pt-4 mt-4 border-t border-gray-200">
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <h6 className="font-bold text-sm text-gray-800 flex items-center gap-1.5">
-                                                        <HelpCircle className="w-4 h-4 text-amber-500" />
-                                                        Quiz Section
-                                                    </h6>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => addQuiz(module.id, lesson.id)}
-                                                        className="text-xs font-bold text-amber-600 hover:bg-amber-50 px-2 py-1 rounded border border-amber-200 flex items-center gap-1"
-                                                    >
-                                                        <Plus className="w-3 h-3" /> Add Question
-                                                    </button>
-                                                </div>
-
-                                                <div className="space-y-4 text-sm">
-                                                    {lesson.quizzes.map((quiz) => (
-                                                        <div key={quiz.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm relative">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => deleteQuiz(module.id, lesson.id, quiz.id)}
-                                                                className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors"
-                                                            >
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </button>
-
-                                                            <div className="mb-3 w-48">
-                                                                <label className="block text-xs font-bold text-gray-600 mb-1">Question Type</label>
-                                                                <select
-                                                                    className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded outline-none focus:ring-1 focus:ring-amber-500"
-                                                                    value={quiz.type}
-                                                                    onChange={(e) => {
-                                                                        const type = e.target.value as QuizType;
-                                                                        let newOptions = quiz.options;
-                                                                        if (type === 'True/False') {
-                                                                            newOptions = [{ id: generateId(), text: 'True' }, { id: generateId(), text: 'False' }];
-                                                                        } else if (type === 'MCQ' && quiz.options.length < 2) {
-                                                                            newOptions = [{ id: generateId(), text: '' }, { id: generateId(), text: '' }];
-                                                                        }
-                                                                        updateQuiz(module.id, lesson.id, quiz.id, { type, options: newOptions });
-                                                                    }}
-                                                                >
-                                                                    <option value="MCQ">Multiple Choice</option>
-                                                                    <option value="True/False">True/False</option>
-                                                                    <option value="Fill in the blank">Fill in the blank</option>
-                                                                </select>
-                                                            </div>
-
-                                                            <div className="space-y-3">
-                                                                <div>
-                                                                    <input
-                                                                        type="text"
-                                                                        placeholder="Question *"
-                                                                        className="w-full px-3 py-2 border border-gray-300 rounded font-medium outline-none focus:border-amber-500"
-                                                                        value={quiz.question}
-                                                                        onChange={e => updateQuiz(module.id, lesson.id, quiz.id, { question: e.target.value })}
-                                                                        required
-                                                                    />
-                                                                </div>
-
-                                                                {/* Options based on type */}
-                                                                {quiz.type === 'MCQ' && (
-                                                                    <div className="space-y-2 pl-4 border-l-2 border-gray-100">
-                                                                        <label className="text-xs font-bold text-gray-600 block">Options & Correct Answer</label>
-                                                                        {quiz.options.map((opt, oIndex) => (
-                                                                            <div key={opt.id} className="flex items-center gap-2">
-                                                                                <input
-                                                                                    type="radio"
-                                                                                    name={`correct-${quiz.id}`}
-                                                                                    checked={quiz.correctAnswer === opt.id}
-                                                                                    onChange={() => updateQuiz(module.id, lesson.id, quiz.id, { correctAnswer: opt.id })}
-                                                                                    className="w-4 h-4 text-amber-500 focus:ring-amber-500"
-                                                                                    required
-                                                                                />
-                                                                                <input
-                                                                                    type="text"
-                                                                                    placeholder={`Option ${oIndex + 1}`}
-                                                                                    className="flex-1 px-2 py-1 border border-gray-300 rounded outline-none focus:border-amber-500"
-                                                                                    value={opt.text}
-                                                                                    onChange={e => {
-                                                                                        const newOpts = [...quiz.options];
-                                                                                        newOpts[oIndex].text = e.target.value;
-                                                                                        updateQuizOptions(module.id, lesson.id, quiz.id, newOpts);
-                                                                                    }}
-                                                                                    required
-                                                                                />
-                                                                                {quiz.options.length > 2 && (
-                                                                                    <button
-                                                                                        type="button"
-                                                                                        onClick={() => {
-                                                                                            const newOpts = quiz.options.filter(o => o.id !== opt.id);
-                                                                                            updateQuizOptions(module.id, lesson.id, quiz.id, newOpts);
-                                                                                            if (quiz.correctAnswer === opt.id) {
-                                                                                                updateQuiz(module.id, lesson.id, quiz.id, { correctAnswer: '' });
-                                                                                            }
-                                                                                        }}
-                                                                                        className="text-gray-400 hover:text-red-500"
-                                                                                    >
-                                                                                        <Trash2 className="w-4 h-4" />
-                                                                                    </button>
-                                                                                )}
-                                                                            </div>
-                                                                        ))}
-                                                                        {quiz.options.length < 5 && (
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() => updateQuizOptions(module.id, lesson.id, quiz.id, [...quiz.options, { id: generateId(), text: '' }])}
-                                                                                className="text-xs text-amber-600 font-bold hover:underline"
-                                                                            >
-                                                                                + Add Option
-                                                                            </button>
-                                                                        )}
-                                                                    </div>
-                                                                )}
-
-                                                                {quiz.type === 'True/False' && (
-                                                                    <div className="space-y-2 pl-4 border-l-2 border-gray-100">
-                                                                        <label className="text-xs font-bold text-gray-600 block">Select Correct Answer</label>
-                                                                        <div className="flex gap-4">
-                                                                            {quiz.options.map((opt) => (
-                                                                                <label key={opt.id} className="flex items-center gap-2 cursor-pointer">
-                                                                                    <input
-                                                                                        type="radio"
-                                                                                        name={`correct-${quiz.id}`}
-                                                                                        checked={quiz.correctAnswer === opt.id}
-                                                                                        onChange={() => updateQuiz(module.id, lesson.id, quiz.id, { correctAnswer: opt.id })}
-                                                                                        className="w-4 h-4 text-amber-500 focus:ring-amber-500"
-                                                                                        required
-                                                                                    />
-                                                                                    <span>{opt.text}</span>
-                                                                                </label>
-                                                                            ))}
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-
-                                                                {quiz.type === 'Fill in the blank' && (
-                                                                    <div className="space-y-2 pl-4 border-l-2 border-gray-100">
-                                                                        <label className="text-xs font-bold text-gray-600 block">Correct Answer</label>
-                                                                        <input
-                                                                            type="text"
-                                                                            placeholder="Type the exact word or phrase"
-                                                                            className="w-full max-w-sm px-3 py-1.5 border border-gray-300 rounded outline-none focus:border-amber-500"
-                                                                            value={quiz.correctAnswer}
-                                                                            onChange={e => updateQuiz(module.id, lesson.id, quiz.id, { correctAnswer: e.target.value })}
-                                                                            required
-                                                                        />
-                                                                    </div>
-                                                                )}
-
-
-                                                                {/* Explanations and Smart Features */}
-                                                                <div className="space-y-3 pt-3 mt-3 border-t border-gray-100">
-                                                                    <div>
-                                                                        <label className="text-xs font-bold text-gray-700 flex items-center gap-1 mb-1">
-                                                                            <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-                                                                            Explanation * <span className="text-gray-400 font-normal ml-1">(Powers auto-correction)</span>
-                                                                        </label>
-                                                                        <textarea
-                                                                            placeholder="Why is this answer correct?"
-                                                                            rows={2}
-                                                                            className="w-full px-3 py-1.5 border border-gray-300 rounded outline-none focus:border-green-500 text-xs resize-none"
-                                                                            value={quiz.explanation}
-                                                                            onChange={e => updateQuiz(module.id, lesson.id, quiz.id, { explanation: e.target.value })}
-                                                                            required
-                                                                        />
-                                                                    </div>
-
-                                                                    <div className="bg-amber-50/50 p-3 rounded-lg border border-amber-100/50">
-                                                                        <label className="text-xs font-bold text-amber-800 flex items-center gap-1 mb-1">
-                                                                            🎯 Smart Feature: Custom Encouragement Message (Optional)
-                                                                        </label>
-                                                                        <p className="text-[10px] text-amber-600 mb-2 leading-tight">
-                                                                            Personalize what the child sees when they select an answer. <br />
-                                                                            Example: "Remember to re-render the component when state changes 🔄"
-                                                                        </p>
-                                                                        <textarea
-                                                                            placeholder="Your custom message here..."
-                                                                            rows={2}
-                                                                            className="w-full px-3 py-1.5 border border-amber-200 rounded outline-none focus:border-amber-400 text-xs bg-white resize-none"
-                                                                            value={quiz.customMessage}
-                                                                            onChange={e => updateQuiz(module.id, lesson.id, quiz.id, { customMessage: e.target.value })}
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                    {lesson.quizzes.length === 0 && (
-                                                        <p className="text-xs text-gray-400 italic text-center py-2">No questions added yet. Quizzes are highly recommended!</p>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                ))}
-
+                            <div className="flex items-center gap-3">
                                 <button
                                     type="button"
-                                    onClick={() => addLesson(module.id)}
-                                    className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-sm font-bold text-gray-500 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 transition-all flex items-center justify-center gap-2"
+                                    onClick={() => toggleWeekExpand(module.id)}
+                                    className="p-2 border-2 border-gray-900 bg-white shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] transition-all"
                                 >
-                                    <Plus className="w-5 h-5" /> Add New Lesson
+                                    {isWeekExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => deleteModule(module.id)}
+                                    className="p-2 border-2 border-gray-900 bg-rose-100 text-rose-700 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_rgba(0,0,0,1)] transition-all"
+                                >
+                                    <Trash2 className="w-5 h-5" />
                                 </button>
                             </div>
                         </div>
+
+                        {isWeekExpanded && (
+                            <div className="p-6 space-y-8">
+                                {/* Week Meta details */}
+                                <div className="grid md:grid-cols-3 gap-6 bg-[#FAF9F6] p-6 border-4 border-gray-900 shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                                    <div className="md:col-span-2 space-y-4">
+                                        <div>
+                                            <label className="block text-xs font-black uppercase text-gray-900 mb-1">Week Title *</label>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g. Introduction to React Components"
+                                                className="w-full px-4 py-3 bg-white border-2 border-gray-900 text-xs font-bold uppercase outline-none focus:bg-[#eff3ff]"
+                                                value={module.title}
+                                                onChange={e => updateModule(module.id, { title: e.target.value })}
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-black uppercase text-gray-900 mb-1">Week Overview / Goal *</label>
+                                            <textarea
+                                                placeholder="Short summary detailing what skills students master this week."
+                                                rows={2}
+                                                className="w-full px-4 py-3 bg-white border-2 border-gray-900 text-xs font-bold uppercase outline-none focus:bg-[#eff3ff] resize-none"
+                                                value={module.description}
+                                                onChange={e => updateModule(module.id, { description: e.target.value })}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-xs font-black uppercase text-gray-900 mb-1">Estimated Commitment *</label>
+                                            <select
+                                                className="w-full px-4 py-3 bg-white border-2 border-gray-900 text-xs font-bold uppercase outline-none"
+                                                value={module.duration}
+                                                onChange={e => updateModule(module.id, { duration: e.target.value })}
+                                            >
+                                                <option>1 Week</option>
+                                                <option>2 Weeks</option>
+                                                <option>3 Weeks</option>
+                                                <option>4 Weeks</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-black uppercase text-gray-900 mb-1">Learning Objectives</label>
+                                            <div className="space-y-2">
+                                                {module.objectives.map((obj, i) => (
+                                                    <div key={i} className="flex gap-2">
+                                                        <input
+                                                            type="text"
+                                                            placeholder={`Objective ${i + 1}`}
+                                                            className="flex-1 px-3 py-2 bg-white border-2 border-gray-900 text-xs font-bold uppercase"
+                                                            value={obj}
+                                                            onChange={e => updateLearningObjective(module.id, i, e.target.value)}
+                                                            required
+                                                        />
+                                                        {module.objectives.length > 1 && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeLearningObjective(module.id, i)}
+                                                                className="text-rose-600 hover:text-rose-800"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                                {module.objectives.length < 5 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => addLearningObjective(module.id)}
+                                                        className="text-xs font-black text-[#f39c12] hover:underline flex items-center gap-1 mt-1"
+                                                    >
+                                                        <Plus className="w-3.5 h-3.5" /> Add Objective
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Coursera Syllabus Timeline Items */}
+                                <div className="space-y-6">
+                                    <h4 className="font-black text-lg uppercase tracking-tight border-b-4 border-gray-900 pb-2 flex items-center gap-2">
+                                        <BookOpen className="w-5 h-5 text-[#f39c12]" />
+                                        Weekly Syllabus Timeline
+                                    </h4>
+
+                                    <div className="space-y-6 relative border-l-4 border-gray-950 pl-6 ml-4">
+                                        {module.lessons.map((lesson, lIndex) => {
+                                            const isLessonExpanded = expandedLessons[lesson.id] !== false; // Default expanded
+                                            return (
+                                                <div key={lesson.id} className="relative bg-white border-4 border-gray-900 shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                                                    {/* Timeline node */}
+                                                    <div className="absolute -left-[38px] top-6 w-5 h-5 bg-[#f39c12] border-4 border-gray-900 rounded-full flex items-center justify-center shadow-[1px_1px_0px_rgba(0,0,0,1)]" />
+
+                                                    {/* Lesson Title Box */}
+                                                    <div 
+                                                        onClick={() => toggleLessonExpand(lesson.id)}
+                                                        className="p-4 bg-[#FAF9F6] border-b-4 border-gray-900 flex justify-between items-center cursor-pointer select-none"
+                                                    >
+                                                        <div className="text-left">
+                                                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Syllabus Topic {lIndex + 1}</span>
+                                                            <h5 className="font-black text-sm uppercase tracking-tight">{lesson.title || 'Untitled Topic'}</h5>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => { e.stopPropagation(); deleteLesson(module.id, lesson.id); }}
+                                                                className="p-1.5 border border-gray-900 bg-white hover:bg-rose-50 text-rose-600 rounded"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                            {isLessonExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                                        </div>
+                                                    </div>
+
+                                                    {isLessonExpanded && (
+                                                        <div className="p-6 space-y-6 text-left">
+                                                            {/* Topic Title Input */}
+                                                            <div>
+                                                                <label className="block text-xs font-black uppercase text-gray-900 mb-1">Topic Title *</label>
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder="Topic Title *"
+                                                                    className="w-full px-3 py-2 border-2 border-gray-900 text-xs font-bold uppercase outline-none focus:bg-[#eff3ff]"
+                                                                    value={lesson.title}
+                                                                    onChange={e => updateLesson(module.id, lesson.id, { title: e.target.value })}
+                                                                    required
+                                                                />
+                                                            </div>
+
+                                                            {/* Coursera Item Blocks Grid */}
+                                                            <div className="grid md:grid-cols-2 gap-6 pt-4 border-t-2 border-gray-900">
+                                                                {/* Item A: Video Lecture */}
+                                                                <div className="border-4 border-gray-900 bg-[#FAF9F6] p-4 shadow-[3px_3px_0px_rgba(0,0,0,1)]">
+                                                                    <h6 className="font-black text-xs uppercase text-gray-900 flex items-center gap-1.5 mb-3 border-b-2 border-gray-900 pb-1.5">
+                                                                        <Video className="w-4 h-4 text-[#f39c12]" /> Video Lecture
+                                                                    </h6>
+                                                                    <div className="space-y-3">
+                                                                        <input
+                                                                            type="text"
+                                                                            placeholder="Paste YouTube Video Link"
+                                                                            className="w-full px-3 py-2 border-2 border-gray-900 text-xs font-bold bg-white outline-none"
+                                                                            value={lesson.videoLink}
+                                                                            onChange={e => updateLesson(module.id, lesson.id, { videoLink: e.target.value })}
+                                                                        />
+                                                                        <p className="text-[10px] text-gray-500 uppercase leading-relaxed">
+                                                                            Include video resources to anchor this topic step.
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Item B: Lab Worksheet / PDF */}
+                                                                <div className="border-4 border-gray-900 bg-[#FAF9F6] p-4 shadow-[3px_3px_0px_rgba(0,0,0,1)]">
+                                                                    <h6 className="font-black text-xs uppercase text-gray-900 flex items-center gap-1.5 mb-3 border-b-2 border-gray-900 pb-1.5">
+                                                                        <FileText className="w-4 h-4 text-[#f39c12]" /> Reference Lab / Worksheet
+                                                                    </h6>
+                                                                    {lesson.worksheetName && lesson.worksheetUrl ? (
+                                                                        <div className="flex items-center justify-between p-3 border-2 border-gray-900 bg-white">
+                                                                            <a
+                                                                                href={lesson.worksheetUrl}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="text-xs font-black text-[#f39c12] hover:underline truncate"
+                                                                                download
+                                                                            >
+                                                                                📄 {lesson.worksheetName}
+                                                                            </a>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => updateLesson(module.id, lesson.id, { worksheetName: '', worksheetUrl: '' })}
+                                                                                className="text-rose-600 hover:text-rose-800"
+                                                                            >
+                                                                                <Trash2 className="w-4 h-4" />
+                                                                            </button>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="space-y-3">
+                                                                            <input
+                                                                                type="url"
+                                                                                placeholder="Paste direct PDF link"
+                                                                                className="w-full px-3 py-2 border-2 border-gray-900 text-xs font-bold bg-white outline-none"
+                                                                                value={lesson.worksheetUrl || ''}
+                                                                                onChange={(e) => updateLesson(module.id, lesson.id, { worksheetUrl: e.target.value, worksheetName: 'Topic Document' })}
+                                                                            />
+                                                                            <div className="text-center text-[9px] font-black text-gray-400">OR</div>
+                                                                            <div>
+                                                                                <input
+                                                                                    type="file"
+                                                                                    id={`file-${lesson.id}`}
+                                                                                    className="hidden"
+                                                                                    accept=".pdf,.doc,.docx"
+                                                                                    onChange={(e) => {
+                                                                                        const file = e.target.files?.[0];
+                                                                                        if (file) handleFileUpload(module.id, lesson.id, file);
+                                                                                    }}
+                                                                                    disabled={uploadingFiles[`${module.id}-${lesson.id}`]}
+                                                                                />
+                                                                                <label
+                                                                                    htmlFor={`file-${lesson.id}`}
+                                                                                    className={`w-full flex items-center justify-center gap-2 px-3 py-2 border-2 border-dashed border-gray-400 bg-white text-xs font-black hover:border-gray-900 hover:bg-[#eff3ff] cursor-pointer transition-colors`}
+                                                                                >
+                                                                                    {uploadingFiles[`${module.id}-${lesson.id}`] ? (
+                                                                                        <>
+                                                                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                                                            Uploading...
+                                                                                        </>
+                                                                                    ) : (
+                                                                                        <>
+                                                                                            <UploadCloud className="w-4 h-4" />
+                                                                                            Upload Doc (Max 10MB)
+                                                                                        </>
+                                                                                    )}
+                                                                                </label>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Item C: Reading Explanation */}
+                                                            <div className="border-4 border-gray-900 bg-[#FAF9F6] p-4 shadow-[3px_3px_0px_rgba(0,0,0,1)]">
+                                                                <h6 className="font-black text-xs uppercase text-gray-900 flex items-center gap-1.5 mb-3 border-b-2 border-gray-900 pb-1.5">
+                                                                    <FileText className="w-4 h-4 text-[#f39c12]" /> Reading Material
+                                                                </h6>
+                                                                <textarea
+                                                                    placeholder="Type reading materials, key lessons, markdown syntax, or resources here..."
+                                                                    rows={4}
+                                                                    className="w-full px-3 py-2 border-2 border-gray-900 text-xs font-bold bg-white outline-none resize-none"
+                                                                    value={lesson.explanation}
+                                                                    onChange={e => updateLesson(module.id, lesson.id, { explanation: e.target.value })}
+                                                                    required
+                                                                />
+                                                            </div>
+
+                                                            {/* Item D: Practice Quizzes */}
+                                                            <div className="border-4 border-gray-900 bg-[#FAF9F6] p-4 shadow-[3px_3px_0px_rgba(0,0,0,1)]">
+                                                                <div className="flex justify-between items-center mb-3 border-b-2 border-gray-900 pb-1.5">
+                                                                    <h6 className="font-black text-xs uppercase text-gray-900 flex items-center gap-1.5">
+                                                                        <HelpCircle className="w-4 h-4 text-[#f39c12]" />
+                                                                        Practice Quiz
+                                                                    </h6>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => addQuiz(module.id, lesson.id)}
+                                                                        className="text-[10px] font-black bg-white hover:bg-[#eff3ff] px-2.5 py-1 border-2 border-gray-900 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] flex items-center gap-1"
+                                                                    >
+                                                                        <Plus className="w-3.5 h-3.5" /> Add Question
+                                                                    </button>
+                                                                </div>
+
+                                                                <div className="space-y-4">
+                                                                    {lesson.quizzes.map((quiz) => (
+                                                                        <div key={quiz.id} className="bg-white border-2 border-gray-900 p-4 shadow-[2px_2px_0px_rgba(0,0,0,1)] relative">
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => deleteQuiz(module.id, lesson.id, quiz.id)}
+                                                                                className="absolute top-3 right-3 text-gray-400 hover:text-rose-600 transition-colors"
+                                                                            >
+                                                                                <Trash2 className="w-4 h-4" />
+                                                                            </button>
+
+                                                                            <div className="mb-3 w-48 text-left">
+                                                                                <label className="block text-[10px] font-black text-gray-500 uppercase mb-1">Question Type</label>
+                                                                                <select
+                                                                                    className="w-full px-2 py-1.5 border-2 border-gray-900 bg-[#FAF9F6] text-[10px] font-black uppercase outline-none"
+                                                                                    value={quiz.type}
+                                                                                    onChange={(e) => {
+                                                                                        const type = e.target.value as QuizType;
+                                                                                        let newOptions = quiz.options;
+                                                                                        if (type === 'True/False') {
+                                                                                            newOptions = [{ id: generateId(), text: 'True' }, { id: generateId(), text: 'False' }];
+                                                                                        } else if (type === 'MCQ' && quiz.options.length < 2) {
+                                                                                            newOptions = [{ id: generateId(), text: '' }, { id: generateId(), text: '' }];
+                                                                                        }
+                                                                                        updateQuiz(module.id, lesson.id, quiz.id, { type, options: newOptions });
+                                                                                    }}
+                                                                                >
+                                                                                    <option value="MCQ">Multiple Choice</option>
+                                                                                    <option value="True/False">True/False</option>
+                                                                                    <option value="Fill in the blank">Fill in the blank</option>
+                                                                                </select>
+                                                                            </div>
+
+                                                                            <div className="space-y-3">
+                                                                                <input
+                                                                                    type="text"
+                                                                                    placeholder="Question *"
+                                                                                    className="w-full px-3 py-2 border-2 border-gray-900 text-xs font-bold outline-none"
+                                                                                    value={quiz.question}
+                                                                                    onChange={e => updateQuiz(module.id, lesson.id, quiz.id, { question: e.target.value })}
+                                                                                    required
+                                                                                />
+
+                                                                                {quiz.type === 'MCQ' && (
+                                                                                    <div className="space-y-2 pl-4 border-l-2 border-gray-900">
+                                                                                        <label className="text-[10px] font-black text-gray-500 uppercase block">Options & Correct Answer</label>
+                                                                                        {quiz.options.map((opt, oIndex) => (
+                                                                                            <div key={opt.id} className="flex items-center gap-2">
+                                                                                                <input
+                                                                                                    type="radio"
+                                                                                                    name={`correct-${quiz.id}`}
+                                                                                                    checked={quiz.correctAnswer === opt.id}
+                                                                                                    onChange={() => updateQuiz(module.id, lesson.id, quiz.id, { correctAnswer: opt.id })}
+                                                                                                    className="w-4 h-4 text-gray-900 focus:ring-gray-900"
+                                                                                                    required
+                                                                                                />
+                                                                                                <input
+                                                                                                    type="text"
+                                                                                                    placeholder={`Option ${oIndex + 1}`}
+                                                                                                    className="flex-1 px-2 py-1 border-2 border-gray-900 text-xs font-bold outline-none"
+                                                                                                    value={opt.text}
+                                                                                                    onChange={e => {
+                                                                                                        const newOpts = [...quiz.options];
+                                                                                                        newOpts[oIndex].text = e.target.value;
+                                                                                                        updateQuizOptions(module.id, lesson.id, quiz.id, newOpts);
+                                                                                                    }}
+                                                                                                    required
+                                                                                                />
+                                                                                                {quiz.options.length > 2 && (
+                                                                                                    <button
+                                                                                                        type="button"
+                                                                                                        onClick={() => {
+                                                                                                            const newOpts = quiz.options.filter(o => o.id !== opt.id);
+                                                                                                            updateQuizOptions(module.id, lesson.id, quiz.id, newOpts);
+                                                                                                            if (quiz.correctAnswer === opt.id) {
+                                                                                                                updateQuiz(module.id, lesson.id, quiz.id, { correctAnswer: '' });
+                                                                                                            }
+                                                                                                        }}
+                                                                                                        className="text-gray-400 hover:text-rose-600"
+                                                                                                    >
+                                                                                                        <Trash2 className="w-4 h-4" />
+                                                                                                    </button>
+                                                                                                )}
+                                                                                            </div>
+                                                                                        ))}
+                                                                                        {quiz.options.length < 5 && (
+                                                                                            <button
+                                                                                                type="button"
+                                                                                                onClick={() => updateQuizOptions(module.id, lesson.id, quiz.id, [...quiz.options, { id: generateId(), text: '' }])}
+                                                                                                className="text-[10px] font-black text-[#f39c12] hover:underline"
+                                                                                            >
+                                                                                                + Add Option
+                                                                                            </button>
+                                                                                        )}
+                                                                                    </div>
+                                                                                )}
+
+                                                                                {quiz.type === 'True/False' && (
+                                                                                    <div className="space-y-2 pl-4 border-l-2 border-gray-900">
+                                                                                        <label className="text-[10px] font-black text-gray-500 uppercase block">Select Correct Answer</label>
+                                                                                        <div className="flex gap-4 text-xs font-bold">
+                                                                                            {quiz.options.map((opt) => (
+                                                                                                <label key={opt.id} className="flex items-center gap-2 cursor-pointer">
+                                                                                                    <input
+                                                                                                        type="radio"
+                                                                                                        name={`correct-${quiz.id}`}
+                                                                                                        checked={quiz.correctAnswer === opt.id}
+                                                                                                        onChange={() => updateQuiz(module.id, lesson.id, quiz.id, { correctAnswer: opt.id })}
+                                                                                                        className="w-4 h-4 text-gray-900 focus:ring-gray-900"
+                                                                                                        required
+                                                                                                    />
+                                                                                                    <span>{opt.text}</span>
+                                                                                                </label>
+                                                                                            ))}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                )}
+
+                                                                                {quiz.type === 'Fill in the blank' && (
+                                                                                    <div className="space-y-2 pl-4 border-l-2 border-gray-900">
+                                                                                        <label className="text-[10px] font-black text-gray-500 uppercase block">Correct Answer</label>
+                                                                                        <input
+                                                                                            type="text"
+                                                                                            placeholder="Type the exact word or phrase"
+                                                                                            className="w-full max-w-sm px-3 py-1.5 border-2 border-gray-900 text-xs font-bold outline-none"
+                                                                                            value={quiz.correctAnswer}
+                                                                                            onChange={e => updateQuiz(module.id, lesson.id, quiz.id, { correctAnswer: e.target.value })}
+                                                                                            required
+                                                                                        />
+                                                                                    </div>
+                                                                                )}
+
+                                                                                <div className="space-y-3 pt-3 mt-3 border-t-2 border-gray-900">
+                                                                                    <div>
+                                                                                        <label className="text-[10px] font-black text-gray-500 uppercase flex items-center gap-1 mb-1">
+                                                                                            <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                                                                                            Explanation *
+                                                                                        </label>
+                                                                                        <textarea
+                                                                                            placeholder="Why is this answer correct? Explanations help auto-correct."
+                                                                                            rows={2}
+                                                                                            className="w-full px-3 py-1.5 border-2 border-gray-900 text-xs font-bold bg-white outline-none resize-none"
+                                                                                            value={quiz.explanation}
+                                                                                            onChange={e => updateQuiz(module.id, lesson.id, quiz.id, { explanation: e.target.value })}
+                                                                                            required
+                                                                                        />
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                    {lesson.quizzes.length === 0 && (
+                                                                        <p className="text-[10px] text-gray-400 italic text-center py-2">No quiz questions added yet.</p>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+
+                                        <button
+                                            type="button"
+                                            onClick={() => addLesson(module.id)}
+                                            className="w-full py-4 border-4 border-dashed border-gray-900 bg-white text-xs font-black text-gray-700 hover:text-[#f39c12] hover:border-[#f39c12] hover:bg-[#eff3ff]/10 transition-all flex items-center justify-center gap-2 shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+                                        >
+                                            <Plus className="w-5 h-5" /> Add New Topic Step
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                </div>
-            ))}
+                );
+            })}
 
             <button
                 type="button"
                 onClick={addModule}
-                className="w-full py-4 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl text-gray-600 font-bold hover:bg-gray-100 hover:text-gray-900 transition-all flex items-center justify-center gap-3 text-lg"
+                className="w-full py-5 border-4 border-dashed border-gray-900 bg-[#f39c12] text-sm font-black text-gray-900 hover:bg-[#e08e0b] shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-2"
             >
-                <Plus className="w-6 h-6" /> Add New Module
+                <Plus className="w-5 h-5" /> Add New Syllabus Week
             </button>
         </div>
     );
 }
+
+export default CourseModulesEditor;
