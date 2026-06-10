@@ -5,7 +5,7 @@ import {
     LogOut, X, User, Users, PlusCircle, Settings, GraduationCap, 
     CalendarDays, BookMarked, Building2, Bell, PanelLeftClose, 
     ChevronDown, Check, CheckCircle2, Plus, CalendarRange, 
-    CheckSquare, FileText, Clock, HelpCircle, StickyNote 
+    CheckSquare, FileText, Clock, HelpCircle, StickyNote, Terminal 
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useOrganizationMode } from '../../../context/OrganizationModeContext';
@@ -206,6 +206,7 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
         { icon: CheckCircle2, label: 'Submissions', path: '/org-submissions' },
         { icon: BookOpen, label: 'Courses', path: '/org-courses' },
         { icon: BookMarked, label: 'Study Materials', path: '/org-materials' },
+        { icon: Terminal, label: 'IDE Sandbox', path: '/org-ide' },
         { icon: Settings, label: 'Settings', path: '/org-settings' },
     ];
 
@@ -215,6 +216,7 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
         { icon: BookOpen, label: 'My Courses', path: '/courses' },
         { icon: Calendar, label: 'Sessions', path: '/calendar' },
         { icon: BookMarked, label: 'Study Materials', path: '/org-materials' },
+        { icon: Terminal, label: 'IDE Sandbox', path: '/org-ide' },
         { icon: Bell, label: 'Announcements', path: '/org-announcements' },
         { icon: MessageSquare, label: 'Messages', path: '/messages' },
         { icon: Users, label: 'Community', path: '/community' },
@@ -229,6 +231,7 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
         { icon: GraduationCap, label: 'My Students', path: '/org-my-students' },
         { icon: BookOpen, label: 'My Courses', path: '/mentor-courses' },
         { icon: BookMarked, label: 'Study Materials', path: '/org-materials' },
+        { icon: Terminal, label: 'IDE Sandbox', path: '/org-ide' },
         { icon: Calendar, label: 'Sessions', path: '/mentor-calendar' },
         { icon: Bell, label: 'Announcements', path: '/org-announcements' },
         { icon: MessageSquare, label: 'Messages', path: '/mentor-messages' },
@@ -418,6 +421,18 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
                                     >
                                         <BookMarked className="w-4 h-4" />
                                         Study Materials
+                                    </Link>
+                                    <Link 
+                                        to="/org-ide" 
+                                        onClick={() => window.innerWidth < 768 && onClose()}
+                                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl font-bold text-[11px] border transition-all ${
+                                            isActive('/org-ide')
+                                                ? 'bg-indigo-50 dark:bg-indigo-950/10 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30'
+                                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 border-transparent'
+                                        }`}
+                                    >
+                                        <Terminal className="w-4 h-4" />
+                                        IDE Sandbox
                                     </Link>
                                     <Link 
                                         to="/profile" 
