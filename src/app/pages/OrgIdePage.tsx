@@ -178,6 +178,7 @@ interface IdeState {
   editorInstance: any | null;
   currentTask: TaskInfo | null;
   previewContent: string;
+  isHydrated: boolean;
   createFile: (filename: string, content?: string) => void;
   deleteFile: (filename: string) => void;
   setActiveFile: (filename: string) => void;
@@ -282,6 +283,7 @@ export const useIdeStore = create<IdeState>((set, get) => {
   const initialState = getInitialState();
 
   return {
+    isHydrated: false,
     files: initialState.files,
     activeFileId: initialState.activeFileId,
     showSidebar: initialState.showSidebar,
@@ -613,6 +615,7 @@ export const useIdeStore = create<IdeState>((set, get) => {
     resetWorkspace: () => {
       localStorage.removeItem('nexlab_workspace_state');
       set({
+        isHydrated: true,
         files: DEFAULT_WORKSPACE_DATA.files,
         activeFileId: DEFAULT_WORKSPACE_DATA.activeFileId,
         showSidebar: DEFAULT_WORKSPACE_DATA.showSidebar,
@@ -626,15 +629,26 @@ export const useIdeStore = create<IdeState>((set, get) => {
 });
 
 // Auto-sync Zustand store to localStorage
+let lastSavedString = "";
 useIdeStore.subscribe((state) => {
+  if (!state.isHydrated) {
+    return;
+  }
+  const stateToSave = {
+    files: state.files,
+    activeFileId: state.activeFileId,
+    terminalHistory: state.terminalHistory,
+    showSidebar: state.showSidebar,
+    showTerminal: state.showTerminal
+  };
+  const serialized = JSON.stringify(stateToSave);
+  if (serialized === lastSavedString) {
+    return;
+  }
+  
   try {
-    localStorage.setItem('nexlab_workspace_state', JSON.stringify({
-      files: state.files,
-      activeFileId: state.activeFileId,
-      terminalHistory: state.terminalHistory,
-      showSidebar: state.showSidebar,
-      showTerminal: state.showTerminal
-    }));
+    localStorage.setItem('nexlab_workspace_state', serialized);
+    lastSavedString = serialized;
   } catch (e) {
     console.error('Failed to sync to localStorage', e);
   }
@@ -827,7 +841,11 @@ export function NexLabMonacoEditor() {
           language={language}
           path={activeFileId}
           value={currentFile.content}
-          onChange={(value) => updateFileContent(activeFileId, value || "")}
+          onChange={(value) => {
+            if (value !== undefined && activeFileId) {
+              updateFileContent(activeFileId, value);
+            }
+          }}
           onMount={(editor) => setEditorInstance(editor)}
           options={{
             minimap: { enabled: true },
@@ -846,8 +864,9 @@ export function NexLabMonacoEditor() {
 
 // ==========================================
 export function NexLabPreview() {
-  const { previewContent, rebuildPreview } = useIdeStore();
+  const { files, activeFileId, previewContent, rebuildPreview } = useIdeStore();
   const [isReloading, setIsReloading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleReload = () => {
     setIsReloading(true);
@@ -859,10 +878,18 @@ export function NexLabPreview() {
   };
 
   useEffect(() => {
-    if (!previewContent) {
+    // If an HTML file is active on mount/hydration, compile it immediately
+    if (activeFileId && activeFileId.endsWith('.html')) {
       rebuildPreview();
     }
-  }, []);
+    
+    // Simulate a brief loading/hydration transition for a standard premium UI feel
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 450);
+
+    return () => clearTimeout(timer);
+  }, [activeFileId]);
 
   return (
     <div className="flex-1 h-full flex flex-col bg-[#121212] border-l border-gray-800 overflow-hidden select-none">
@@ -899,7 +926,12 @@ export function NexLabPreview() {
 
       {/* Preview Body */}
       <div className="flex-1 w-full bg-white relative">
-        {previewContent ? (
+        {isLoading ? (
+          <div className="absolute inset-0 bg-[#121212] flex flex-col items-center justify-center text-xs text-gray-400 gap-3">
+            <div className="w-6 h-6 border-2 border-[#ff9f1c]/20 border-t-[#ff9f1c] rounded-full animate-spin"></div>
+            <span>Hydrating sandbox preview...</span>
+          </div>
+        ) : previewContent ? (
           <iframe 
             srcDoc={previewContent} 
             sandbox="allow-scripts" 
@@ -908,7 +940,7 @@ export function NexLabPreview() {
           />
         ) : (
           <div className="absolute inset-0 bg-[#121212] flex items-center justify-center text-xs text-gray-500">
-            Compiling and rendering sandbox...
+            No active preview compilation. Click RUN to execute.
           </div>
         )}
       </div>
@@ -1165,6 +1197,10 @@ export function OrgIdePage() {
     setTerminalHistory,
     editorInstance
   } = useIdeStore();
+
+  useEffect(() => {
+    useIdeStore.setState({ isHydrated: true });
+  }, []);
 
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [activeActivity, setActiveActivity] = useState<string>('explorer');
