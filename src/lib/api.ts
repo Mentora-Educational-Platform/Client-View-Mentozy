@@ -388,6 +388,36 @@ export const createCourse = async (
             }
         }
 
+        // Auto-enroll all organization students in this new course if it is published and belongs to an organization
+        const orgId = (courseData as any).org_id || payload.org_id;
+        if (orgId && status === 'published') {
+            try {
+                // Fetch all active students in the organization
+                const { data: students, error: studentsError } = await supabase
+                    .from('org_students')
+                    .select('student_id')
+                    .eq('org_id', orgId)
+                    .eq('status', 'Active');
+
+                if (!studentsError && students && students.length > 0) {
+                    const enrollments = students.map(student => ({
+                        user_id: student.student_id,
+                        track_id: trackId,
+                        org_id: orgId,
+                        status: 'active',
+                        progress: 0
+                    }));
+
+                    // Insert batch enrollments, ignoring duplicates
+                    await supabase
+                        .from('enrollments')
+                        .insert(enrollments);
+                }
+            } catch (enrollErr) {
+                console.error("Failed to auto-enroll organization students:", enrollErr);
+            }
+        }
+
         return true;
 
     } catch (e) {

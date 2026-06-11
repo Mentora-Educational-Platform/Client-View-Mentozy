@@ -41,7 +41,7 @@ export function CoursesPage() {
     }, [user, mode, activeOrganization?.id]);
 
     const filteredEnrollments = enrollments.filter(e => {
-        const matchesSearch = e.tracks?.title.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = (e.tracks?.title || '').toLowerCase().includes(searchQuery.toLowerCase());
         const matchesFilter = filter === 'all' || e.status === filter;
         return matchesSearch && matchesFilter;
     });

@@ -304,7 +304,7 @@ export function CourseViewerPage() {
                                                                     `}
                                                                 >
                                                                     <div className="flex items-center gap-2.5 min-w-0">
-                                                                        {lesson.videoLink ? (
+                                                                        {lesson.videoLink && lesson.videoLink.trim() !== '' ? (
                                                                             <Play className={`w-3.5 h-3.5 shrink-0 ${isItemActive ? 'text-blue-700' : 'text-gray-400'}`} />
                                                                         ) : lesson.quizzes && lesson.quizzes.length > 0 ? (
                                                                             <HelpCircle className={`w-3.5 h-3.5 shrink-0 ${isItemActive ? 'text-blue-700' : 'text-gray-400'}`} />
@@ -344,13 +344,13 @@ export function CourseViewerPage() {
                                     {/* Topic Title */}
                                     <div className="border-b border-gray-200 pb-5">
                                         <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 uppercase tracking-widest mb-1.5">
-                                            {activeLesson.videoLink ? 'Video Lecture' : activeLesson.quizzes && activeLesson.quizzes.length > 0 ? 'Practice Assessment' : 'Required Reading'}
+                                            {activeLesson.videoLink && activeLesson.videoLink.trim() !== '' ? 'Video Lecture' : activeLesson.quizzes && activeLesson.quizzes.length > 0 ? 'Practice Assessment' : 'Required Reading'}
                                         </div>
                                         <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">{activeLesson.title}</h2>
                                     </div>
 
                                     {/* 1. Video Player */}
-                                    {activeLesson.videoLink && (
+                                    {activeLesson.videoLink && activeLesson.videoLink.trim() !== "" && (
                                         <div className="space-y-4">
                                             <div className="w-full bg-slate-950 rounded-xl overflow-hidden aspect-video shadow-xs border border-slate-200">
                                                 <iframe
