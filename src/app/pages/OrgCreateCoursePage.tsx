@@ -10,9 +10,16 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { CourseModulesEditor, Module } from '../components/course/CourseModulesEditor';
+import { useCourseStore } from '../../lib/useCourseStore';
+import { useAuth } from '../../context/AuthContext';
+import { useOrganizationMode } from '../../context/OrganizationModeContext';
+import { createCourse } from '../../lib/api';
 
 export function OrgCreateCoursePage() {
   const navigate = useNavigate();
+  const { saveDraft, publishCourse } = useCourseStore();
+  const { user } = useAuth();
+  const { activeOrganization } = useOrganizationMode();
   
   const [loading, setLoading] = useState(false);
   const [actionStatus, setActionStatus] = useState<'published' | 'draft'>('published');
@@ -72,13 +79,57 @@ export function OrgCreateCoursePage() {
   const handleSaveCourse = async (status: 'draft' | 'published') => {
     setLoading(true);
     setActionStatus(status);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setLoading(false);
+    
+    // Build tracks data format matching Supabase
+    const dbCourseData = {
+      title: courseTitle,
+      description: courseSubtitle, // subtitle serves as description
+      level: 'Intermediate',
+      duration: '4 Weeks',
+      price: 0,
+      org_id: activeOrganization?.id || null
+    };
+
+    // Save to Supabase using createCourse
+    const success = await createCourse(
+      null,
+      dbCourseData as any,
+      modules,
+      user?.id,
+      status,
+      activeOrganization?.id || undefined
+    );
+
+    // Save to Zustand store as local storage copy
+    const localCourseData = {
+      title: courseTitle,
+      subtitle: courseSubtitle,
+      instructor: instructorName,
+      techStack: selectedTechs,
+      weeks: modules,
+      totalHours,
+      weeklyAllocation,
+      slackUrl,
+      organizerUrl
+    };
     
     if (status === 'draft') {
-      toast.success('Course draft saved successfully!');
+      saveDraft(localCourseData);
     } else {
-      toast.success('Course officially published to your Organisation!');
+      publishCourse(localCourseData);
+    }
+
+    setLoading(false);
+
+    if (success) {
+      if (status === 'draft') {
+        toast.success('Course draft saved successfully!');
+      } else {
+        toast.success('Course officially published to your Organisation!');
+      }
+      navigate('/org-courses');
+    } else {
+      toast.error('Failed to publish course to database, saved locally.');
       navigate('/org-courses');
     }
   };

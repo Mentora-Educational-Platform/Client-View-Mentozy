@@ -319,6 +319,10 @@ export const createCourse = async (
             payload.status = status;
         }
 
+        if ((courseData as any).org_id) {
+            payload.org_id = (courseData as any).org_id;
+        }
+
         let trackId = courseId;
 
         if (trackId) {
@@ -516,9 +520,19 @@ export const enrollInTrack = async (userId: string, trackId: number): Promise<bo
         const supabase = getSupabase();
         if (!supabase) return false;
 
+        const { data: trackData } = await supabase
+            .from('tracks')
+            .select('org_id')
+            .eq('id', trackId)
+            .single();
+
         const { error } = await supabase
             .from('enrollments')
-            .insert({ user_id: userId, track_id: trackId });
+            .insert({ 
+                user_id: userId, 
+                track_id: trackId,
+                org_id: trackData?.org_id || null
+            });
 
         if (error) throw error;
         return true;
