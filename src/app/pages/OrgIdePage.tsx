@@ -7,9 +7,10 @@ import {
   Folder, ChevronDown, ChevronRight, FileCode, CheckCircle, 
   Settings, User, Search, GitBranch, Save, FilePlus, Eye,
   Activity, EyeOff, Laptop, Sun, Moon, Sparkles, RefreshCw,
-  ChevronLeft, RotateCw
+  ChevronLeft, RotateCw, GraduationCap, Award
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '../../context/AuthContext';
 
 // ==========================================
 // 1. State Management (Zustand Store)
@@ -33,6 +34,8 @@ interface TestCase {
 interface TaskInfo {
   id: string;
   title: string;
+  description: string;
+  boilerplateCode: string;
   functionName: string;
   testCases: TestCase[];
 }
@@ -170,6 +173,7 @@ ${bootstrapCode}
 };
 
 interface IdeState {
+  userId: string | null;
   files: Record<string, WorkspaceFile>;
   activeFileId: string | null;
   showSidebar: boolean;
@@ -177,6 +181,8 @@ interface IdeState {
   terminalHistory: TerminalLine[];
   editorInstance: any | null;
   currentTask: TaskInfo | null;
+  tasks: TaskInfo[];
+  activeTaskId: string | null;
   previewContent: string;
   isHydrated: boolean;
   createFile: (filename: string, content?: string) => void;
@@ -192,6 +198,8 @@ interface IdeState {
   verifyTask: () => void;
   rebuildPreview: () => void;
   resetWorkspace: () => void;
+  loadTask: (taskId: string, userId: string) => void;
+  initializeUserWorkspace: (userId: string) => void;
 }
 
 const DEFAULT_WORKSPACE_DATA = {
@@ -258,49 +266,151 @@ greet("Developer");`
   ]
 };
 
-const getInitialState = () => {
-  const saved = localStorage.getItem('nexlab_workspace_state');
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      if (parsed && typeof parsed === 'object') {
-        return {
-          files: (parsed.files && typeof parsed.files === 'object' && !Array.isArray(parsed.files)) ? parsed.files : DEFAULT_WORKSPACE_DATA.files,
-          activeFileId: parsed.activeFileId !== undefined ? parsed.activeFileId : DEFAULT_WORKSPACE_DATA.activeFileId,
-          showSidebar: parsed.showSidebar !== undefined ? parsed.showSidebar : DEFAULT_WORKSPACE_DATA.showSidebar,
-          showTerminal: parsed.showTerminal !== undefined ? parsed.showTerminal : DEFAULT_WORKSPACE_DATA.showTerminal,
-          terminalHistory: Array.isArray(parsed.terminalHistory) ? parsed.terminalHistory : DEFAULT_WORKSPACE_DATA.terminalHistory
-        };
-      }
-    } catch (e) {
-      console.error('Failed to parse saved workspace state', e);
-    }
+const MOCK_TASKS: TaskInfo[] = [
+  {
+    id: "task_01",
+    title: "Console Initialization",
+    description: "Write a function named `initializeConsole` that prints 'Console Ready!' to the log using `console.log` and returns `true`.",
+    functionName: "initializeConsole",
+    boilerplateCode: `// Task 1: Console Initialization
+// Write a function named 'initializeConsole' that logs "Console Ready!" and returns true
+
+function initializeConsole() {
+  // Write your code here
+  
+}`,
+    testCases: [
+      { input: [], expected: true }
+    ]
+  },
+  {
+    id: "task_02",
+    title: "Variable Declaration",
+    description: "Write a function named `sumTwo` that takes two numbers as arguments and returns their sum.",
+    functionName: "sumTwo",
+    boilerplateCode: `// Task 2: Variable Declaration
+// Write a function named 'sumTwo' that takes two parameters and returns their sum
+
+function sumTwo(a, b) {
+  // Write your code here
+  
+}`,
+    testCases: [
+      { input: [2, 3], expected: 5 },
+      { input: [-1, 1], expected: 0 },
+      { input: [0, 0], expected: 0 }
+    ]
+  },
+  {
+    id: "task_03",
+    title: "Absolute Value Logic",
+    description: "Write a function named `getAbsolute` that takes a number and returns its absolute value.",
+    functionName: "getAbsolute",
+    boilerplateCode: `// Task 3: Absolute Value Logic
+// Write a function named 'getAbsolute' that returns the absolute value of the number
+
+function getAbsolute(num) {
+  // Write your code here
+  
+}`,
+    testCases: [
+      { input: [-5], expected: 5 },
+      { input: [10], expected: 10 },
+      { input: [0], expected: 0 }
+    ]
   }
-  return DEFAULT_WORKSPACE_DATA;
-};
+];
 
 export const useIdeStore = create<IdeState>((set, get) => {
-  const initialState = getInitialState();
-
   return {
+    userId: null,
     isHydrated: false,
-    files: initialState.files,
-    activeFileId: initialState.activeFileId,
-    showSidebar: initialState.showSidebar,
-    showTerminal: initialState.showTerminal,
-    terminalHistory: initialState.terminalHistory,
+    files: DEFAULT_WORKSPACE_DATA.files,
+    activeFileId: DEFAULT_WORKSPACE_DATA.activeFileId,
+    showSidebar: DEFAULT_WORKSPACE_DATA.showSidebar,
+    showTerminal: DEFAULT_WORKSPACE_DATA.showTerminal,
+    terminalHistory: DEFAULT_WORKSPACE_DATA.terminalHistory,
     editorInstance: null,
-    currentTask: {
-      id: "task_01",
-      title: "Calculate Absolute Value",
-      functionName: "getAbsolute",
-      testCases: [
-        { input: [-5], expected: 5 },
-        { input: [10], expected: 10 },
-        { input: [0], expected: 0 }
-      ]
-    },
+    currentTask: null,
+    activeTaskId: null,
+    tasks: MOCK_TASKS,
     previewContent: "",
+
+    initializeUserWorkspace: (userId: string) => {
+      const storageKey = `nexlab_workspace_${userId}`;
+      const saved = localStorage.getItem(storageKey);
+      let loadedState = null;
+
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === 'object') {
+            loadedState = {
+              files: (parsed.files && typeof parsed.files === 'object' && !Array.isArray(parsed.files)) ? parsed.files : DEFAULT_WORKSPACE_DATA.files,
+              activeFileId: parsed.activeFileId !== undefined ? parsed.activeFileId : DEFAULT_WORKSPACE_DATA.activeFileId,
+              showSidebar: parsed.showSidebar !== undefined ? parsed.showSidebar : DEFAULT_WORKSPACE_DATA.showSidebar,
+              showTerminal: parsed.showTerminal !== undefined ? parsed.showTerminal : DEFAULT_WORKSPACE_DATA.showTerminal,
+              terminalHistory: Array.isArray(parsed.terminalHistory) ? parsed.terminalHistory : DEFAULT_WORKSPACE_DATA.terminalHistory,
+              activeTaskId: parsed.activeTaskId !== undefined ? parsed.activeTaskId : null,
+              currentTask: parsed.currentTask !== undefined ? parsed.currentTask : null
+            };
+          }
+        } catch (e) {
+          console.error('Failed to parse saved workspace state', e);
+        }
+      }
+
+      const finalState = loadedState || {
+        ...DEFAULT_WORKSPACE_DATA,
+        activeTaskId: null,
+        currentTask: null
+      };
+
+      set({
+        userId,
+        isHydrated: true,
+        files: finalState.files,
+        activeFileId: finalState.activeFileId,
+        showSidebar: finalState.showSidebar,
+        showTerminal: finalState.showTerminal,
+        terminalHistory: finalState.terminalHistory,
+        activeTaskId: finalState.activeTaskId,
+        currentTask: finalState.currentTask,
+        previewContent: generatePreviewDOM(finalState.files, finalState.activeFileId)
+      });
+    },
+
+    loadTask: (taskId: string, userId: string) => {
+      const task = get().tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      const updatedFiles = {
+        ...get().files,
+        'main.js': { name: 'main.js', content: task.boilerplateCode }
+      };
+
+      set({
+        activeTaskId: taskId,
+        currentTask: task,
+        files: updatedFiles,
+        activeFileId: 'main.js',
+        previewContent: generatePreviewDOM(updatedFiles, 'main.js')
+      });
+
+      // Instantly save to user's local storage to prevent any race condition
+      const storageKey = `nexlab_workspace_${userId}`;
+      const stateToSave = {
+        files: updatedFiles,
+        activeFileId: 'main.js',
+        terminalHistory: get().terminalHistory,
+        showSidebar: get().showSidebar,
+        showTerminal: get().showTerminal,
+        activeTaskId: taskId,
+        currentTask: task
+      };
+      localStorage.setItem(storageKey, JSON.stringify(stateToSave));
+      toast.success(`Loaded challenge: ${task.title}`);
+    },
 
     createFile: (filename: string, content: string = "") => set((state) => {
       if (state.files[filename]) {
@@ -458,9 +568,15 @@ export const useIdeStore = create<IdeState>((set, get) => {
       }
     },
     verifyTask: () => {
-      const { activeFileId, files, currentTask, setTerminalHistory } = get();
-      if (!currentTask) {
+      const { activeFileId, files, activeTaskId, tasks, setTerminalHistory } = get();
+      const activeTask = tasks.find(t => t.id === activeTaskId);
+
+      if (!activeTask) {
         toast.error("No task active to verify");
+        setTerminalHistory(prev => [
+          ...prev,
+          { type: 'error', text: 'Validation error: Select a task from the Curriculum Dashboard first.' }
+        ]);
         return;
       }
 
@@ -486,7 +602,7 @@ export const useIdeStore = create<IdeState>((set, get) => {
 
       setTerminalHistory(prev => [
         ...prev,
-        { type: 'output', text: `Verifying task: "${currentTask.title}"...` }
+        { type: 'output', text: `Verifying task: "${activeTask.title}"...` }
       ]);
 
       const originalLog = console.log;
@@ -510,8 +626,8 @@ export const useIdeStore = create<IdeState>((set, get) => {
         // Create the testing script
         const validationScript = `
 (function() {
-  const testCases = ${JSON.stringify(currentTask.testCases)};
-  const targetFnName = ${JSON.stringify(currentTask.functionName)};
+  const testCases = ${JSON.stringify(activeTask.testCases)};
+  const targetFnName = ${JSON.stringify(activeTask.functionName)};
   const results = [];
   try {
     let fn;
@@ -586,9 +702,9 @@ export const useIdeStore = create<IdeState>((set, get) => {
         if (allPassed && results.length > 0) {
           outputLines.push({ 
             type: 'output', 
-            text: `\n==================================================\n[SUCCESS] Task Completed! Operator status unlocked. 🎉\n==================================================\n` 
+            text: `\n==================================================\n[SUCCESS] ${activeTask.title} Completed! Operator status unlocked. 🎉\n==================================================\n` 
           });
-          toast.success("Task verification passed! Excellent job.");
+          toast.success(`Task verification passed: ${activeTask.title}!`);
         } else {
           toast.error("Task verification failed. Please correct your code.");
         }
@@ -613,7 +729,10 @@ export const useIdeStore = create<IdeState>((set, get) => {
       previewContent: generatePreviewDOM(state.files, state.activeFileId)
     })),
     resetWorkspace: () => {
-      localStorage.removeItem('nexlab_workspace_state');
+      const { userId } = get();
+      if (userId) {
+        localStorage.removeItem(`nexlab_workspace_${userId}`);
+      }
       set({
         isHydrated: true,
         files: DEFAULT_WORKSPACE_DATA.files,
@@ -621,6 +740,8 @@ export const useIdeStore = create<IdeState>((set, get) => {
         showSidebar: DEFAULT_WORKSPACE_DATA.showSidebar,
         showTerminal: DEFAULT_WORKSPACE_DATA.showTerminal,
         terminalHistory: DEFAULT_WORKSPACE_DATA.terminalHistory,
+        activeTaskId: null,
+        currentTask: null,
         previewContent: generatePreviewDOM(DEFAULT_WORKSPACE_DATA.files, DEFAULT_WORKSPACE_DATA.activeFileId)
       });
       toast.success('Workspace reset to pristine boilerplate successfully');
@@ -631,7 +752,7 @@ export const useIdeStore = create<IdeState>((set, get) => {
 // Auto-sync Zustand store to localStorage
 let lastSavedString = "";
 useIdeStore.subscribe((state) => {
-  if (!state.isHydrated) {
+  if (!state.isHydrated || !state.userId) {
     return;
   }
   const stateToSave = {
@@ -639,7 +760,9 @@ useIdeStore.subscribe((state) => {
     activeFileId: state.activeFileId,
     terminalHistory: state.terminalHistory,
     showSidebar: state.showSidebar,
-    showTerminal: state.showTerminal
+    showTerminal: state.showTerminal,
+    activeTaskId: state.activeTaskId,
+    currentTask: state.currentTask
   };
   const serialized = JSON.stringify(stateToSave);
   if (serialized === lastSavedString) {
@@ -647,7 +770,8 @@ useIdeStore.subscribe((state) => {
   }
   
   try {
-    localStorage.setItem('nexlab_workspace_state', serialized);
+    const storageKey = `nexlab_workspace_${state.userId}`;
+    localStorage.setItem(storageKey, serialized);
     lastSavedString = serialized;
   } catch (e) {
     console.error('Failed to sync to localStorage', e);
@@ -679,7 +803,7 @@ export function WorkspaceWelcomeScreen() {
           <div className="text-[10px] font-bold text-[#06d6a0] uppercase tracking-wider mb-1 font-sans">Active Assignment</div>
           <div className="text-base font-bold text-white mb-2 font-sans">{currentTask.title}</div>
           <div className="text-xs text-gray-400 leading-relaxed font-sans">
-            Write a JavaScript function named <code className="text-[#ff9f1c] font-mono font-bold bg-[#1a1a1a] px-1.5 py-0.5 rounded border border-gray-800">{currentTask.functionName}</code> that returns the absolute value of the input. Press the green <strong className="text-[#06d6a0]">✔️ Verify Task</strong> button to test your code.
+            {currentTask.description} Write your solution in <code className="text-[#ff9f1c] font-mono font-bold bg-[#1a1a1a] px-1.5 py-0.5 rounded border border-gray-800">main.js</code> and press the green <strong className="text-[#06d6a0]">✔️ Verify Task</strong> button to test your code.
           </div>
         </div>
       )}
@@ -786,6 +910,56 @@ export function SidebarExplorer({ onNewFileClick }: { onNewFileClick: () => void
             );
           })
         )}
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 3b. Operator Curriculum Dashboard Component
+// ==========================================
+
+export function OperatorDashboard({ userId }: { userId: string }) {
+  const { tasks, activeTaskId, loadTask } = useIdeStore();
+
+  return (
+    <div className="flex flex-col h-full select-none text-xs bg-[#1a1a1a]">
+      <div className="p-3 font-bold uppercase tracking-wider text-gray-400 text-[10px] border-b border-gray-800 bg-[#1a1a1a] flex items-center gap-2">
+        <GraduationCap className="w-4 h-4 text-[#ff9f1c]" />
+        <span>Curriculum Challenges</span>
+      </div>
+
+      <div className="p-2.5 font-semibold text-gray-500 uppercase text-[9px] tracking-widest bg-[#151515]">
+        OPERATOR PATH
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
+        {tasks.map(task => {
+          const isActive = task.id === activeTaskId;
+          return (
+            <div
+              key={task.id}
+              onClick={() => loadTask(task.id, userId)}
+              className={`p-3 rounded-xl cursor-pointer transition-all duration-200 text-left bg-black/30 border ${
+                isActive 
+                  ? 'border-[#ff9f1c] bg-[#ff9f1c]/5 shadow-[0_0_12px_rgba(255,159,28,0.1)]' 
+                  : 'border-gray-800 hover:border-gray-700 hover:bg-black/45'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className={`font-bold text-[11px] truncate ${isActive ? 'text-[#ff9f1c]' : 'text-gray-200'}`}>
+                  {task.title}
+                </span>
+                {isActive && (
+                  <span className="w-2 h-2 bg-[#ff9f1c] rounded-full shadow-[0_0_8px_#ff9f1c]" />
+                )}
+              </div>
+              <p className="text-[10px] text-gray-400 leading-relaxed font-sans line-clamp-3">
+                {task.description}
+              </p>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -1182,6 +1356,9 @@ export function NexLabTerminal() {
 // ==========================================
 
 export function OrgIdePage() {
+  const { user } = useAuth();
+  const userId = user?.id || 'guest_user';
+
   const { 
     files, 
     activeFileId, 
@@ -1195,12 +1372,13 @@ export function OrgIdePage() {
     verifyTask,
     clearTerminalHistory, 
     setTerminalHistory,
-    editorInstance
+    editorInstance,
+    initializeUserWorkspace
   } = useIdeStore();
 
   useEffect(() => {
-    useIdeStore.setState({ isHydrated: true });
-  }, []);
+    initializeUserWorkspace(userId);
+  }, [userId]);
 
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [activeActivity, setActiveActivity] = useState<string>('explorer');
@@ -1527,6 +1705,13 @@ export function OrgIdePage() {
               <Folder className="w-5 h-5" />
             </button>
             <button 
+              onClick={() => setActiveActivity(activeActivity === 'curriculum' ? '' : 'curriculum')}
+              className={`p-2 w-full flex justify-center hover:text-white border-l-2 ${activeActivity === 'curriculum' ? 'border-[#ff9f1c] text-[#ff9f1c]' : 'border-transparent text-gray-400'}`}
+              title="Operator Curriculum"
+            >
+              <GraduationCap className="w-5 h-5" />
+            </button>
+            <button 
               onClick={() => setActiveActivity(activeActivity === 'search' ? '' : 'search')}
               className={`p-2 w-full flex justify-center hover:text-white border-l-2 ${activeActivity === 'search' ? 'border-[#ff9f1c] text-[#ff9f1c]' : 'border-transparent text-gray-400'}`}
               title="Search Contents"
@@ -1563,6 +1748,13 @@ export function OrgIdePage() {
                     />
                   </form>
                 )}
+              </div>
+            )}
+
+            {/* Curriculum Panel */}
+            {activeActivity === 'curriculum' && (
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <OperatorDashboard userId={userId} />
               </div>
             )}
 
@@ -1611,7 +1803,7 @@ export function OrgIdePage() {
                 <div 
                   key={name}
                   onClick={() => setActiveFile(name)}
-                  className={`h-full px-4 flex items-center gap-2 border-r border-gray-850 cursor-pointer text-xs transition-colors shrink-0 ${
+                  className={`h-full px-4 flex items-center gap-2 border-r border-gray-855 cursor-pointer text-xs transition-colors shrink-0 ${
                     name === activeFileId 
                       ? 'bg-[#121212] text-[#ff9f1c] border-t-2 border-t-[#ff9f1c]' 
                       : 'bg-[#181818] text-gray-500 hover:bg-[#1d1d1d] hover:text-gray-300'
