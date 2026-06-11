@@ -302,6 +302,41 @@ export const createCourse = async (
     status: 'published' | 'draft' = 'published'
 ): Promise<boolean> => {
     try {
+        // Try calling the Next.js backend Server Action / API Route first for secure execution
+        try {
+            const response = await fetch('/api/publish-course', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    courseId,
+                    courseData,
+                    modules,
+                    creatorId,
+                    status,
+                    orgId: (courseData as any).org_id || null
+                })
+            });
+
+            if (response.ok) {
+                const resData = await response.json();
+                if (resData && resData.success) {
+                    return true;
+                }
+            } else if (response.status !== 404) {
+                // If it's a real server error (not a 404 missing endpoint), report it
+                const errData = await response.json().catch(() => ({}));
+                console.error("Backend publish course error:", errData);
+                toast.error(errData.error || "Failed to publish course via secure backend.");
+                return false;
+            }
+        } catch (fetchErr) {
+            // Fetch failed (e.g., connection refused because Next.js dev server is not running locally)
+            console.warn("Backend server not reached. Falling back to direct client-side database writing...", fetchErr);
+        }
+
+        // --- Client-side fallback if backend is unavailable ---
         const supabase = getSupabase();
         if (!supabase) return false;
 
@@ -326,55 +361,40 @@ export const createCourse = async (
         let trackId = courseId;
 
         if (trackId) {
-            // Update existing Track
             const { error: updateError } = await supabase
                 .from('tracks')
                 .update(payload)
                 .eq('id', trackId);
 
             if (updateError) {
-                console.error("Error updating track full details:", updateError);
-                toast.error(`Database Error: ${updateError.message || 'Unknown error'}`);
+                console.error("Error updating track:", updateError);
+                toast.error(`Database Error: ${updateError.message}`);
                 return false;
             }
 
-            // Delete existing modules to replace them cleanly
             await supabase.from('track_modules').delete().eq('track_id', trackId);
-
         } else {
-            // Insert new Track
             const { data: trackRecords, error: trackError } = await supabase
                 .from('tracks')
                 .insert([payload])
                 .select('id');
 
             if (trackError) {
-                console.error("Error creating track full details:", trackError);
-                console.error("Payload was:", payload);
-                toast.error(`Database Error: ${trackError.message || 'Unknown error'}`);
+                console.error("Error creating track:", trackError);
+                toast.error(`Database Error: ${trackError.message}`);
                 return false;
             }
 
-            if (!trackRecords || trackRecords.length === 0) {
-                console.warn("Track creation returned no data.");
-                return false;
-            }
-
+            if (!trackRecords || trackRecords.length === 0) return false;
             trackId = trackRecords[0].id as number;
         }
 
-        if (!trackId) {
-            console.error("Failed to retrieve or determine track ID after creation/update.");
-            return false;
-        }
-
-        // Insert Modules into track_modules table
         if (modules && modules.length > 0) {
             const moduleInserts = modules.map((mod, index) => ({
                 track_id: trackId,
                 title: mod.title || 'Untitled Module',
                 module_order: index + 1,
-                content: mod // Save the entire deep lesson object here natively!
+                content: mod
             }));
 
             const { error: moduleError } = await supabase
@@ -383,44 +403,16 @@ export const createCourse = async (
 
             if (moduleError) {
                 console.error("Error creating modules:", moduleError);
-                toast.error(`Database Error: ${moduleError.message || 'Unknown error'}`);
+                toast.error(`Database Error: ${moduleError.message}`);
                 return false;
             }
         }
 
-        // Auto-enroll all organization students in this new course if it is published and belongs to an organization
-        const orgId = (courseData as any).org_id || payload.org_id;
-        if (orgId && status === 'published') {
-            try {
-                // Fetch all active students in the organization
-                const { data: students, error: studentsError } = await supabase
-                    .from('org_students')
-                    .select('student_id')
-                    .eq('org_id', orgId)
-                    .eq('status', 'Active');
-
-                if (!studentsError && students && students.length > 0) {
-                    const enrollments = students.map(student => ({
-                        user_id: student.student_id,
-                        track_id: trackId,
-                        org_id: orgId,
-                        status: 'active',
-                        progress: 0
-                    }));
-
-                    // Insert batch enrollments, ignoring duplicates
-                    await supabase
-                        .from('enrollments')
-                        .insert(enrollments);
-                }
-            } catch (enrollErr) {
-                console.error("Failed to auto-enroll organization students:", enrollErr);
-            }
-        }
-
+        // NOTE: Client-side bulk enrollment is stripped here to avoid RLS blockages on client-side inserts.
+        // It is fully offloaded to the server-side action (publishCourseAction.ts).
         return true;
 
-    } catch (e) {
+    } catch (e: any) {
         console.error("Unexpected error in createCourse:", e);
         return false;
     }
@@ -1860,6 +1852,43 @@ export const getOrganizationDetails = async (orgId: string): Promise<Profile | n
     } catch (e) {
         console.error("Error in getOrganizationDetails:", e);
         return null;
+    }
+};
+
+export const getOrgTracks = async (orgId: string): Promise<Track[]> => {
+    try {
+        const supabase = getSupabase();
+        if (!supabase) return [];
+
+        const { data, error } = await supabase
+            .from('tracks')
+            .select(`
+                *,
+                track_modules(*)
+            `)
+            .eq('org_id', orgId)
+            .order('id', { ascending: false });
+
+        if (error) {
+            console.error("Error fetching org tracks:", error);
+            return [];
+        }
+
+        return (data || []).map((item: any) => ({
+            id: item.id,
+            title: item.title,
+            level: item.level || 'All Levels',
+            duration: item.duration_weeks ? `${item.duration_weeks} Weeks` : 'Self-paced',
+            projects: 0,
+            description: item.description || '',
+            modules: item.track_modules?.map((m: any) => m.content || { title: m.title }) || [],
+            image_url: item.image_url || undefined,
+            price: item.price !== undefined ? parseFloat(item.price) : 0,
+            org_id: item.org_id
+        }));
+    } catch (e) {
+        console.error("Error in getOrgTracks:", e);
+        return [];
     }
 };
 
