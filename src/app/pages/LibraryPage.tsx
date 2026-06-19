@@ -24,63 +24,7 @@ interface LibraryResource {
 }
 
 // Default items if DB is empty
-const defaultItems: LibraryResource[] = [
-    {
-        id: 'default-1',
-        title: 'Mensuration & Formula Sheet',
-        category: 'Formula Sheets',
-        author_name: 'Math Mentor',
-        downloads: 1205,
-        views: 3400,
-        file_url: '/library/mensuration.png',
-        tags: ['Maths', 'Geometry', 'Mensuration'],
-        likes: 245
-    },
-    {
-        id: 'default-2',
-        title: 'Trigonometry - Formula Sheet',
-        category: 'Formula Sheets',
-        author_name: 'Student Contributor',
-        downloads: 854,
-        views: 2100,
-        file_url: '/library/trigonometry.png',
-        tags: ['Maths', 'Trigonometry', 'Formulas'],
-        likes: 189
-    },
-    {
-        id: 'default-3',
-        title: 'Pipes & Cisterns Complete Exam Revision',
-        category: 'Data Sheets',
-        author_name: 'EduSphere Academy',
-        downloads: 432,
-        views: 1800,
-        file_url: '/library/pipes.png',
-        tags: ['Aptitude', 'Exam Prep', 'Revision'],
-        likes: 92
-    },
-    {
-        id: 'default-4',
-        title: 'How a Hydraulic Press Works?',
-        category: 'Images',
-        author_name: 'Physics Mentor',
-        downloads: 673,
-        views: 2900,
-        file_url: '/library/press.png',
-        tags: ['Physics', 'Mechanics', 'Engineering'],
-        likes: 310
-    },
-    {
-        id: 'default-5',
-        title: 'How a CNC Machine Works?',
-        category: 'Images',
-        author_name: 'Tech Student',
-        downloads: 1540,
-        views: 4200,
-        file_url: '/library/cnc.png',
-        tags: ['Engineering', 'CNC', 'Manufacturing'],
-        likes: 134
-    }
-];
+const defaultItems: LibraryResource[] = [];
 
 export function LibraryPage() {
     const { user } = useAuth();

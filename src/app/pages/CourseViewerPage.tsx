@@ -1,10 +1,18 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { getCourseDataForStudent, updateEnrollmentProgress } from '../../lib/api';
-import { Play, FileText, HelpCircle, CheckCircle, ChevronLeft, ChevronDown, ChevronUp, Trophy, ArrowRight, Check } from 'lucide-react';
+import { Play, FileText, HelpCircle, CheckCircle, ChevronLeft, ChevronDown, ChevronUp, Trophy, ArrowRight, Check, Maximize2, Minimize2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
+
+const getEmbedUrl = (url: string) => {
+    if (!url) return '';
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    const videoId = (match && match[2].length === 11) ? match[2] : null;
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
+};
 
 export function CourseViewerPage() {
     const { courseId } = useParams<{ courseId: string }>();
@@ -19,6 +27,7 @@ export function CourseViewerPage() {
     const [readPdfs, setReadPdfs] = useState<Record<string, boolean>>({});
     const [completedLessons, setCompletedLessons] = useState<string[]>([]);
     const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({});
+    const [activeTab, setActiveTab] = useState<'video' | 'reading' | 'quiz'>('video');
 
     const handleQuizSelect = (quizId: string, selectedValue: string) => {
         if (!quizAnswers[quizId]) {
@@ -84,6 +93,57 @@ export function CourseViewerPage() {
     }
 
     const activeLessonIdentifier = activeLesson?.id?.toString() || activeLesson?.title;
+
+    const hasVideo = useMemo(() => activeLesson ? !!getEmbedUrl(activeLesson.videoLink) : false, [activeLesson]);
+    const hasReading = useMemo(() => activeLesson ? !!(activeLesson.explanation || activeLesson.worksheetUrl || activeLesson.pdf_url) : false, [activeLesson]);
+    const hasQuiz = useMemo(() => {
+        if (!activeLesson) return false;
+        const quizzes = activeLesson.quiz || activeLesson.quizzes || [];
+        return Array.isArray(quizzes) && quizzes.length > 0;
+    }, [activeLesson]);
+
+    useEffect(() => {
+        if (hasVideo) {
+            setActiveTab('video');
+        } else if (hasReading) {
+            setActiveTab('reading');
+        } else if (hasQuiz) {
+            setActiveTab('quiz');
+        }
+    }, [activeLessonId, hasVideo, hasReading, hasQuiz]);
+
+    const availableTabs = useMemo(() => {
+        const tabs = [];
+        if (hasVideo) tabs.push({ id: 'video', label: 'Video Lecture', icon: Play });
+        if (hasReading) tabs.push({ id: 'reading', label: 'Concept & Resources', icon: FileText });
+        if (hasQuiz) tabs.push({ id: 'quiz', label: 'Practice Quiz', icon: HelpCircle });
+        return tabs;
+    }, [hasVideo, hasReading, hasQuiz]);
+
+    const rightPaneRef = useRef<HTMLDivElement>(null);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    const toggleFullscreen = () => {
+        if (!rightPaneRef.current) return;
+        if (!document.fullscreenElement) {
+            rightPaneRef.current.requestFullscreen().then(() => {
+                setIsFullscreen(true);
+            }).catch(() => {
+                toast.error("Fullscreen mode is not supported by your browser");
+            });
+        } else {
+            document.exitFullscreen();
+            setIsFullscreen(false);
+        }
+    };
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    }, []);
 
     // Check for pdf read and quiz completeness for the active lesson
     const isLessonCompletable = () => {
@@ -196,13 +256,7 @@ export function CourseViewerPage() {
         );
     }
 
-    const getEmbedUrl = (url: string) => {
-        if (!url) return '';
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-        const match = url.match(regExp);
-        const videoId = (match && match[2].length === 11) ? match[2] : null;
-        return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
-    };
+
 
     const toggleModuleExpand = (moduleId: string) => {
         setExpandedModules(prev => ({ ...prev, [moduleId]: !prev[moduleId] }));
@@ -210,7 +264,7 @@ export function CourseViewerPage() {
 
     return (
         <DashboardLayout>
-            <div className="flex flex-col h-[calc(100vh-80px)] overflow-hidden bg-white border border-gray-200 rounded-xl shadow-sm">
+            <div ref={rightPaneRef} className={`flex flex-col overflow-hidden bg-white border border-gray-200 rounded-xl shadow-sm ${isFullscreen ? 'h-screen' : 'h-[calc(100vh-80px)]'}`}>
                 
                 {/* Header Navbar */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white shrink-0">
@@ -304,7 +358,7 @@ export function CourseViewerPage() {
                                                                     `}
                                                                 >
                                                                     <div className="flex items-center gap-2.5 min-w-0">
-                                                                        {lesson.videoLink && lesson.videoLink.trim() !== '' ? (
+                                                                        {getEmbedUrl(lesson.videoLink) ? (
                                                                             <Play className={`w-3.5 h-3.5 shrink-0 ${isItemActive ? 'text-blue-700' : 'text-gray-400'}`} />
                                                                         ) : lesson.quizzes && lesson.quizzes.length > 0 ? (
                                                                             <HelpCircle className={`w-3.5 h-3.5 shrink-0 ${isItemActive ? 'text-blue-700' : 'text-gray-400'}`} />
@@ -342,15 +396,59 @@ export function CourseViewerPage() {
                                 <div className="space-y-8">
                                     
                                     {/* Topic Title */}
-                                    <div className="border-b border-gray-200 pb-5">
-                                        <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 uppercase tracking-widest mb-1.5">
-                                            {activeLesson.videoLink && activeLesson.videoLink.trim() !== '' ? 'Video Lecture' : activeLesson.quizzes && activeLesson.quizzes.length > 0 ? 'Practice Assessment' : 'Required Reading'}
+                                    <div className="border-b border-gray-200 pb-5 flex justify-between items-start">
+                                        <div>
+                                            <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 uppercase tracking-widest mb-1.5">
+                                                {activeTab === 'video' ? 'Video Lecture' : activeTab === 'quiz' ? 'Practice Assessment' : 'Required Reading'}
+                                            </div>
+                                            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">{activeLesson.title}</h2>
                                         </div>
-                                        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">{activeLesson.title}</h2>
+                                        <button
+                                            onClick={toggleFullscreen}
+                                            className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 rounded-lg transition shadow-xs flex items-center gap-1.5 text-xs font-bold shrink-0 ml-4 select-none"
+                                            title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                                        >
+                                            {isFullscreen ? (
+                                                <>
+                                                    <Minimize2 className="w-4 h-4" />
+                                                    <span>Exit Fullscreen</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Maximize2 className="w-4 h-4" />
+                                                    <span>Fullscreen Focus</span>
+                                                </>
+                                            )}
+                                        </button>
                                     </div>
 
+                                    {/* Tabs Navigation */}
+                                    {availableTabs.length > 1 && (
+                                        <div className="flex border-b border-gray-200 mb-6 gap-2">
+                                            {availableTabs.map((tab) => {
+                                                const Icon = tab.icon;
+                                                const isActive = activeTab === tab.id;
+                                                return (
+                                                    <button
+                                                        key={tab.id}
+                                                        onClick={() => setActiveTab(tab.id as any)}
+                                                        className={`flex items-center gap-2 px-4 py-2.5 border-b-2 font-bold text-sm transition-all -mb-px select-none
+                                                            ${isActive 
+                                                                ? 'border-blue-600 text-blue-600' 
+                                                                : 'border-transparent text-gray-500 hover:text-slate-800 hover:border-gray-300'
+                                                            }
+                                                        `}
+                                                    >
+                                                        <Icon className="w-4 h-4" />
+                                                        <span>{tab.label}</span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+
                                     {/* 1. Video Player */}
-                                    {activeLesson.videoLink && activeLesson.videoLink.trim() !== "" && (
+                                    {hasVideo && activeTab === 'video' && (
                                         <div className="space-y-4">
                                             <div className="w-full bg-slate-950 rounded-xl overflow-hidden aspect-video shadow-xs border border-slate-200">
                                                 <iframe
@@ -366,7 +464,7 @@ export function CourseViewerPage() {
                                     )}
 
                                     {/* 2. Reading Explanation with Elegant Typography */}
-                                    {activeLesson.explanation && (
+                                    {hasReading && activeTab === 'reading' && activeLesson.explanation && (
                                         <div className="prose prose-slate max-w-none">
                                             <h3 className="text-lg font-bold text-slate-900 mb-2 uppercase tracking-wide text-xs text-gray-400">Concept Overview</h3>
                                             <p className="text-slate-750 text-base leading-relaxed whitespace-pre-line font-sans">
@@ -376,7 +474,7 @@ export function CourseViewerPage() {
                                     )}
 
                                     {/* 3. Document / Worksheet Section */}
-                                    {(activeLesson.worksheetUrl || activeLesson.pdf_url) && (() => {
+                                    {hasReading && activeTab === 'reading' && (activeLesson.worksheetUrl || activeLesson.pdf_url) && (() => {
                                         const pdfUrl = activeLesson.worksheetUrl || activeLesson.pdf_url;
                                         return (
                                             <div className="p-5 bg-slate-50 border border-gray-250 rounded-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -413,12 +511,12 @@ export function CourseViewerPage() {
                                     })()}
 
                                     {/* 4. MCQ / True-False Quiz View */}
-                                    {(() => {
+                                    {hasQuiz && activeTab === 'quiz' && (() => {
                                         const quizzesToRender = activeLesson.quiz || activeLesson.quizzes || [];
                                         if (!Array.isArray(quizzesToRender) || quizzesToRender.length === 0) return null;
 
                                         return (
-                                            <div className="space-y-6 pt-4 border-t border-gray-200">
+                                            <div className="space-y-6">
                                                 <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                                                     <HelpCircle className="w-5 h-5 text-blue-600" />
                                                     Practice Quiz Verification
@@ -532,7 +630,7 @@ export function CourseViewerPage() {
                                                                             </p>
                                                                         )}
                                                                         {quiz.explanation && (
-                                                                            <div className="p-3 bg-slate-50 border border-gray-200 rounded-lg text-slate-700 text-xs">
+                                                                            <div className="p-3 bg-slate-50 border border-gray-250 rounded-lg text-slate-700 text-xs">
                                                                                 <strong className="text-slate-900 block mb-1">Explanation:</strong>
                                                                                 {quiz.explanation}
                                                                             </div>

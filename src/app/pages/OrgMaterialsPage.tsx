@@ -25,11 +25,7 @@ export function OrgMaterialsPage() {
     const [materials, setMaterials] = useState<any[]>(() => {
         const saved = localStorage.getItem('mentozy_org_materials');
         if (saved) return JSON.parse(saved);
-        return [
-            { id: '1', name: 'React Hooks Cheat Sheet.pdf', category: 'Handouts', type: 'pdf', size: '1.2 MB', uploadedBy: 'Admin', date: '2026-06-05', url: 'https://react.dev' },
-            { id: '2', name: 'Intro to Algorithms.ppt', category: 'Presentations', type: 'ppt', size: '4.8 MB', uploadedBy: 'Dr. Aris Thorne', date: '2026-06-07', url: 'https://wikipedia.org' },
-            { id: '3', name: 'Week 1 Live Session recording.mp4', category: 'Recordings', type: 'video', size: '45.2 MB', uploadedBy: 'Elena Rodriguez', date: '2026-06-06', url: 'https://youtube.com' }
-        ];
+        return [];
     });
 
     // States for filter and search
