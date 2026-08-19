@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { 
     Clock, Calendar, ArrowLeft, Building2, 
-    Upload, X, FileText, Image, Loader2, CheckCircle2, AlertCircle, Award
+    Upload, X, FileText, Image, Loader2, CheckCircle2, AlertCircle, Award, ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -25,6 +25,7 @@ export function TaskDetailPage() {
     const [studentName, setStudentName] = useState('Raymond Oyondi');
 
     // Evaluation feedback states from database
+    const [submissionText, setSubmissionText] = useState<string>('');
     const [submissionStatus, setSubmissionStatus] = useState<string>('pending');
     const [grade, setGrade] = useState<string>('');
     const [feedback, setFeedback] = useState<string>('');
@@ -84,6 +85,7 @@ export function TaskDetailPage() {
                         setIsSubmitted(true);
                         setSubmittedAt(new Date(submission.created_at).toLocaleString());
                         setSubmittedFiles(submission.files || []);
+                        setSubmissionText(submission.submission_text || '');
                         setSubmissionStatus(submission.status || 'pending');
                         setGrade(submission.grade || '');
                         setFeedback(submission.feedback || '');
@@ -162,8 +164,8 @@ export function TaskDetailPage() {
             return;
         }
 
-        if (screenshots.length === 0 && !pdfFile) {
-            toast.error('Please upload at least one screenshot or PDF before submitting.');
+        if (!submissionText.trim() && screenshots.length === 0 && !pdfFile) {
+            toast.error('Please enter submission text or upload at least one file before submitting.');
             return;
         }
 
@@ -182,10 +184,32 @@ export function TaskDetailPage() {
         }, 100);
 
         try {
-            const filesSummary = [
-                ...screenshots.map(f => ({ name: f.name, size: formatBytes(f.size), type: 'image' })),
-                ...(pdfFile ? [{ name: pdfFile.name, size: formatBytes(pdfFile.size), type: 'pdf' }] : [])
-            ];
+            const fileToDataUrl = (file: File): Promise<string> => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = (err) => reject(err);
+                    reader.readAsDataURL(file);
+                });
+            };
+
+            const screenshotItems = await Promise.all(
+                screenshots.map(async f => ({
+                    name: f.name,
+                    size: formatBytes(f.size),
+                    type: 'image',
+                    url: await fileToDataUrl(f)
+                }))
+            );
+
+            const pdfItems = pdfFile ? [{
+                name: pdfFile.name,
+                size: formatBytes(pdfFile.size),
+                type: 'pdf',
+                url: await fileToDataUrl(pdfFile)
+            }] : [];
+
+            const filesSummary = [...screenshotItems, ...pdfItems];
 
             const nowStr = new Date().toISOString();
 
@@ -195,6 +219,7 @@ export function TaskDetailPage() {
                 .upsert({
                     task_id: taskId,
                     student_id: currentUser.id,
+                    submission_text: submissionText.trim(),
                     files: filesSummary,
                     status: 'pending',
                     created_at: nowStr,
@@ -389,33 +414,56 @@ export function TaskDetailPage() {
                                 )}
 
                                 {submissionStatus === 'pending' && (
-                                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
-                                        <Clock className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
-                                        <div>
-                                            <h4 className="text-sm font-extrabold text-amber-950">Awaiting Evaluation</h4>
-                                            <p className="text-[10px] text-amber-700 mt-0.5">Submitted at: {submittedAt}</p>
+                                    <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-2.5">
+                                        <div className="flex items-start gap-3">
+                                            <CheckCircle2 className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-0.5" />
+                                            <div>
+                                                <h4 className="text-sm font-extrabold text-emerald-950">Task Submitted ✓</h4>
+                                                <p className="text-xs text-emerald-800 font-medium mt-0.5">Your submission has been recorded successfully.</p>
+                                                <p className="text-[10px] text-emerald-700 font-semibold mt-1">Submitted on: {submittedAt}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
 
-                                <div className="space-y-2">
-                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Submitted Files</p>
-                                    <div className="divide-y divide-gray-100 border border-gray-150 rounded-2xl overflow-hidden bg-gray-50/50">
-                                        {submittedFiles.map((file, i) => (
-                                            <div key={i} className="p-3.5 flex items-center gap-3 text-sm">
-                                                {file.type === 'pdf' ? (
-                                                    <FileText className="w-5 h-5 text-rose-500 flex-shrink-0" />
-                                                ) : (
-                                                    <Image className="w-5 h-5 text-indigo-500 flex-shrink-0" />
-                                                )}
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="font-semibold text-gray-900 truncate text-xs">{file.name}</p>
-                                                    <p className="text-[10px] text-gray-500 mt-0.5">{file.size}</p>
+                                {submittedFiles.length > 0 && (
+                                    <div className="space-y-2">
+                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Submitted Files</p>
+                                        <div className="divide-y divide-gray-100 border border-gray-150 rounded-2xl overflow-hidden bg-gray-50/50">
+                                            {submittedFiles.map((file, i) => (
+                                                <div 
+                                                    key={i} 
+                                                    onClick={() => {
+                                                        if (file.url) {
+                                                            window.open(file.url, '_blank');
+                                                        } else {
+                                                            toast.info(`Attachment ${file.name}`);
+                                                        }
+                                                    }}
+                                                    className="p-3.5 flex items-center gap-3 text-sm cursor-pointer hover:bg-gray-100/80 transition-colors"
+                                                >
+                                                    {file.type === 'pdf' ? (
+                                                        <FileText className="w-5 h-5 text-rose-500 flex-shrink-0" />
+                                                    ) : (
+                                                        <Image className="w-5 h-5 text-indigo-500 flex-shrink-0" />
+                                                    )}
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="font-semibold text-gray-900 truncate text-xs">{file.name}</p>
+                                                        <p className="text-[10px] text-gray-500 mt-0.5">{file.size} • Click to open</p>
+                                                    </div>
+                                                    <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
+
+                                <button
+                                    onClick={() => navigate(-1)}
+                                    className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                                >
+                                    <ArrowLeft className="w-4 h-4" /> Return to Dashboard
+                                </button>
 
                                 {submissionStatus !== 'passed' && (
                                     <button
@@ -424,7 +472,7 @@ export function TaskDetailPage() {
                                             setScreenshots([]);
                                             setPdfFile(null);
                                         }}
-                                        className="w-full py-3 bg-gray-150 hover:bg-gray-250 text-gray-700 text-xs font-bold rounded-xl transition-all"
+                                        className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl transition-all"
                                     >
                                         Update / Resubmit Files
                                     </button>
@@ -433,6 +481,20 @@ export function TaskDetailPage() {
                         ) : (
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 
+                                {/* Submission Text Notes Area */}
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block">
+                                        Submission Text / Notes
+                                    </label>
+                                    <textarea
+                                        value={submissionText}
+                                        onChange={(e) => setSubmissionText(e.target.value)}
+                                        rows={3}
+                                        placeholder="Type your submission notes or summary here..."
+                                        className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-gray-50/50 resize-y"
+                                    />
+                                </div>
+
                                 {/* Screenshots Upload Area */}
                                 <div className="space-y-3">
                                     <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block">

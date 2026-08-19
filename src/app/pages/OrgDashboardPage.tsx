@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { useAuth } from '../../context/AuthContext';
+import { useOrganizationMode } from '../../context/OrganizationModeContext';
 import { 
   Users, 
   GraduationCap, 
@@ -23,6 +24,7 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export function OrgDashboardPage() {
     const { user } = useAuth();
+    const { activeOrganization } = useOrganizationMode();
     const navigate = useNavigate();
     
     // Core state
@@ -141,17 +143,19 @@ export function OrgDashboardPage() {
                 return;
             }
 
+            const targetOrgId = activeOrganization?.id || user.id;
+
             const { data } = await client.from('mentors').select('company, bio').eq('user_id', user.id).single();
             if (data) setOrgProfile(data);
 
-            const teachersData = await getOrgTeachers(user.id);
+            const teachersData = await getOrgTeachers(targetOrgId);
             if (teachersData) setStaff(teachersData);
 
-            const studentsData = await getOrgStudents(user.id);
+            const studentsData = await getOrgStudents(targetOrgId);
             if (studentsData) setStudents(studentsData);
         };
         fetchOrgDetails();
-    }, [user, navigate]);
+    }, [user, activeOrganization?.id, navigate]);
 
     let orgName = orgProfile?.company || user?.user_metadata?.full_name || 'Organisation';
     let founderRole = 'Founder';

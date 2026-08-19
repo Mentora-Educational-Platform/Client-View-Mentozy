@@ -175,8 +175,21 @@ export function OrganisationTeacherOnboardingPage() {
                 avatar_url: formData.logoUrl,
             }, { onConflict: 'id' });
 
+            // Create Parent Organisation Entity
+            try {
+                await supabase.from('organisations').upsert({
+                    id: authData.user.id,
+                    name: formData.orgName,
+                    slug: formData.orgName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                    owner_id: authData.user.id,
+                    logo_url: formData.logoUrl,
+                    description: `${formData.orgName} Educational Organisation`
+                }, { onConflict: 'id' });
+            } catch (orgErr) {
+                console.warn('Could not insert parent organisation record:', orgErr);
+            }
+
             // Create Mentor (Org) Record
-            // Logic: Store Org details in company/bio
             const status = orgType === 'online' ? 'active' : 'pending';
 
             await supabase.from('mentors').upsert({
@@ -189,7 +202,7 @@ export function OrganisationTeacherOnboardingPage() {
                     domain: formData.teachingDomain,
                     address: formData.address,
                     founder: formData.founderName,
-                    status: status, // Storing status in JSON
+                    status: status,
                     logo: formData.logoUrl
                 }),
                 rating: 0,

@@ -23,7 +23,7 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }: SidebarProps) {
     const location = useLocation();
     const { signOut, user } = useAuth();
-    const { mode, activeOrganization, setActiveOrganization } = useOrganizationMode();
+    const { mode, setMode, activeOrganization, setActiveOrganization } = useOrganizationMode();
     const [profileRole, setProfileRole] = useState<string | null>(null);
 
     // Dynamic Org Student Sidebar stats
@@ -124,7 +124,7 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
     // Organization mode navigation for teachers (viewing as org teacher)
     const orgTeacherItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/mentor-dashboard' },
-        { icon: GraduationCap, label: 'My Students', path: '/org-my-students' },
+        { icon: GraduationCap, label: 'My Students', path: '/org-students' },
         { icon: BookOpen, label: 'My Courses', path: '/mentor-courses' },
         { icon: BookMarked, label: 'Study Materials', path: '/org-materials' },
         { icon: Terminal, label: 'IDE Sandbox', path: '/org-ide' },
@@ -399,10 +399,11 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
                                 ))}
                             </div>
 
-                            {/* Switch back to Personal view if org mode */}
-                            {mode === 'organization' && activeOrganization && (
+                            {/* Switch back to Personal view if org mode and user is not an org admin */}
+                            {!isOrg && mode === 'organization' && activeOrganization && (
                                 <button 
                                     onClick={() => {
+                                        setMode('personal');
                                         setActiveOrganization(null);
                                         toast.success("Returned to Personal Dashboard!");
                                     }}

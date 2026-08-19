@@ -86,10 +86,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     </div>
                 </header>
 
-                {/* Desktop Header — only show in personal mode (org mode has the banner) */}
-                {!isOrgMode && hasOrganizations && (
+                {/* Desktop Header — only show in personal mode if user is not a dedicated org admin */}
+                {!isOrgMode && !user?.user_metadata?.is_org && hasOrganizations && (
                     <header className="hidden md:flex bg-white border-b border-gray-200 px-6 py-3 items-center justify-between sticky top-0 z-30">
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <div className="flex items-center gap-2 text-sm text-gray-500 font-semibold">
                             <User className="w-4 h-4" />
                             <span>Personal Mode</span>
                         </div>

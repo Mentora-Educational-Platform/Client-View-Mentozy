@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
+import { useOrganizationMode } from '../../context/OrganizationModeContext';
 import { 
     Clock, Calendar, User, CheckCircle2, AlertCircle, 
     Eye, Check, X, FileText, Image, Search, RefreshCw 
@@ -15,10 +16,12 @@ interface Submission {
     studentEmail: string;
     studentAvatar?: string;
     submittedAt: string;
+    submissionText?: string;
     files: Array<{
         name: string;
         size: string;
         type: string;
+        url?: string;
     }>;
     status: 'pending' | 'passed' | 'redo' | 'graded';
     grade?: string;
@@ -27,6 +30,7 @@ interface Submission {
 }
 
 export function OrgSubmissionsPage() {
+    const { activeOrganization } = useOrganizationMode();
     const [submissions, setSubmissions] = useState<Submission[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -36,7 +40,7 @@ export function OrgSubmissionsPage() {
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
     const [gradeValue, setGradeValue] = useState('Pass');
     const [feedbackText, setFeedbackText] = useState('');
-    const [activeScreenshotPreview, setActiveScreenshotPreview] = useState<string | null>(null);
+    const [activeFilePreview, setActiveFilePreview] = useState<{ name: string; size?: string; type: string; url?: string } | null>(null);
 
     const loadSubmissions = async () => {
         setLoading(true);
@@ -54,10 +58,13 @@ export function OrgSubmissionsPage() {
                 return;
             }
 
+            const targetOrgId = activeOrganization?.id || currentUser.id;
+
             // 2. Query tasks to map IDs, titles, and owners
             const { data: dbTasks, error: taskError } = await client
                 .from('org_tasks')
-                .select('id, title, org_id');
+                .select('id, title, org_id')
+                .eq('org_id', targetOrgId);
 
             if (taskError) throw taskError;
 
@@ -99,11 +106,11 @@ export function OrgSubmissionsPage() {
                     }
                 }
 
-                // Filter only submissions corresponding to tasks belonging to the logged-in host
+                // Filter only submissions corresponding to tasks belonging to the active organization
                 dbSubs
                     .filter((sub: any) => {
                         const taskInfo = tasksMap[sub.task_id];
-                        return taskInfo?.org_id === currentUser?.id;
+                        return taskInfo?.org_id === targetOrgId;
                     })
                     .forEach((sub: any) => {
                         const taskInfo = tasksMap[sub.task_id];
@@ -116,6 +123,7 @@ export function OrgSubmissionsPage() {
                             studentEmail: studentInfo?.email || 'student@krishnaite.dev',
                             studentAvatar: studentInfo?.avatar_url,
                             submittedAt: new Date(sub.created_at).toLocaleString(),
+                            submissionText: sub.submission_text || undefined,
                             files: sub.files || [],
                             status: sub.status,
                             grade: sub.grade || undefined,
@@ -139,7 +147,7 @@ export function OrgSubmissionsPage() {
 
     useEffect(() => {
         loadSubmissions();
-    }, []);
+    }, [activeOrganization?.id]);
 
     // Handle Search Filter
     const filteredSubmissions = submissions.filter(sub => {
@@ -426,11 +434,11 @@ export function OrgSubmissionsPage() {
                                 <h3 className="text-xl font-black text-gray-900">REVIEW STUDENT SUBMISSION</h3>
                                 <p className="text-xs font-bold text-gray-700 mt-1">Student: {selectedSubmission.studentName}</p>
                             </div>
-                            <button 
+                             <button 
                                 onClick={() => {
                                     setReviewModalOpen(false);
                                     setSelectedSubmission(null);
-                                    setActiveScreenshotPreview(null);
+                                    setActiveFilePreview(null);
                                 }}
                                 className="p-2 text-gray-900 hover:bg-white border-2 border-gray-900 transition-colors shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] bg-white active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
                             >
@@ -451,6 +459,14 @@ export function OrgSubmissionsPage() {
                                 </div>
                             </div>
 
+                            {/* Student Submission Text / Notes */}
+                            {selectedSubmission.submissionText && (
+                                <div className="p-4 bg-white border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] space-y-1.5">
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Student Text Submission</span>
+                                    <p className="text-sm font-bold text-gray-900 whitespace-pre-wrap leading-relaxed">{selectedSubmission.submissionText}</p>
+                                </div>
+                            )}
+
                             {/* Files Section */}
                             <div className="space-y-3">
                                 <h5 className="text-xs font-black text-gray-700 bg-white border-2 border-gray-900 px-3 py-1 w-fit uppercase tracking-wider shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">Submitted Attachments</h5>
@@ -458,13 +474,12 @@ export function OrgSubmissionsPage() {
                                     {selectedSubmission.files.map((file, i) => (
                                         <div 
                                             key={i}
-                                            className="p-3.5 border-2 border-gray-900 flex items-center gap-3 bg-white hover:bg-[#eff3ff]/10 transition-all cursor-pointer shadow-[2px_2px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                                            className="p-3.5 border-2 border-gray-900 flex items-center gap-3 bg-white hover:bg-[#eff3ff] transition-all cursor-pointer shadow-[2px_2px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
                                             onClick={() => {
-                                                if (file.type === 'image') {
-                                                    setActiveScreenshotPreview(file.name);
-                                                } else {
-                                                    toast.info(`Simulating opening PDF document "${file.name}"...`);
+                                                if (file.type === 'pdf' && file.url) {
+                                                    window.open(file.url, '_blank');
                                                 }
+                                                setActiveFilePreview(file);
                                             }}
                                         >
                                             {file.type === 'pdf' ? (
@@ -474,31 +489,76 @@ export function OrgSubmissionsPage() {
                                             )}
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-xs font-black text-gray-900 truncate uppercase">{file.name}</p>
-                                                <p className="text-[10px] text-gray-400 font-bold mt-0.5">{file.size} • Click to {file.type === 'image' ? 'Preview' : 'Open'}</p>
+                                                <p className="text-[10px] text-gray-400 font-bold mt-0.5">{file.size} • Click to {file.type === 'image' ? 'Preview' : 'Open PDF'}</p>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             </div>
 
-                            {/* Screenshot Lightbox Preview Area */}
-                            {activeScreenshotPreview && (
-                                <div className="p-4 border-2 border-gray-900 bg-[#eff3ff]/10 rounded-none relative space-y-3 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
-                                    <div className="flex items-center justify-between text-xs font-black text-gray-900 uppercase">
-                                        <span>Image Preview: {activeScreenshotPreview}</span>
-                                        <button 
-                                            onClick={() => setActiveScreenshotPreview(null)}
-                                            className="text-gray-500 hover:text-rose-600 font-black uppercase text-[10px] border border-gray-900 px-2 py-0.5 bg-white shadow-[1px_1px_0px_rgba(0,0,0,1)]"
-                                        >
-                                            Close Preview
-                                        </button>
+                            {/* Interactive Attachment Previewer */}
+                            {activeFilePreview && (
+                                <div className="p-4 border-2 border-gray-900 bg-white relative space-y-3 shadow-[3px_3px_0px_rgba(0,0,0,1)]">
+                                    <div className="flex items-center justify-between text-xs font-black text-gray-900 uppercase border-b-2 border-gray-900 pb-2">
+                                        <span className="flex items-center gap-2">
+                                            {activeFilePreview.type === 'pdf' ? <FileText className="w-4 h-4 text-rose-500" /> : <Image className="w-4 h-4 text-indigo-500" />}
+                                            {activeFilePreview.type === 'pdf' ? 'PDF Attachment View:' : 'Screenshot Preview:'} {activeFilePreview.name}
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            {activeFilePreview.url && (
+                                                <button
+                                                    onClick={() => window.open(activeFilePreview.url, '_blank')}
+                                                    className="text-indigo-600 hover:text-indigo-800 font-black uppercase text-[10px] border border-gray-900 px-2 py-0.5 bg-white shadow-[1px_1px_0px_rgba(0,0,0,1)]"
+                                                >
+                                                    Open Full Window ↗
+                                                </button>
+                                            )}
+                                            <button 
+                                                onClick={() => setActiveFilePreview(null)}
+                                                className="text-gray-500 hover:text-rose-600 font-black uppercase text-[10px] border border-gray-900 px-2 py-0.5 bg-white shadow-[1px_1px_0px_rgba(0,0,0,1)]"
+                                            >
+                                                Close Preview
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="w-full h-48 bg-slate-900 border-2 border-gray-900 flex items-center justify-center text-slate-500 text-xs flex-col gap-2 relative">
-                                        <Image className="w-10 h-10 text-indigo-400 opacity-60 animate-bounce" />
-                                        <span className="font-mono font-bold text-slate-400">Mock student workspace screenshot</span>
-                                        <span className="text-[10px] text-slate-600">Slack workspace verification & confirmation message</span>
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
-                                    </div>
+
+                                    {activeFilePreview.type === 'image' ? (
+                                        <div className="w-full max-h-[420px] overflow-auto bg-slate-950 border-2 border-gray-900 flex items-center justify-center p-3">
+                                            <img 
+                                                src={activeFilePreview.url || `data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='500' viewBox='0 0 800 500'%3E%3Crect width='100%25' height='100%25' fill='%231e1b4b'/%3E%3Ctext x='50%25' y='45%25' fill='%23818cf8' font-family='sans-serif' font-size='22' font-weight='bold' text-anchor='middle'%3ESTUDENT WORKSCREEN SUBMISSION%3C/text%3E%3Ctext x='50%25' y='55%25' fill='%23a5b4fc' font-family='sans-serif' font-size='14' text-anchor='middle'%3E${encodeURIComponent(activeFilePreview.name)}%3C/text%3E%3C/svg%3E`} 
+                                                alt={activeFilePreview.name} 
+                                                className="max-w-full max-h-[390px] object-contain rounded border border-slate-700 shadow-lg" 
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="w-full h-[400px] border-2 border-gray-900 bg-gray-100 relative">
+                                            {activeFilePreview.url ? (
+                                                <iframe 
+                                                    src={activeFilePreview.url} 
+                                                    className="w-full h-full border-none"
+                                                    title={activeFilePreview.name}
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full bg-slate-900 p-6 flex flex-col items-center justify-center text-center space-y-4">
+                                                    <FileText className="w-14 h-14 text-rose-400 animate-bounce" />
+                                                    <div>
+                                                        <h6 className="text-white font-bold text-base uppercase">{activeFilePreview.name}</h6>
+                                                        <p className="text-slate-400 text-xs mt-1 max-w-md">Student PDF attachment file preview.</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => {
+                                                            const blob = new Blob([`%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R >>\nendobj\n4 0 obj\n<< /Length 54 >>\nstream\nBT /F1 24 Tf 100 700 Td (${activeFilePreview.name}) Tj ET\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f\n0000000009 00000 n\n0000000056 00000 n\n0000000111 00000 n\n0000000212 00000 n\ntrailer\n<< /Size 5 /Root 1 0 R >>\nstartxref\n316\n%%EOF`], { type: 'application/pdf' });
+                                                            const url = URL.createObjectURL(blob);
+                                                            window.open(url, '_blank');
+                                                        }}
+                                                        className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs rounded border border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] flex items-center gap-2"
+                                                    >
+                                                        <FileText className="w-4 h-4" /> Open PDF Document Window ↗
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -542,7 +602,7 @@ export function OrgSubmissionsPage() {
                                 onClick={() => {
                                     setReviewModalOpen(false);
                                     setSelectedSubmission(null);
-                                    setActiveScreenshotPreview(null);
+                                    setActiveFilePreview(null);
                                 }}
                                 className="px-5 py-2.5 border-2 border-gray-900 text-sm font-black text-gray-900 bg-white hover:bg-[#eff3ff] transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]"
                             >

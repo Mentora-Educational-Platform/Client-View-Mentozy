@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS public.org_task_submissions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     task_id UUID NOT NULL REFERENCES public.org_tasks(id) ON DELETE CASCADE,
     student_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    submission_text TEXT,
     files JSONB NOT NULL DEFAULT '[]'::jsonb,
     status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'passed', 'redo')),
     grade TEXT,
@@ -41,6 +42,8 @@ CREATE TABLE IF NOT EXISTS public.org_task_submissions (
     -- Ensure a student can submit only once per task (upserts update the record)
     CONSTRAINT unique_student_task UNIQUE (task_id, student_id)
 );
+
+ALTER TABLE public.org_task_submissions ADD COLUMN IF NOT EXISTS submission_text TEXT;
 
 -- Enable RLS for org_task_submissions
 ALTER TABLE public.org_task_submissions ENABLE ROW LEVEL SECURITY;

@@ -287,6 +287,11 @@ function App() {
             <OrgStudentsPage />
           </Suspense>
         } />
+        <Route path="/org-my-students" element={
+          <Suspense fallback={<PageLoader />}>
+            <OrgStudentsPage />
+          </Suspense>
+        } />
         <Route path="/org-calendar" element={
           <Suspense fallback={<PageLoader />}>
             <OrgCalendarPage />

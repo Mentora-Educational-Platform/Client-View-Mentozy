@@ -3,10 +3,12 @@ import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { Search, Filter, MoreVertical, Mail, GraduationCap, CheckCircle2, Plus, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
+import { useOrganizationMode } from '../../context/OrganizationModeContext';
 import { getOrgStudents, searchStudentsForOrg, sendOrgStudentInvite, Profile } from '../../lib/api';
 
 export function OrgStudentsPage() {
     const { user } = useAuth();
+    const { activeOrganization } = useOrganizationMode();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterGrade, setFilterGrade] = useState('All');
     const [students, setStudents] = useState<any[]>([]);
@@ -19,17 +21,19 @@ export function OrgStudentsPage() {
     const [studentResults, setStudentResults] = useState<Profile[]>([]);
     const [isSearching, setIsSearching] = useState(false);
 
+    const targetOrgId = activeOrganization?.id || user?.id;
+
     useEffect(() => {
         async function loadStudents() {
-            if (user) {
+            if (targetOrgId) {
                 setIsLoading(true);
-                const data = await getOrgStudents(user.id);
+                const data = await getOrgStudents(targetOrgId);
                 setStudents(data);
                 setIsLoading(false);
             }
         }
         loadStudents();
-    }, [user]);
+    }, [targetOrgId]);
 
     // Student Search Effect
     useEffect(() => {
@@ -58,10 +62,10 @@ export function OrgStudentsPage() {
     const grades = ['All', ...Array.from(new Set(students.map(s => s.grade))).sort()];
 
     const handleSendStudentInvite = async (student: Profile) => {
-        if (!user) return;
+        if (!targetOrgId) return;
         try {
             setIsSubmitting(true);
-            const success = await sendOrgStudentInvite(user.id, student.id);
+            const success = await sendOrgStudentInvite(targetOrgId, student.id);
             if (success) {
                 toast.success(`Invitation sent successfully to ${student.full_name}!`);
                 setIsModalOpen(false);

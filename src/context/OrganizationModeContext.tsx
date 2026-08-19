@@ -82,11 +82,36 @@ export function OrganizationModeProvider({ children }: { children: React.ReactNo
 
             // Build organization list
             const organizations: Organization[] = [];
+            const addedOrgIds = new Set<string>();
 
-            // Add student organizations
+            // 1. Fetch top-level organisations (Mentozy, Krishnaite, etc.)
+            try {
+                const { data: dbOrgs } = await supabase
+                    .from('organisations')
+                    .select('id, name, logo_url, owner_id');
+
+                if (dbOrgs && dbOrgs.length > 0) {
+                    dbOrgs.forEach((org: any) => {
+                        if (!addedOrgIds.has(org.id)) {
+                            addedOrgIds.add(org.id);
+                            organizations.push({
+                                id: org.id,
+                                name: org.name || 'Organization',
+                                avatar_url: org.logo_url,
+                                role: org.owner_id === user.id ? 'teacher' : 'student'
+                            });
+                        }
+                    });
+                }
+            } catch (err) {
+                console.warn('organisations table query fallback:', err);
+            }
+
+            // 2. Add student organizations
             if (studentOrgs) {
                 studentOrgs.forEach((item: any) => {
-                    if (item.profiles) {
+                    if (item.profiles && !addedOrgIds.has(item.profiles.id)) {
+                        addedOrgIds.add(item.profiles.id);
                         organizations.push({
                             id: item.profiles.id,
                             name: item.profiles.full_name || 'Unknown Organization',
@@ -97,21 +122,14 @@ export function OrganizationModeProvider({ children }: { children: React.ReactNo
                 });
             }
 
-            // Add teacher organizations
-            if (teacherOrgs && !teacherError) {
-                teacherOrgs.forEach((item: any) => {
-                    if (item.profiles) {
-                        // Check if already added as student
-                        const exists = organizations.find(o => o.id === item.profiles.id);
-                        if (!exists) {
-                            organizations.push({
-                                id: item.profiles.id,
-                                name: item.profiles.full_name || 'Unknown Organization',
-                                avatar_url: item.profiles.avatar_url,
-                                role: 'teacher',
-                            });
-                        }
-                    }
+            // 4. If current user is an organisation admin/owner, include their organisation profile
+            if (user?.user_metadata?.is_org && !addedOrgIds.has(user.id)) {
+                addedOrgIds.add(user.id);
+                organizations.push({
+                    id: user.id,
+                    name: user.user_metadata?.full_name || 'My Organisation',
+                    avatar_url: user.user_metadata?.avatar_url,
+                    role: 'teacher'
                 });
             }
 
@@ -121,18 +139,15 @@ export function OrganizationModeProvider({ children }: { children: React.ReactNo
             const savedMode = localStorage.getItem(LOCAL_STORAGE_KEY) as 'personal' | 'organization' | null;
             const savedOrgId = localStorage.getItem(LOCAL_STORAGE_ORG_KEY);
 
-            if (savedMode === 'organization' && savedOrgId && organizations.length > 0) {
-                const savedOrg = organizations.find(o => o.id === savedOrgId);
-                if (savedOrg) {
-                    setModeState('organization');
-                    setActiveOrganizationState(savedOrg);
-                } else {
-                    // Saved org no longer exists, reset to personal
-                    setModeState('personal');
-                    setActiveOrganizationState(null);
-                    localStorage.removeItem(LOCAL_STORAGE_KEY);
-                    localStorage.removeItem(LOCAL_STORAGE_ORG_KEY);
-                }
+            const isOrgAdmin = Boolean(user?.user_metadata?.is_org);
+
+            if ((savedMode === 'organization' || isOrgAdmin) && organizations.length > 0) {
+                const savedOrg = savedOrgId ? organizations.find(o => o.id === savedOrgId) : null;
+                const activeOrg = savedOrg || organizations[0];
+                setModeState('organization');
+                setActiveOrganizationState(activeOrg);
+                localStorage.setItem(LOCAL_STORAGE_KEY, 'organization');
+                localStorage.setItem(LOCAL_STORAGE_ORG_KEY, activeOrg.id);
             } else {
                 setModeState('personal');
                 setActiveOrganizationState(null);
