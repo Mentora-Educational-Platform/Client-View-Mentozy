@@ -123,6 +123,42 @@ BEGIN
 END;
 $$;
 
+-- Helper function to check if user is an organisation admin/owner
+CREATE OR REPLACE FUNCTION public.is_org_admin(p_org_id UUID, p_user_id UUID)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    -- 1. Direct match: user IS the organisation profile account
+    IF p_org_id = p_user_id THEN
+        RETURN TRUE;
+    END IF;
+
+    -- 2. Check if user is organisation owner in organisations table
+    IF EXISTS (
+        SELECT 1 FROM public.organisations 
+        WHERE (id = p_org_id OR owner_id = p_org_id) 
+          AND (owner_id = p_user_id OR id = p_user_id)
+    ) THEN
+        RETURN TRUE;
+    END IF;
+
+    -- 3. Check if user is active teacher with admin role in org
+    IF EXISTS (
+        SELECT 1 FROM public.org_teachers 
+        WHERE org_id = p_org_id 
+          AND teacher_id = p_user_id 
+          AND LOWER(role) = 'admin' 
+          AND LOWER(status) = 'active'
+    ) THEN
+        RETURN TRUE;
+    END IF;
+
+    RETURN FALSE;
+END;
+$$;
+
 -- RLS Policies for community_categories
 CREATE POLICY "Categories viewable by organisation members" ON public.community_categories
     FOR SELECT USING (public.is_org_member(org_id, auth.uid()));
@@ -138,10 +174,16 @@ CREATE POLICY "Posts insertable by organisation members" ON public.community_pos
     FOR INSERT WITH CHECK (public.is_org_member(org_id, auth.uid()) AND author_id = auth.uid());
 
 CREATE POLICY "Posts updateable by author or org owner" ON public.community_posts
-    FOR UPDATE USING (public.is_org_member(org_id, auth.uid()));
+    FOR UPDATE USING (
+        author_id = auth.uid() 
+        OR public.is_org_admin(org_id, auth.uid())
+    );
 
 CREATE POLICY "Posts deletable by author or org owner" ON public.community_posts
-    FOR DELETE USING (public.is_org_member(org_id, auth.uid()));
+    FOR DELETE USING (
+        author_id = auth.uid() 
+        OR public.is_org_admin(org_id, auth.uid())
+    );
 
 -- RLS Policies for community_replies
 CREATE POLICY "Replies viewable by post organisation members" ON public.community_replies
@@ -162,17 +204,17 @@ CREATE POLICY "Replies insertable by post organisation members" ON public.commun
 
 CREATE POLICY "Replies updateable by author or org member" ON public.community_replies
     FOR UPDATE USING (
-        EXISTS (
+        author_id = auth.uid() OR EXISTS (
             SELECT 1 FROM public.community_posts p 
-            WHERE p.id = post_id AND public.is_org_member(p.org_id, auth.uid())
+            WHERE p.id = post_id AND public.is_org_admin(p.org_id, auth.uid())
         )
     );
 
 CREATE POLICY "Replies deletable by author or org member" ON public.community_replies
     FOR DELETE USING (
-        EXISTS (
+        author_id = auth.uid() OR EXISTS (
             SELECT 1 FROM public.community_posts p 
-            WHERE p.id = post_id AND public.is_org_member(p.org_id, auth.uid())
+            WHERE p.id = post_id AND public.is_org_admin(p.org_id, auth.uid())
         )
     );
 

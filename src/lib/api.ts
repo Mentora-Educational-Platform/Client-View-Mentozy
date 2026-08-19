@@ -2788,22 +2788,69 @@ export const toggleAcceptedCommunityReply = async (postId: string, replyId: stri
 
 export const deleteCommunityPost = async (postId: string): Promise<boolean> => {
     try {
+        console.log("DELETE REQUEST:", postId);
         const supabase = getSupabase();
         if (!supabase || !postId) return false;
-        const { error } = await supabase.from('community_posts').update({ is_deleted: true }).eq('id', postId);
-        return !error;
+
+        const { data, error } = await supabase
+            .from('community_posts')
+            .update({ is_deleted: true })
+            .eq('id', postId)
+            .select();
+
+        console.log("DELETE RESULT:", {
+            data,
+            error,
+        });
+
+        if (error) {
+            console.error("Community post delete failed - Error:", error);
+            return false;
+        }
+
+        // When RLS blocks an update, Supabase returns error=null and data=[] (0 rows affected)
+        if (data && data.length === 0) {
+            console.warn("DELETE REJECTED BY RLS OR NOT FOUND: 0 rows were updated in community_posts.");
+            return false;
+        }
+
+        return true;
     } catch (e) {
+        console.error("Exception in deleteCommunityPost:", e);
         return false;
     }
 };
 
 export const deleteCommunityReply = async (replyId: string): Promise<boolean> => {
     try {
+        console.log("DELETE REPLY REQUEST:", replyId);
         const supabase = getSupabase();
         if (!supabase || !replyId) return false;
-        const { error } = await supabase.from('community_replies').update({ is_deleted: true }).eq('id', replyId);
-        return !error;
+
+        const { data, error } = await supabase
+            .from('community_replies')
+            .update({ is_deleted: true })
+            .eq('id', replyId)
+            .select();
+
+        console.log("DELETE REPLY RESULT:", {
+            data,
+            error,
+        });
+
+        if (error) {
+            console.error("Community reply delete failed - Error:", error);
+            return false;
+        }
+
+        if (data && data.length === 0) {
+            console.warn("DELETE REPLY REJECTED BY RLS OR NOT FOUND: 0 rows were updated in community_replies.");
+            return false;
+        }
+
+        return true;
     } catch (e) {
+        console.error("Exception in deleteCommunityReply:", e);
         return false;
     }
 };

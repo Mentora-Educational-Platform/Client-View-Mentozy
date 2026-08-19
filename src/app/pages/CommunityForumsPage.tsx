@@ -263,6 +263,8 @@ export function CommunityForumsPage() {
             if (selectedPostId === postId) {
                 setSelectedPostId(null);
             }
+        } else {
+            toast.error("Could not delete post. You might not have permission.");
         }
     };
 
