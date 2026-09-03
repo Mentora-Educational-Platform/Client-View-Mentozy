@@ -52,15 +52,29 @@ export function SignupPage() {
                     </Link>
                 </div>
 
-                <div className="text-center">
+                <div className="text-center space-y-3">
                     <p className="text-sm font-bold uppercase text-gray-700">
                         Already have an account?{' '}
                         <Link to="/login" className="font-black text-gray-900 underline decoration-gray-900 decoration-2 underline-offset-4 hover:text-[#f39c12]">
                             Log in
                         </Link>
                     </p>
+                    <div className="pt-2 border-t-2 border-dashed border-gray-300">
+                        <p className="text-xs font-bold text-gray-600">
+                            Representing a School, Academy, or Institution?{' '}
+                            <Link to="/org-onboarding" className="text-black font-black underline hover:text-[#f39c12]">
+                                Partner With Us →
+                            </Link>{' '}
+                            •{' '}
+                            <Link to="/org-login" className="text-zinc-600 font-bold hover:text-black underline">
+                                Organization Login
+                            </Link>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     );
-}
+}
+
+export default SignupPage;

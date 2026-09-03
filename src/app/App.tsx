@@ -15,6 +15,11 @@ import { NotFoundPage } from './pages/NotFoundPage';
 // Lazy load pages
 const CareerPage = lazy(() => import('./pages/CareerPage').then(module => ({ default: module.CareerPage })));
 const MentorsPage = lazy(() => import('./pages/MentorsPage').then(module => ({ default: module.MentorsPage })));
+const KrishnaiteAICoursePage = lazy(() => import('./pages/KrishnaiteAICoursePage').then(module => ({ default: module.KrishnaiteAICoursePage })));
+const KrishnaiteApplicationPage = lazy(() => import('./pages/KrishnaiteApplicationPage').then(module => ({ default: module.KrishnaiteApplicationPage })));
+const KrishnaiteApplicantPortalPage = lazy(() => import('./pages/KrishnaiteApplicantPortalPage').then(module => ({ default: module.KrishnaiteApplicantPortalPage })));
+const AdminKrishnaiteApplicationsPage = lazy(() => import('./pages/admin/AdminKrishnaiteApplicationsPage').then(module => ({ default: module.AdminKrishnaiteApplicationsPage })));
+const AdminKrishnaiteApplicationDetailPage = lazy(() => import('./pages/admin/AdminKrishnaiteApplicationDetailPage').then(module => ({ default: module.AdminKrishnaiteApplicationDetailPage })));
 const TracksPage = lazy(() => import('./pages/TracksPage').then(module => ({ default: module.TracksPage })));
 const AboutPage = lazy(() => import('./pages/AboutPage').then(module => ({ default: module.AboutPage })));
 const LibraryPage = lazy(() => import('./pages/LibraryPage').then(module => ({ default: module.LibraryPage })));
@@ -30,6 +35,8 @@ const SignupPage = lazy(() => import('./pages/SignupPage').then(module => ({ def
 const StudentAuthPage = lazy(() => import('./pages/StudentAuthPage').then(module => ({ default: module.StudentAuthPage })));
 const StudentOnboardingPage = lazy(() => import('./pages/StudentOnboardingPage').then(module => ({ default: module.StudentOnboardingPage })));
 const MentorOnboardingPage = lazy(() => import('./pages/MentorOnboardingPage').then(module => ({ default: module.MentorOnboardingPage })));
+const MentorApplicationPage = lazy(() => import('./pages/MentorApplicationPage').then(module => ({ default: module.MentorApplicationPage })));
+const MentorApplicantPortalPage = lazy(() => import('./pages/MentorApplicantPortalPage').then(module => ({ default: module.MentorApplicantPortalPage })));
 const MentorDashboardPage = lazy(() => import('./pages/MentorDashboardPage').then(module => ({ default: module.MentorDashboardPage })));
 const StudentDashboardPage = lazy(() => import('./pages/StudentDashboardPage').then(module => ({ default: module.StudentDashboardPage })));
 const DashboardMentorsPage = lazy(() => import('./pages/DashboardMentorsPage').then(module => ({ default: module.DashboardMentorsPage })));
@@ -45,6 +52,7 @@ const TaskDetailPage = lazy(() => import('./pages/TaskDetailPage').then(module =
 const TeacherTypeSelectionPage = lazy(() => import('./pages/TeacherTypeSelectionPage').then(module => ({ default: module.TeacherTypeSelectionPage })));
 const IndividualOnboardingPage = lazy(() => import('./pages/IndividualOnboardingPage').then(module => ({ default: module.IndividualOnboardingPage })));
 const OrganisationTeacherOnboardingPage = lazy(() => import('./pages/OrganisationTeacherOnboardingPage').then(module => ({ default: module.OrganisationTeacherOnboardingPage })));
+const OrgLoginPage = lazy(() => import('./pages/OrgLoginPage').then(module => ({ default: module.OrgLoginPage })));
 const TeacherSuccessPage = lazy(() => import('./pages/TeacherSuccessPage').then(module => ({ default: module.TeacherSuccessPage })));
 const OrgDashboardPage = lazy(() => import('./pages/OrgDashboardPage').then(module => ({ default: module.OrgDashboardPage })));
 const OrgStudentsPage = lazy(() => import('./pages/OrgStudentsPage').then(module => ({ default: module.OrgStudentsPage })));
@@ -58,7 +66,12 @@ const OrgSettingsPage = lazy(() => import('./pages/OrgSettingsPage').then(module
 const OrgAnnouncementsPage = lazy(() => import('./pages/OrgAnnouncementsPage').then(module => ({ default: module.OrgAnnouncementsPage })));
 const OrgSubmissionsPage = lazy(() => import('./pages/OrgSubmissionsPage').then(module => ({ default: module.OrgSubmissionsPage })));
 const OrgIdePage = lazy(() => import('./pages/OrgIdePage').then(module => ({ default: module.OrgIdePage })));
-const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage').then(module => ({ default: module.AdminDashboardPage })));
+const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage').then(module => ({ default: module.AdminLoginPage })));
+const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage').then(module => ({ default: module.AdminDashboardPage })));
+const AdminMentorApplicationsPage = lazy(() => import('./pages/admin/AdminMentorApplicationsPage').then(module => ({ default: module.AdminMentorApplicationsPage })));
+const AdminMentorApplicationDetailPage = lazy(() => import('./pages/admin/AdminMentorApplicationDetailPage').then(module => ({ default: module.AdminMentorApplicationDetailPage })));
+const AdminOrganizationsPage = lazy(() => import('./pages/admin/AdminOrganizationsPage').then(module => ({ default: module.AdminOrganizationsPage })));
+const AdminOrganizationDetailPage = lazy(() => import('./pages/admin/AdminOrganizationDetailPage').then(module => ({ default: module.AdminOrganizationDetailPage })));
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(module => ({ default: module.ProfilePage })));
 const PlansPage = lazy(() => import('./pages/PlansPage').then(module => ({ default: module.PlansPage })));
 const CoursesPage = lazy(() => import('./pages/CoursesPage').then(module => ({ default: module.CoursesPage })));
@@ -156,6 +169,12 @@ function App() {
           <Route path="/projects" element={<CommunityProjectsPage />} />
 
           {/* Auth/Dashboard pages moved to standalone routes below */}
+          <Route path="/academy" element={<KrishnaiteAICoursePage />} />
+          <Route path="/krishnaite" element={<KrishnaiteAICoursePage />} />
+          <Route path="/krishnaite/ai-course" element={<KrishnaiteAICoursePage />} />
+          <Route path="/krishnaite/apply" element={<KrishnaiteApplicationPage />} />
+          <Route path="/krishnaite/application" element={<KrishnaiteApplicantPortalPage />} />
+          <Route path="/krishnaite/status" element={<KrishnaiteApplicantPortalPage />} />
           <Route path="/tracks" element={<TracksPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/library" element={<LibraryPage />} />
@@ -229,10 +248,45 @@ function App() {
             <EmailUpdatePage />
           </Suspense>
         } />
-        {/* Missing Mentor Routes Added Back */}
+        {/* Mentor Application & Onboarding Routes */}
+        <Route path="/mentor/apply" element={
+          <Suspense fallback={<PageLoader />}>
+            <MentorApplicationPage />
+          </Suspense>
+        } />
+        <Route path="/mentor/application" element={
+          <Suspense fallback={<PageLoader />}>
+            <MentorApplicantPortalPage />
+          </Suspense>
+        } />
+        <Route path="/mentor-application" element={
+          <Suspense fallback={<PageLoader />}>
+            <MentorApplicantPortalPage />
+          </Suspense>
+        } />
+        <Route path="/mentor/status" element={
+          <Suspense fallback={<PageLoader />}>
+            <MentorApplicantPortalPage />
+          </Suspense>
+        } />
+        <Route path="/mentor-apply" element={
+          <Suspense fallback={<PageLoader />}>
+            <MentorApplicationPage />
+          </Suspense>
+        } />
+        <Route path="/apply-mentor" element={
+          <Suspense fallback={<PageLoader />}>
+            <MentorApplicationPage />
+          </Suspense>
+        } />
         <Route path="/mentor-auth" element={
           <Suspense fallback={<PageLoader />}>
-            <MentorOnboardingPage />
+            <MentorApplicationPage />
+          </Suspense>
+        } />
+        <Route path="/individual-onboarding" element={
+          <Suspense fallback={<PageLoader />}>
+            <MentorApplicationPage />
           </Suspense>
         } />
         <Route path="/mentor-dashboard" element={
@@ -270,6 +324,11 @@ function App() {
         <Route path="/org-onboarding" element={
           <Suspense fallback={<PageLoader />}>
             <OrganisationTeacherOnboardingPage />
+          </Suspense>
+        } />
+        <Route path="/org-login" element={
+          <Suspense fallback={<PageLoader />}>
+            <OrgLoginPage />
           </Suspense>
         } />
         <Route path="/teacher-success" element={
@@ -342,9 +401,50 @@ function App() {
             <OrgSettingsPage />
           </Suspense>
         } />
+        {/* Admin Secure Routes */}
+        <Route path="/admin/login" element={
+          <Suspense fallback={<PageLoader />}>
+            <AdminLoginPage />
+          </Suspense>
+        } />
         <Route path="/admin" element={
           <Suspense fallback={<PageLoader />}>
             <AdminDashboardPage />
+          </Suspense>
+        } />
+        <Route path="/admin/dashboard" element={
+          <Suspense fallback={<PageLoader />}>
+            <AdminDashboardPage />
+          </Suspense>
+        } />
+        <Route path="/admin/mentor-applications" element={
+          <Suspense fallback={<PageLoader />}>
+            <AdminMentorApplicationsPage />
+          </Suspense>
+        } />
+        <Route path="/admin/mentor-applications/:applicationId" element={
+          <Suspense fallback={<PageLoader />}>
+            <AdminMentorApplicationDetailPage />
+          </Suspense>
+        } />
+        <Route path="/admin/krishnaite-applications" element={
+          <Suspense fallback={<PageLoader />}>
+            <AdminKrishnaiteApplicationsPage />
+          </Suspense>
+        } />
+        <Route path="/admin/krishnaite-applications/:id" element={
+          <Suspense fallback={<PageLoader />}>
+            <AdminKrishnaiteApplicationDetailPage />
+          </Suspense>
+        } />
+        <Route path="/admin/organizations" element={
+          <Suspense fallback={<PageLoader />}>
+            <AdminOrganizationsPage />
+          </Suspense>
+        } />
+        <Route path="/admin/organizations/:id" element={
+          <Suspense fallback={<PageLoader />}>
+            <AdminOrganizationDetailPage />
           </Suspense>
         } />
         <Route path="/profile" element={

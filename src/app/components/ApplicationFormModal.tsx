@@ -104,13 +104,12 @@ export function ApplicationFormModal({ open, onOpenChange, role }: ApplicationFo
       console.warn('Application submit error:', err);
     }
 
-    toast.success('Application submitted', {
-      description: `Thanks ${form.name.split(' ')[0]}! Redirecting you to applications.mentozy.app…`,
+    toast.success('Application submitted successfully', {
+      description: `Thanks ${form.name.split(' ')[0]}! Our admissions & recruitment team will review your application and get in touch.`,
     });
 
-    setTimeout(() => {
-      window.location.href = APPLICATIONS_REDIRECT_URL;
-    }, 1200);
+    setSubmitting(false);
+    onOpenChange(false);
   };
 
   return (
@@ -121,8 +120,7 @@ export function ApplicationFormModal({ open, onOpenChange, role }: ApplicationFo
             Apply for {role}
           </DialogTitle>
           <DialogDescription>
-            Fill in your details below. After a successful submission you'll be redirected to{' '}
-            <span className="font-semibold text-amber-600">applications.mentozy.app</span> to complete the next steps.
+            Fill in your details below. Our team will review your application and contact you via email.
           </DialogDescription>
         </DialogHeader>
 

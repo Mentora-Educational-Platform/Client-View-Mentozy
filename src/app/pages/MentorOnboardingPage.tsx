@@ -53,12 +53,12 @@ export function MentorOnboardingPage() {
         }
 
         toast.success("Application submitted", {
-            description: `Thanks ${formData.fullName.split(' ')[0] || 'there'}! Redirecting you to applications.mentozy.app…`,
+            description: `Thanks ${formData.fullName.split(' ')[0] || 'there'}! Redirecting you to the mentor application space…`,
         });
 
         setTimeout(() => {
-            window.location.href = APPLICATIONS_REDIRECT_URL;
-        }, 1200);
+            window.location.href = '/mentor/apply';
+        }, 1000);
     };
 
     return (
@@ -76,8 +76,7 @@ export function MentorOnboardingPage() {
                     </div>
                     <h2 className="text-4xl font-black text-gray-900 tracking-tight mb-2">Apply as Mentor</h2>
                     <p className="text-gray-500 font-medium">
-                        Tell us about yourself. After submitting you'll be redirected to{' '}
-                        <span className="font-semibold text-blue-600">applications.mentozy.app</span> to finish the process.
+                        Tell us about yourself to begin your application on Mentozy.
                     </p>
                 </div>
 

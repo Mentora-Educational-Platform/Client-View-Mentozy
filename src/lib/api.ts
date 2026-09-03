@@ -424,8 +424,12 @@ export const createCourse = async (
 
 export const getUserProfile = async (userId: string): Promise<Profile | null> => {
     try {
+        console.log("getUserProfile START for userId:", userId);
         const supabase = getSupabase();
-        if (!supabase) return null;
+        if (!supabase) {
+            console.warn("getUserProfile: No Supabase instance");
+            return null;
+        }
 
         const { data, error } = await supabase
             .from('profiles')
@@ -434,10 +438,11 @@ export const getUserProfile = async (userId: string): Promise<Profile | null> =>
             .single();
 
         if (error) {
-            console.error("Error fetching profile:", error);
+            console.error("Error fetching profile from Supabase:", error);
             return null;
         }
 
+        console.log("getUserProfile SUCCESS for userId:", userId, data);
         return data as Profile;
     } catch (e) {
         console.error("Unexpected error in getUserProfile:", e);
@@ -2855,4 +2860,1006 @@ export const deleteCommunityReply = async (replyId: string): Promise<boolean> =>
     }
 };
 
+/* =========================================================================
+   KRISHNAITE 18-DAY PRACTICAL AI COURSE TYPES & API
+   ========================================================================= */
 
+export type KrishnaiteApplicationStatus = 
+  | 'draft' 
+  | 'submitted' 
+  | 'under_review' 
+  | 'needs_info' 
+  | 'accepted' 
+  | 'declined' 
+  | 'waitlisted' 
+  | 'invited';
+
+export type KrishnaiteScholarshipType = 
+  | 'standard_50' 
+  | 'scholarship_75' 
+  | 'aivantage_100';
+
+export type KrishnaiteApplicationSource = 
+  | 'general_application' 
+  | 'aivantage_direct_invitation';
+
+export interface KrishnaiteCourseApplication {
+  id: string;
+  application_id: string; // e.g. KGA-2026-XXXXXX
+  user_id?: string;
+  
+  // Basic info
+  full_name: string;
+  preferred_name?: string;
+  email: string;
+  phone?: string;
+  date_of_birth?: string;
+  age?: string;
+  gender?: string;
+  country?: string;
+  state?: string;
+  city?: string;
+  timezone?: string;
+  profile_photo_url?: string;
+
+  // JSONB Data Payloads
+  education_data?: Record<string, any>;
+  professional_data?: Record<string, any>;
+  ai_experience?: Record<string, any>;
+  learning_goals?: Record<string, any>;
+  skills?: Record<string, any>;
+  automation_interests?: Record<string, any>;
+  creative_interests?: Record<string, any>;
+  learning_commitment?: Record<string, any>;
+  motivation_data?: Record<string, any>;
+  community_data?: Record<string, any>;
+  portfolio_data?: Record<string, any>;
+  device_data?: Record<string, any>;
+  acknowledgements?: Record<string, any>;
+
+  // Source & Status
+  source: KrishnaiteApplicationSource;
+  status: KrishnaiteApplicationStatus;
+
+  // Financial & Scholarship (server-anchored)
+  scholarship_type: KrishnaiteScholarshipType;
+  scholarship_percentage: number;
+  course_value: number;
+  discount_amount: number;
+  payable_amount: number;
+
+  // Admin & Progress
+  current_step: number;
+  admin_notes?: string;
+  reviewed_by?: string;
+  reviewed_at?: string;
+  submitted_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface KrishnaiteApplicationMessage {
+  id: string;
+  application_id: string;
+  sender_user_id?: string;
+  sender_type: 'admin' | 'applicant' | 'system';
+  sender_name?: string;
+  message: string;
+  attachments?: any[];
+  created_at: string;
+}
+
+export interface KrishnaiteApplicationEvent {
+  id: string;
+  application_id: string;
+  actor_user_id?: string;
+  event_type: string;
+  metadata?: Record<string, any>;
+  created_at: string;
+}
+
+// Local storage key fallback
+const LOCAL_STORAGE_KGA_DRAFT_KEY = 'mentozy_krishnaite_draft_v1';
+const LOCAL_STORAGE_KGA_APPS_KEY = 'mentozy_krishnaite_apps_local_v1';
+const LOCAL_STORAGE_KGA_MSGS_KEY = 'mentozy_krishnaite_msgs_local_v1';
+const LOCAL_STORAGE_KGA_EVENTS_KEY = 'mentozy_krishnaite_events_local_v1';
+
+export function generateKrishnaiteApplicationId(): string {
+  const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+  let rand = '';
+  for (let i = 0; i < 6; i++) {
+    rand += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return `KGA-2026-${rand}`;
+}
+
+/**
+ * Fetch application for the currently logged-in user
+ */
+export async function getKrishnaiteApplicationByUserId(userId: string): Promise<KrishnaiteCourseApplication | null> {
+  const supabase = getSupabase();
+  if (supabase && userId) {
+    try {
+      const { data, error } = await supabase
+        .from('krishnaite_course_applications')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data) {
+        return data as KrishnaiteCourseApplication;
+      }
+    } catch (err) {
+      console.warn('[Krishnaite API] DB fetch by user error, checking local store:', err);
+    }
+  }
+
+  // Fallback to local storage
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KGA_APPS_KEY);
+    if (raw) {
+      const list: KrishnaiteCourseApplication[] = JSON.parse(raw);
+      const found = list.find(a => a.user_id === userId);
+      if (found) return found;
+    }
+    // Check active draft
+    const rawDraft = localStorage.getItem(LOCAL_STORAGE_KGA_DRAFT_KEY);
+    if (rawDraft) {
+      const draft = JSON.parse(rawDraft);
+      if (draft && (!draft.user_id || draft.user_id === userId)) return draft;
+    }
+  } catch (e) {
+    console.warn('[Krishnaite API] Local storage read error:', e);
+  }
+
+  return null;
+}
+
+/**
+ * Fetch application by unique internal ID (UUID) or public application_id (KGA-2026-XXXXXX)
+ */
+export async function getKrishnaiteApplicationById(idOrAppId: string): Promise<KrishnaiteCourseApplication | null> {
+  const supabase = getSupabase();
+  if (supabase && idOrAppId) {
+    try {
+      // Check by UUID id or application_id
+      const isUUID = idOrAppId.includes('-');
+      const query = supabase.from('krishnaite_course_applications').select('*');
+      
+      const { data, error } = await (isUUID && idOrAppId.length > 20
+        ? query.or(`id.eq.${idOrAppId},application_id.eq.${idOrAppId}`)
+        : query.eq('application_id', idOrAppId)
+      ).maybeSingle();
+
+      if (!error && data) {
+        return data as KrishnaiteCourseApplication;
+      }
+    } catch (err) {
+      console.warn('[Krishnaite API] DB fetch by ID error, checking local store:', err);
+    }
+  }
+
+  // Fallback to local storage
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KGA_APPS_KEY);
+    if (raw) {
+      const list: KrishnaiteCourseApplication[] = JSON.parse(raw);
+      const found = list.find(a => a.id === idOrAppId || a.application_id === idOrAppId);
+      if (found) return found;
+    }
+    const rawDraft = localStorage.getItem(LOCAL_STORAGE_KGA_DRAFT_KEY);
+    if (rawDraft) {
+      const draft = JSON.parse(rawDraft);
+      if (draft && (draft.id === idOrAppId || draft.application_id === idOrAppId)) return draft;
+    }
+  } catch (e) {
+    console.warn('[Krishnaite API] Local storage read error:', e);
+  }
+
+  return null;
+}
+
+/**
+ * Save draft application (Step changes, autosave)
+ */
+export async function saveKrishnaiteDraftApplication(
+  data: Partial<KrishnaiteCourseApplication>,
+  userId?: string
+): Promise<KrishnaiteCourseApplication> {
+  const supabase = getSupabase();
+  
+  // Mandatory server-side anchor rules for general applications:
+  const appId = data.application_id || generateKrishnaiteApplicationId();
+  const draftPayload: Partial<KrishnaiteCourseApplication> = {
+    ...data,
+    application_id: appId,
+    user_id: userId || data.user_id,
+    source: data.source || 'general_application',
+    status: data.status || 'draft',
+    scholarship_type: data.scholarship_type || 'standard_50',
+    scholarship_percentage: data.scholarship_percentage || 50,
+    course_value: 10000,
+    discount_amount: 5000,
+    payable_amount: 5000,
+    updated_at: new Date().toISOString()
+  };
+
+  // 1. Save to Local Storage always as instant resilient backup
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KGA_DRAFT_KEY, JSON.stringify(draftPayload));
+  } catch (e) {
+    console.warn('[Krishnaite API] localStorage save error:', e);
+  }
+
+  // 2. Persist to DB if logged in and Supabase available
+  if (supabase && userId) {
+    try {
+      // Check if existing record exists
+      const { data: existing } = await supabase
+        .from('krishnaite_course_applications')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (existing) {
+        const { data: updated, error } = await supabase
+          .from('krishnaite_course_applications')
+          .update(draftPayload)
+          .eq('id', existing.id)
+          .select()
+          .single();
+
+        if (!error && updated) {
+          return updated as KrishnaiteCourseApplication;
+        }
+      } else {
+        const { data: inserted, error } = await supabase
+          .from('krishnaite_course_applications')
+          .insert({
+            ...draftPayload,
+            created_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (!error && inserted) {
+          return inserted as KrishnaiteCourseApplication;
+        }
+      }
+    } catch (err) {
+      console.warn('[Krishnaite API] DB draft save error, continuing with local draft:', err);
+    }
+  }
+
+  return {
+    id: data.id || `local-${Date.now()}`,
+    created_at: data.created_at || new Date().toISOString(),
+    ...draftPayload
+  } as KrishnaiteCourseApplication;
+}
+
+/**
+ * Submit final application
+ */
+export async function submitKrishnaiteApplication(
+  fullData: Partial<KrishnaiteCourseApplication>,
+  userId?: string
+): Promise<KrishnaiteCourseApplication> {
+  const supabase = getSupabase();
+  const submittedAt = new Date().toISOString();
+  const appId = fullData.application_id || generateKrishnaiteApplicationId();
+
+  // Enforce server-side 50% scholarship security:
+  const finalPayload: Partial<KrishnaiteCourseApplication> = {
+    ...fullData,
+    application_id: appId,
+    user_id: userId || fullData.user_id,
+    source: 'general_application',
+    status: 'under_review',
+    scholarship_type: 'standard_50',
+    scholarship_percentage: 50,
+    course_value: 10000,
+    discount_amount: 5000,
+    payable_amount: 5000,
+    submitted_at: submittedAt,
+    updated_at: submittedAt
+  };
+
+  let savedRecord: KrishnaiteCourseApplication | null = null;
+
+  if (supabase && userId) {
+    try {
+      const { data: existing } = await supabase
+        .from('krishnaite_course_applications')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (existing) {
+        const { data: updated, error } = await supabase
+          .from('krishnaite_course_applications')
+          .update(finalPayload)
+          .eq('id', existing.id)
+          .select()
+          .single();
+
+        if (!error && updated) savedRecord = updated as KrishnaiteCourseApplication;
+      } else {
+        const { data: inserted, error } = await supabase
+          .from('krishnaite_course_applications')
+          .insert({
+            ...finalPayload,
+            created_at: submittedAt
+          })
+          .select()
+          .single();
+
+        if (!error && inserted) savedRecord = inserted as KrishnaiteCourseApplication;
+      }
+    } catch (err) {
+      console.warn('[Krishnaite API] DB submit error, saving to local store:', err);
+    }
+  }
+
+  if (!savedRecord) {
+    savedRecord = {
+      id: fullData.id || `kga-${Date.now()}`,
+      created_at: fullData.created_at || submittedAt,
+      ...finalPayload
+    } as KrishnaiteCourseApplication;
+  }
+
+  // Update local storage
+  try {
+    localStorage.removeItem(LOCAL_STORAGE_KGA_DRAFT_KEY);
+    const raw = localStorage.getItem(LOCAL_STORAGE_KGA_APPS_KEY);
+    const list: KrishnaiteCourseApplication[] = raw ? JSON.parse(raw) : [];
+    const idx = list.findIndex(a => a.id === savedRecord!.id || a.application_id === savedRecord!.application_id);
+    if (idx >= 0) {
+      list[idx] = savedRecord;
+    } else {
+      list.unshift(savedRecord);
+    }
+    localStorage.setItem(LOCAL_STORAGE_KGA_APPS_KEY, JSON.stringify(list));
+  } catch (e) {
+    console.warn('[Krishnaite API] Local storage update error:', e);
+  }
+
+  // Log Audit Event
+  logKrishnaiteApplicationEvent(
+    savedRecord.id,
+    'APPLICATION_SUBMITTED',
+    {
+      application_id: savedRecord.application_id,
+      applicant_email: savedRecord.email,
+      scholarship_percentage: 50,
+      payable_amount: 5000
+    },
+    userId
+  ).catch(err => console.warn('[Krishnaite API] Audit event log skipped:', err));
+
+  return savedRecord;
+}
+
+/**
+ * Fetch all applications for Admin Station
+ */
+export async function getAllKrishnaiteApplications(): Promise<KrishnaiteCourseApplication[]> {
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('krishnaite_course_applications')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        return data as KrishnaiteCourseApplication[];
+      }
+    } catch (err) {
+      console.warn('[Krishnaite API] DB fetch all applications error, checking local store:', err);
+    }
+  }
+
+  // Fallback to local storage
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KGA_APPS_KEY);
+    if (raw) {
+      return JSON.parse(raw) as KrishnaiteCourseApplication[];
+    }
+  } catch (e) {
+    console.warn('[Krishnaite API] Local store read error:', e);
+  }
+
+  return [];
+}
+
+/**
+ * Update application status and scholarship (Admin Workstation)
+ */
+export async function updateKrishnaiteApplicationStatus(
+  id: string,
+  status: KrishnaiteApplicationStatus,
+  updates?: {
+    adminNotes?: string;
+    scholarshipPercentage?: number;
+    scholarshipType?: KrishnaiteScholarshipType;
+    payableAmount?: number;
+    reviewedBy?: string;
+  }
+): Promise<KrishnaiteCourseApplication | null> {
+  const supabase = getSupabase();
+  const updatePayload: Record<string, any> = {
+    status,
+    updated_at: new Date().toISOString()
+  };
+
+  if (updates?.adminNotes !== undefined) updatePayload.admin_notes = updates.adminNotes;
+  if (updates?.reviewedBy !== undefined) {
+    updatePayload.reviewed_by = updates.reviewedBy;
+    updatePayload.reviewed_at = new Date().toISOString();
+  }
+  if (updates?.scholarshipPercentage !== undefined) {
+    updatePayload.scholarship_percentage = updates.scholarshipPercentage;
+    updatePayload.discount_amount = (10000 * updates.scholarshipPercentage) / 100;
+    updatePayload.payable_amount = updates.payableAmount ?? (10000 - updatePayload.discount_amount);
+  }
+  if (updates?.scholarshipType !== undefined) {
+    updatePayload.scholarship_type = updates.scholarshipType;
+  }
+
+  let updatedApp: KrishnaiteCourseApplication | null = null;
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('krishnaite_course_applications')
+        .update(updatePayload)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (!error && data) {
+        updatedApp = data as KrishnaiteCourseApplication;
+      }
+    } catch (err) {
+      console.warn('[Krishnaite API] DB update error, updating local store:', err);
+    }
+  }
+
+  // Update local storage fallback
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KGA_APPS_KEY);
+    if (raw) {
+      const list: KrishnaiteCourseApplication[] = JSON.parse(raw);
+      const idx = list.findIndex(a => a.id === id || a.application_id === id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], ...updatePayload };
+        updatedApp = list[idx];
+        localStorage.setItem(LOCAL_STORAGE_KGA_APPS_KEY, JSON.stringify(list));
+      }
+    }
+  } catch (e) {
+    console.warn('[Krishnaite API] Local storage update error:', e);
+  }
+
+  // Log Audit Event
+  if (updatedApp) {
+    const eventType = 
+      status === 'accepted' ? 'APPLICATION_ACCEPTED' :
+      status === 'declined' ? 'APPLICATION_DECLINED' :
+      status === 'needs_info' ? 'NEEDS_INFO_REQUESTED' :
+      status === 'waitlisted' ? 'APPLICATION_WAITLISTED' :
+      status === 'invited' ? 'AIVANTAGE_WINNER_DESIGNATED' : 'STATUS_CHANGED';
+
+    logKrishnaiteApplicationEvent(
+      updatedApp.id,
+      eventType,
+      {
+        new_status: status,
+        scholarship_percentage: updatedApp.scholarship_percentage,
+        payable_amount: updatedApp.payable_amount,
+        admin_notes: updates?.adminNotes
+      },
+      updates?.reviewedBy
+    ).catch(e => console.warn('[Krishnaite API] Audit log skipped:', e));
+  }
+
+  return updatedApp;
+}
+
+/**
+ * Admin-controlled Direct AIvantage Winner Designation
+ */
+export async function createAIvantageWinnerInvitation(winnerData: {
+  fullName: string;
+  email: string;
+  phone?: string;
+  notes?: string;
+  adminUserId?: string;
+}): Promise<KrishnaiteCourseApplication> {
+  const supabase = getSupabase();
+  const appId = generateKrishnaiteApplicationId();
+  const now = new Date().toISOString();
+
+  const winnerPayload: Partial<KrishnaiteCourseApplication> = {
+    application_id: appId,
+    full_name: winnerData.fullName,
+    email: winnerData.email,
+    phone: winnerData.phone,
+    source: 'aivantage_direct_invitation',
+    status: 'invited',
+    scholarship_type: 'aivantage_100',
+    scholarship_percentage: 100,
+    course_value: 10000,
+    discount_amount: 10000,
+    payable_amount: 0,
+    admin_notes: winnerData.notes,
+    reviewed_by: winnerData.adminUserId,
+    reviewed_at: now,
+    submitted_at: now,
+    created_at: now,
+    updated_at: now
+  };
+
+  let createdRecord: KrishnaiteCourseApplication | null = null;
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('krishnaite_course_applications')
+        .insert(winnerPayload)
+        .select()
+        .single();
+
+      if (!error && data) {
+        createdRecord = data as KrishnaiteCourseApplication;
+      }
+    } catch (err) {
+      console.warn('[Krishnaite API] DB winner insert error, saving to local store:', err);
+    }
+  }
+
+  if (!createdRecord) {
+    createdRecord = {
+      id: `winner-${Date.now()}`,
+      ...winnerPayload
+    } as KrishnaiteCourseApplication;
+  }
+
+  // Update local storage
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KGA_APPS_KEY);
+    const list: KrishnaiteCourseApplication[] = raw ? JSON.parse(raw) : [];
+    list.unshift(createdRecord);
+    localStorage.setItem(LOCAL_STORAGE_KGA_APPS_KEY, JSON.stringify(list));
+  } catch (e) {
+    console.warn('[Krishnaite API] Local storage error:', e);
+  }
+
+  // Log Audit Event
+  logKrishnaiteApplicationEvent(
+    createdRecord.id,
+    'AIVANTAGE_WINNER_DESIGNATED',
+    {
+      application_id: createdRecord.application_id,
+      email: createdRecord.email,
+      source: 'aivantage_direct_invitation',
+      scholarship: '100% Free'
+    },
+    winnerData.adminUserId
+  ).catch(e => console.warn('[Krishnaite API] Audit log skipped:', e));
+
+  return createdRecord;
+}
+
+/**
+ * Messages & Communications Thread for Krishnaite Applications
+ */
+export async function getKrishnaiteApplicationMessages(appId: string): Promise<KrishnaiteApplicationMessage[]> {
+  const supabase = getSupabase();
+  if (supabase && appId) {
+    try {
+      const { data, error } = await supabase
+        .from('krishnaite_application_messages')
+        .select('*')
+        .eq('application_id', appId)
+        .order('created_at', { ascending: true });
+
+      if (!error && data) {
+        return data as KrishnaiteApplicationMessage[];
+      }
+    } catch (err) {
+      console.warn('[Krishnaite API] DB messages fetch error, checking local store:', err);
+    }
+  }
+
+  // Fallback
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KGA_MSGS_KEY);
+    if (raw) {
+      const map: Record<string, KrishnaiteApplicationMessage[]> = JSON.parse(raw);
+      return map[appId] || [];
+    }
+  } catch (e) {
+    console.warn('[Krishnaite API] Local storage read error:', e);
+  }
+
+  return [];
+}
+
+export async function sendKrishnaiteApplicationMessage(
+  appId: string,
+  message: string,
+  senderType: 'admin' | 'applicant' | 'system',
+  senderName?: string,
+  senderUserId?: string
+): Promise<KrishnaiteApplicationMessage> {
+  const supabase = getSupabase();
+  const msgPayload = {
+    application_id: appId,
+    message,
+    sender_type: senderType,
+    sender_name: senderName || (senderType === 'admin' ? 'Krishnaite Admissions' : 'Applicant'),
+    sender_user_id: senderUserId,
+    created_at: new Date().toISOString()
+  };
+
+  let savedMsg: KrishnaiteApplicationMessage | null = null;
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('krishnaite_application_messages')
+        .insert(msgPayload)
+        .select()
+        .single();
+
+      if (!error && data) {
+        savedMsg = data as KrishnaiteApplicationMessage;
+      }
+    } catch (err) {
+      console.warn('[Krishnaite API] DB message insert error, storing locally:', err);
+    }
+  }
+
+  if (!savedMsg) {
+    savedMsg = {
+      id: `msg-${Date.now()}`,
+      ...msgPayload
+    } as KrishnaiteApplicationMessage;
+  }  // Local storage fallback
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KGA_MSGS_KEY);
+    const map: Record<string, KrishnaiteApplicationMessage[]> = raw ? JSON.parse(raw) : {};
+    if (!map[appId]) map[appId] = [];
+    map[appId].push(savedMsg);
+    localStorage.setItem(LOCAL_STORAGE_KGA_MSGS_KEY, JSON.stringify(map));
+  } catch (e) {
+    console.warn('[Krishnaite API] Local storage write error:', e);
+  }
+
+  // Log Audit Event
+  const eventType = senderType === 'applicant' ? 'APPLICANT_RESPONDED' : 'ADMIN_NOTE_ADDED';
+  logKrishnaiteApplicationEvent(
+    appId,
+    eventType,
+    { message_snippet: message.substring(0, 100), sender_type: senderType },
+    senderUserId
+  ).catch(e => console.warn('[Krishnaite API] Audit log skipped:', e));
+
+  return savedMsg;
+}
+
+/**
+ * Audit Events Logger & Fetcher
+ */
+export async function getKrishnaiteApplicationEvents(appId: string): Promise<KrishnaiteApplicationEvent[]> {
+  const supabase = getSupabase();
+  if (supabase && appId) {
+    try {
+      const { data, error } = await supabase
+        .from('krishnaite_application_events')
+        .select('*')
+        .eq('application_id', appId)
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        return data as KrishnaiteApplicationEvent[];
+      }
+    } catch (err) {
+      console.warn('[Krishnaite API] DB events fetch error, checking local store:', err);
+    }
+  }
+
+  // Fallback
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KGA_EVENTS_KEY);
+    if (raw) {
+      const map: Record<string, KrishnaiteApplicationEvent[]> = JSON.parse(raw);
+      return map[appId] || [];
+    }
+  } catch (e) {
+    console.warn('[Krishnaite API] Local storage read error:', e);
+  }
+
+  return [];
+}
+
+export async function logKrishnaiteApplicationEvent(
+  appId: string,
+  eventType: string,
+  metadata: Record<string, any> = {},
+  actorUserId?: string
+): Promise<void> {
+  const supabase = getSupabase();
+  const eventPayload = {
+    application_id: appId,
+    event_type: eventType,
+    metadata,
+    actor_user_id: actorUserId,
+    created_at: new Date().toISOString()
+  };
+
+  if (supabase) {
+    try {
+      await supabase.from('krishnaite_application_events').insert(eventPayload);
+    } catch (err) {
+      console.warn('[Krishnaite API] DB event insert error:', err);
+    }
+  }
+
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KGA_EVENTS_KEY);
+    const map: Record<string, KrishnaiteApplicationEvent[]> = raw ? JSON.parse(raw) : {};
+    if (!map[appId]) map[appId] = [];
+    map[appId].unshift({
+      id: `evt-${Date.now()}`,
+      ...eventPayload
+    });
+    localStorage.setItem(LOCAL_STORAGE_KGA_EVENTS_KEY, JSON.stringify(map));
+  } catch (e) {
+    console.warn('[Krishnaite API] Local storage event write error:', e);
+  }
+}
+
+// ==========================================
+// MENTOZY ORGANIZATIONS MANAGEMENT
+// ==========================================
+
+export interface MentozyOrganization {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  logo_url?: string;
+  owner_id?: string;
+  owner_email?: string;
+  founder_name?: string;
+  org_type?: string;
+  status: 'active' | 'pending' | 'suspended';
+  teacher_count?: number;
+  student_count?: number;
+  course_count?: number;
+  created_at?: string;
+  updated_at?: string;
+  notes?: string;
+}
+
+const LOCAL_STORAGE_ORGS_KEY = 'mentozy_orgs_local_v1';
+
+const DEFAULT_DEMO_ORGS: MentozyOrganization[] = [
+  {
+    id: 'org-krishnaite-academy',
+    name: 'Krishnaite Academy',
+    slug: 'krishnaite-academy',
+    description: 'Official Krishnaite practical AI and high-impact technology learning organization.',
+    owner_email: 'founder@krishnaite.com',
+    founder_name: 'Krishnaite Foundation',
+    org_type: 'Academy / Tech Institute',
+    status: 'active',
+    teacher_count: 8,
+    student_count: 142,
+    course_count: 4,
+    created_at: new Date(Date.now() - 30 * 86400000).toISOString(),
+    notes: 'Official Partner Academy'
+  },
+  {
+    id: 'org-springfield-tech',
+    name: 'Apex Coding Institute',
+    slug: 'apex-coding-institute',
+    description: 'Premier regional coding and developer training institute.',
+    owner_email: 'admin@apexcoding.edu',
+    founder_name: 'Prof. Rajesh Verma',
+    org_type: 'Coaching / Institute',
+    status: 'active',
+    teacher_count: 4,
+    student_count: 58,
+    course_count: 2,
+    created_at: new Date(Date.now() - 14 * 86400000).toISOString(),
+    notes: 'Approved partnership via direct admissions'
+  }
+];
+
+export async function getAllOrganizations(): Promise<MentozyOrganization[]> {
+  const supabase = getSupabase();
+  let dbOrgs: MentozyOrganization[] = [];
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('organisations')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        // Fetch teacher and student counts for each org
+        const enriched = await Promise.all(data.map(async (org: any) => {
+          let teacherCount = 0;
+          let studentCount = 0;
+          try {
+            const { count: tCount } = await supabase
+              .from('org_teachers')
+              .select('*', { count: 'exact', head: true })
+              .eq('org_id', org.id);
+            teacherCount = tCount || 0;
+          } catch (e) { /* ignore */ }
+
+          try {
+            const { count: sCount } = await supabase
+              .from('org_students')
+              .select('*', { count: 'exact', head: true })
+              .eq('org_id', org.id);
+            studentCount = sCount || 0;
+          } catch (e) { /* ignore */ }
+
+          return {
+            id: org.id,
+            name: org.name,
+            slug: org.slug || org.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            description: org.description,
+            logo_url: org.logo_url,
+            owner_id: org.owner_id,
+            owner_email: org.owner_email || 'admin@' + (org.slug || 'org') + '.com',
+            founder_name: org.founder_name || 'Organization Admin',
+            org_type: org.org_type || 'Educational Institute',
+            status: (org.status as any) || 'active',
+            teacher_count: teacherCount,
+            student_count: studentCount,
+            created_at: org.created_at || new Date().toISOString(),
+            updated_at: org.updated_at,
+            notes: org.notes
+          };
+        }));
+        dbOrgs = enriched;
+      }
+    } catch (err) {
+      console.warn('[Orgs API] DB fetch warning:', err);
+    }
+  }
+
+  // Local storage fallback & merge
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_ORGS_KEY);
+    if (raw) {
+      const localList: MentozyOrganization[] = JSON.parse(raw);
+      const dbIds = new Set(dbOrgs.map(o => o.id));
+      const filteredLocal = localList.filter(o => !dbIds.has(o.id));
+      return [...dbOrgs, ...filteredLocal];
+    } else {
+      localStorage.setItem(LOCAL_STORAGE_ORGS_KEY, JSON.stringify(DEFAULT_DEMO_ORGS));
+      if (dbOrgs.length === 0) {
+        return DEFAULT_DEMO_ORGS;
+      }
+    }
+  } catch (e) {
+    console.warn('[Orgs API] Local storage read error:', e);
+  }
+
+  return dbOrgs.length > 0 ? dbOrgs : DEFAULT_DEMO_ORGS;
+}
+
+export async function getOrganizationById(id: string): Promise<MentozyOrganization | null> {
+  const all = await getAllOrganizations();
+  return all.find(o => o.id === id || o.slug === id) || null;
+}
+
+export async function provisionOrganization(payload: {
+  name: string;
+  email: string;
+  password?: string;
+  orgType: string;
+  description?: string;
+  founderName?: string;
+  notes?: string;
+  adminUserId?: string;
+}): Promise<MentozyOrganization> {
+  const supabase = getSupabase();
+  const slug = payload.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const orgId = `org-${slug}-${Date.now().toString(36)}`;
+
+  const newOrg: MentozyOrganization = {
+    id: orgId,
+    name: payload.name,
+    slug,
+    description: payload.description || `${payload.name} Educational Organization`,
+    owner_email: payload.email,
+    founder_name: payload.founderName || 'Administrator',
+    org_type: payload.orgType,
+    status: 'active',
+    teacher_count: 0,
+    student_count: 0,
+    course_count: 0,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    notes: payload.notes || 'Provisioned by Admin'
+  };
+
+  // 1. Attempt database insert if available
+  if (supabase) {
+    try {
+      await supabase.from('organisations').upsert({
+        id: orgId,
+        name: payload.name,
+        slug,
+        description: payload.description,
+        owner_id: payload.adminUserId,
+        created_at: new Date().toISOString()
+      }, { onConflict: 'id' });
+    } catch (err) {
+      console.warn('[Orgs API] DB organisation upsert skipped:', err);
+    }
+  }
+
+  // 2. Persist to Local Storage
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_ORGS_KEY);
+    const list: MentozyOrganization[] = raw ? JSON.parse(raw) : DEFAULT_DEMO_ORGS;
+    list.unshift(newOrg);
+    localStorage.setItem(LOCAL_STORAGE_ORGS_KEY, JSON.stringify(list));
+  } catch (e) {
+    console.warn('[Orgs API] Local storage org write error:', e);
+  }
+
+  return newOrg;
+}
+
+export async function updateOrganizationStatus(
+  id: string,
+  status: 'active' | 'pending' | 'suspended',
+  notes?: string
+): Promise<MentozyOrganization | null> {
+  const supabase = getSupabase();
+
+  if (supabase) {
+    try {
+      await supabase
+        .from('organisations')
+        .update({ status, notes, updated_at: new Date().toISOString() })
+        .eq('id', id);
+    } catch (e) {
+      console.warn('[Orgs API] DB status update skipped:', e);
+    }
+  }
+
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_ORGS_KEY);
+    if (raw) {
+      const list: MentozyOrganization[] = JSON.parse(raw);
+      const idx = list.findIndex(o => o.id === id);
+      if (idx !== -1) {
+        list[idx].status = status;
+        if (notes !== undefined) list[idx].notes = notes;
+        list[idx].updated_at = new Date().toISOString();
+        localStorage.setItem(LOCAL_STORAGE_ORGS_KEY, JSON.stringify(list));
+        return list[idx];
+      }
+    }
+  } catch (e) {
+    console.warn('[Orgs API] Local storage status update error:', e);
+  }
+
+  return null;
+}

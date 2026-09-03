@@ -264,7 +264,7 @@ app.post('/api/contact', async (req, res) => {
       return res.status(400).json({ error: 'firstName, email, and message are required' });
     }
 
-    const resendApiKey = process.env.RESEND_API_KEY || 're_DD881ExK_KTtrprwhcwhykwt6Zn2fdTxd';
+    const resendApiKey = process.env.RESEND_API_KEY;
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',

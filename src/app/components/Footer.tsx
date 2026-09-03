@@ -17,7 +17,9 @@ export const Footer = memo(function Footer() {
       { label: 'About Us', path: '/about' },
       { label: 'Careers', path: '/careers' },
       { label: 'Contact', path: '/contact' },
-      { label: 'Become a Mentor', path: '/contact' },
+      { label: 'Become a Mentor', path: '/mentor/apply' },
+      { label: 'Partner With Us', path: '/org-onboarding' },
+      { label: 'Organization Login', path: '/org-login' },
     ],
     legal: [
       { label: 'Privacy Policy', path: '/privacy-policy' },

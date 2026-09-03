@@ -71,8 +71,8 @@ export function MentorDashboardPage() {
                         .maybeSingle();
 
                     if (applicationData && applicationData.status !== 'approved') {
-                        toast.info(`Your mentor application is currently ${applicationData.status}. Dashboard unlocks after approval.`);
-                        navigate('/teacher-success?status=pending&type=mentor', { replace: true });
+                        toast.info(`Your mentor application is currently ${applicationData.status}. Viewing Applicant Portal.`);
+                        navigate('/mentor/application', { replace: true });
                         return;
                     }
                 }
@@ -207,22 +207,22 @@ export function MentorDashboardPage() {
     return (
         <DashboardLayout>
             {/* Welcome Banner */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 p-8 md:p-10 text-white shadow-2xl shadow-indigo-500/20 mb-8">
+            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 p-5 sm:p-8 md:p-10 text-white shadow-2xl shadow-indigo-500/20 mb-6 sm:mb-8">
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
                         <div className="flex items-center gap-2 mb-3">
-                            <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm uppercase tracking-wider">
+                            <span className="text-[11px] sm:text-xs font-bold bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm uppercase tracking-wider">
                                 Mentor Dashboard
                             </span>
                             {mentorDetails?.status === 'active' && (
-                                <span className="flex items-center gap-1.5 text-xs font-bold bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-full backdrop-blur-sm">
+                                <span className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-full backdrop-blur-sm">
                                     <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
                                     Online
                                 </span>
                             )}
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-black mb-3">Welcome back, {firstName}!</h1>
-                        <p className="text-indigo-100 text-base md:text-lg max-w-md">
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black mb-2 sm:mb-3">Welcome back, {firstName}!</h1>
+                        <p className="text-indigo-100 text-sm sm:text-base md:text-lg max-w-md">
                             {pendingBookings.length > 0 ? (
                                 <>You have <span className="font-bold text-white bg-white/10 px-2 py-0.5 rounded-lg">{pendingBookings.length} pending requests</span> waiting for your review.</>
                             ) : (
@@ -232,55 +232,55 @@ export function MentorDashboardPage() {
                     </div>
                     
                     {/* Quick Stats Mini */}
-                    <div className="flex gap-4">
-                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 min-w-[100px] text-center">
-                            <p className="text-3xl font-black">${estimatedEarnings}</p>
+                    <div className="grid grid-cols-2 sm:flex gap-3 sm:gap-4 w-full sm:w-auto">
+                        <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-3.5 sm:p-4 border border-white/10 min-w-[90px] text-center">
+                            <p className="text-2xl sm:text-3xl font-black">${estimatedEarnings}</p>
                             <p className="text-indigo-200 text-xs font-medium">Earnings</p>
                         </div>
-                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 min-w-[100px] text-center">
-                            <p className="text-3xl font-black">{completedBookings.length + confirmedBookings.length}</p>
+                        <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-3.5 sm:p-4 border border-white/10 min-w-[90px] text-center">
+                            <p className="text-2xl sm:text-3xl font-black">{completedBookings.length + confirmedBookings.length}</p>
                             <p className="text-indigo-200 text-xs font-medium">Sessions</p>
                         </div>
                     </div>
                 </div>
                 
                 {/* Decoration Elements */}
-                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-gradient-to-br from-pink-500/30 to-transparent rounded-full blur-3xl"></div>
-                <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-60 h-60 bg-gradient-to-tr from-blue-500/30 to-transparent rounded-full blur-3xl"></div>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-gradient-to-br from-pink-500/30 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-60 h-60 bg-gradient-to-tr from-blue-500/30 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
             </div>
 
             {/* Quick Stats Grid - Enhanced Bento Style */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4 mb-6 sm:mb-8">
                 {/* Earnings Card - Featured */}
-                <div className="group relative bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-3xl shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/30 transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+                <div className="group relative bg-gradient-to-br from-emerald-500 to-teal-600 p-5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/30 transition-all duration-300 hover:-translate-y-1 overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10" />
                     <div className="relative">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <DollarSign className="w-6 h-6 text-white" />
+                            <div className="w-11 h-11 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                             </div>
                             <TrendingUp className="w-5 h-5 text-emerald-200" />
                         </div>
-                        <h3 className="text-4xl font-black text-white mb-1">${estimatedEarnings}</h3>
-                        <p className="text-emerald-100 font-medium text-sm">Total Earnings</p>
+                        <h3 className="text-3xl sm:text-4xl font-black text-white mb-1">${estimatedEarnings}</h3>
+                        <p className="text-emerald-100 font-medium text-xs sm:text-sm">Total Earnings</p>
                     </div>
                 </div>
 
                 {/* Upcoming Sessions */}
-                <div className="group bg-white p-6 rounded-3xl border-2 border-gray-100 shadow-sm hover:shadow-lg hover:border-indigo-200 transition-all duration-300 hover:-translate-y-1">
+                <div className="group bg-white p-5 sm:p-6 rounded-2xl sm:rounded-3xl border-2 border-gray-100 shadow-sm hover:shadow-lg hover:border-indigo-200 transition-all duration-300 hover:-translate-y-1">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <Calendar className="w-6 h-6 text-indigo-600" />
+                        <div className="w-11 h-11 sm:w-12 sm:h-12 bg-indigo-50 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600" />
                         </div>
                         <Video className="w-5 h-5 text-indigo-400" />
                     </div>
-                    <h3 className="text-4xl font-black text-gray-900 mb-1">{confirmedBookings.length}</h3>
-                    <p className="text-gray-500 font-medium text-sm">Upcoming</p>
+                    <h3 className="text-3xl sm:text-4xl font-black text-gray-900 mb-1">{confirmedBookings.length}</h3>
+                    <p className="text-gray-500 font-medium text-xs sm:text-sm">Upcoming Sessions</p>
                 </div>
 
                 {/* Pending Requests */}
-                <div className="group bg-white p-6 rounded-3xl border-2 border-gray-100 shadow-sm hover:shadow-lg hover:border-amber-200 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+                <div className="group bg-white p-5 sm:p-6 rounded-2xl sm:rounded-3xl border-2 border-gray-100 shadow-sm hover:shadow-lg hover:border-amber-200 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
                     {pendingBookings.length > 0 && (
                         <div className="absolute top-3 right-3">
                             <span className="flex h-3 w-3">
@@ -290,32 +290,32 @@ export function MentorDashboardPage() {
                         </div>
                     )}
                     <div className="flex items-center justify-between mb-4">
-                        <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <AlertCircle className="w-6 h-6 text-amber-600" />
+                        <div className="w-11 h-11 sm:w-12 sm:h-12 bg-amber-50 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" />
                         </div>
                     </div>
-                    <h3 className="text-4xl font-black text-gray-900 mb-1">{pendingBookings.length}</h3>
-                    <p className="text-gray-500 font-medium text-sm">Pending</p>
+                    <h3 className="text-3xl sm:text-4xl font-black text-gray-900 mb-1">{pendingBookings.length}</h3>
+                    <p className="text-gray-500 font-medium text-xs sm:text-sm">Pending Requests</p>
                 </div>
 
                 {/* Completed - Featured Dark */}
-                <div className="group relative bg-gradient-to-br from-violet-600 to-indigo-700 p-6 rounded-3xl shadow-lg shadow-violet-500/20 hover:shadow-xl hover:shadow-violet-500/30 transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+                <div className="group relative bg-gradient-to-br from-violet-600 to-indigo-700 p-5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-lg shadow-violet-500/20 hover:shadow-xl hover:shadow-violet-500/30 transition-all duration-300 hover:-translate-y-1 overflow-hidden">
                     <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
                     <div className="relative">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <CheckCircle2 className="w-6 h-6 text-white" />
+                            <div className="w-11 h-11 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                             </div>
                             <Sparkles className="w-5 h-5 text-violet-200" />
                         </div>
-                        <h3 className="text-4xl font-black text-white mb-1">{completedBookings.length}</h3>
-                        <p className="text-violet-200 font-medium text-sm">Completed</p>
+                        <h3 className="text-3xl sm:text-4xl font-black text-white mb-1">{completedBookings.length}</h3>
+                        <p className="text-violet-200 font-medium text-xs sm:text-sm">Completed Sessions</p>
                     </div>
                 </div>
             </div>
 
             {/* Content Area */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
 
                 {/* Left Column: Requests & Schedule */}
                 <div className="lg:col-span-2 space-y-8">

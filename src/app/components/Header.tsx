@@ -25,7 +25,7 @@ export function Header() {
     { label: 'Mentors', path: '/mentors' },
     { label: 'Projects', path: '/projects' },
     { label: 'Pricing', path: '/plans' },
-    { label: 'Tracks', path: '/tracks' },
+    { label: 'Academy', path: '/academy' },
     { label: 'Careers', path: '/careers' },
     { label: 'About', path: '/about' },
     { label: 'Library', path: '/library' },
@@ -34,17 +34,17 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b-4 border-gray-900 bg-[#FAF9F6] font-mono select-none">
       {/* Neo-brutalist Maintenance Banner */}
-      <div className="bg-[#f39c12] text-gray-900 px-4 py-2 text-center text-xs font-black uppercase tracking-wider border-b-4 border-gray-900">
-        🚀 Our mentor onboarding is currently being upgraded. Student accounts are fully active.
+      <div className="bg-[#f39c12] text-gray-900 px-3 py-1.5 text-center text-[10px] sm:text-xs font-black uppercase tracking-wider border-b-4 border-gray-900">
+        ⚠️ Our mentor applications are under maintenance • Students are completely live
       </div>
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
+      <div className="container mx-auto px-3 sm:px-6 py-2.5 sm:py-4">
+        <div className="flex items-center justify-between gap-2">
           <Link
             to="/"
-            className="flex items-center gap-3 cursor-pointer group border-4 border-gray-900 bg-white px-3 py-1.5 shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all"
+            className="flex items-center gap-2 sm:gap-3 cursor-pointer group border-2 sm:border-4 border-gray-900 bg-white px-2.5 sm:px-3 py-1.5 shadow-[2px_2px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_rgba(0,0,0,1)] shrink-0"
           >
-            <span className="text-xl font-black tracking-tight text-gray-900 uppercase">Mentozy</span>
-            <div className="w-3.5 h-3.5 bg-[#f39c12] border-2 border-gray-900"></div>
+            <span className="text-lg sm:text-xl font-black tracking-tight text-gray-900 uppercase">Mentozy</span>
+            <div className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 bg-[#f39c12] border-2 border-gray-900"></div>
           </Link>
 
           <nav className="hidden xl:flex items-center gap-6">
@@ -61,14 +61,14 @@ export function Header() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {/* Theme Toggle */}
             <button
               onClick={() => setTheme(isDarkMode ? 'light' : 'dark')}
-              className="p-2.5 bg-white border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] transition-all text-gray-900"
+              className="min-w-[40px] min-h-[40px] flex items-center justify-center bg-white border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] transition-all text-gray-900 cursor-pointer"
               title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             >
-              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              {isDarkMode ? <Sun className="w-4 h-4 sm:w-5 sm:h-5" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5" />}
             </button>
 
             <div className={`hidden sm:flex items-center transition-all duration-300 ${isSearchOpen ? 'w-64' : 'w-auto'}`}>
@@ -93,7 +93,7 @@ export function Header() {
               ) : (
                 <button
                   onClick={() => setIsSearchOpen(true)}
-                  className="p-2.5 bg-white border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] transition-all text-gray-900"
+                  className="p-2.5 bg-white border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] transition-all text-gray-900 cursor-pointer"
                 >
                   <Search className="w-5 h-5" />
                 </button>
@@ -102,21 +102,30 @@ export function Header() {
 
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="xl:hidden p-2.5 bg-white border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] text-gray-900"
+              className="xl:hidden min-w-[40px] min-h-[40px] flex items-center justify-center bg-white border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] text-gray-900 cursor-pointer"
+              aria-label="Toggle mobile menu"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
 
+            {/* Apply Us Button */}
+            <Link
+              to="/krishnaite/apply"
+              className="hidden md:flex items-center px-4 py-2 border-2 sm:border-4 border-gray-900 bg-[#eff3ff] hover:bg-[#dbeafe] text-gray-900 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all min-h-[40px] cursor-pointer"
+            >
+              Apply Us
+            </Link>
+
             <Link
               to="/login"
-              className="hidden md:block px-4 py-2 border-2 border-gray-900 bg-white text-gray-900 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] transition-all"
+              className="hidden md:flex items-center px-4 py-2 border-2 border-gray-900 bg-white text-gray-900 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] transition-all min-h-[40px]"
             >
               Log In
             </Link>
 
             <Link
               to="/signup"
-              className="hidden md:block px-5 py-2 border-4 border-gray-900 bg-[#f39c12] text-gray-900 text-xs font-black uppercase tracking-wider shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all"
+              className="hidden md:flex items-center px-5 py-2 border-4 border-gray-900 bg-[#f39c12] text-gray-900 text-xs font-black uppercase tracking-wider shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all min-h-[40px]"
             >
               Join Mentozy
             </Link>
@@ -131,7 +140,7 @@ export function Header() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="xl:hidden border-t-4 border-gray-900 bg-[#FAF9F6] absolute w-full inset-x-0 shadow-[0_4px_0px_rgba(0,0,0,1)] pb-6"
+            className="xl:hidden border-t-4 border-gray-900 bg-[#FAF9F6] absolute w-full inset-x-0 shadow-[0_4px_0px_rgba(0,0,0,1)] pb-6 max-h-[calc(100vh-100px)] overflow-y-auto"
           >
             <nav className="flex flex-col p-4 gap-2">
               {navItems.map((item) => (
@@ -140,24 +149,31 @@ export function Header() {
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={({ isActive }) =>
-                    `px-4 py-3 border-2 border-gray-900 text-xs font-black uppercase tracking-wider transition-colors ${isActive ? 'bg-[#f39c12] text-gray-900' : 'bg-white text-gray-900 hover:bg-[#eff3ff]'}`
+                    `px-4 py-3 border-2 border-gray-900 text-xs font-black uppercase tracking-wider transition-colors min-h-[44px] flex items-center ${isActive ? 'bg-[#f39c12] text-gray-900' : 'bg-white text-gray-900 hover:bg-[#eff3ff]'}`
                   }
                 >
                   {item.label}
                 </NavLink>
               ))}
-              <div className="flex flex-col gap-2 mt-4 pt-4 border-t-2 border-gray-900">
+              <div className="flex flex-col gap-2.5 mt-4 pt-4 border-t-2 border-gray-900">
+                <Link
+                  to="/krishnaite/apply"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="px-4 py-3 text-center border-2 sm:border-4 border-gray-900 bg-[#eff3ff] hover:bg-[#dbeafe] text-gray-900 font-black uppercase tracking-wider transition-colors shadow-[2px_2px_0px_rgba(0,0,0,1)] min-h-[44px] flex items-center justify-center text-xs cursor-pointer"
+                >
+                  Apply Us
+                </Link>
                 <Link
                   to="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="px-4 py-3 text-center border-2 border-gray-900 bg-white text-gray-900 font-black uppercase tracking-wider hover:bg-[#eff3ff] transition-colors"
+                  className="px-4 py-3 text-center border-2 border-gray-900 bg-white text-gray-900 font-black uppercase tracking-wider hover:bg-[#eff3ff] transition-colors min-h-[44px] flex items-center justify-center text-xs"
                 >
                   Log In
                 </Link>
                 <Link
                   to="/signup"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="px-4 py-3 text-center border-4 border-gray-900 bg-[#f39c12] text-gray-900 font-black uppercase tracking-wider hover:bg-[#e08e0b] transition-colors shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+                  className="px-4 py-3 text-center border-4 border-gray-900 bg-[#f39c12] text-gray-900 font-black uppercase tracking-wider hover:bg-[#e08e0b] transition-colors shadow-[2px_2px_0px_rgba(0,0,0,1)] min-h-[44px] flex items-center justify-center text-xs"
                 >
                   Join the Community
                 </Link>

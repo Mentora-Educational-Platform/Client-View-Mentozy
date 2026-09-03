@@ -133,8 +133,10 @@ export function OrgDashboardPage() {
             if (!user?.id || !client) return;
 
             // Strict redirect logic
-            if (!user.user_metadata?.is_org) {
-                const profile = await getUserProfile(user.id);
+            const profile = await getUserProfile(user.id);
+            const isOrgUser = user.user_metadata?.is_org || profile?.role === 'org' || profile?.role === 'admin';
+            
+            if (!isOrgUser) {
                 if (profile?.role === 'student') {
                     navigate('/student-dashboard', { replace: true });
                 } else {

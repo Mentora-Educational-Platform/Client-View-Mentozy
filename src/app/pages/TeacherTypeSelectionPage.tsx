@@ -46,7 +46,7 @@ export function TeacherTypeSelectionPage() {
                     <div className="grid md:grid-cols-2 gap-8">
                         {/* Individual Teacher Card */}
                         <div
-                            onClick={() => window.open(MENTOR_APPLICATIONS_URL, '_blank', 'noopener,noreferrer')}
+                            onClick={() => navigate('/mentor/apply')}
                             className="bg-white p-10 border-4 border-gray-900 cursor-pointer shadow-[8px_8px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[4px_4px_0px_rgba(0,0,0,1)] transition-all duration-300 flex flex-col items-center text-center group"
                         >
                             <div className="w-20 h-20 bg-[#eff3ff] border-4 border-gray-900 flex items-center justify-center text-gray-900 mb-8 shadow-[4px_4px_0px_rgba(0,0,0,1)] group-hover:scale-105 transition-transform duration-300">
@@ -54,14 +54,14 @@ export function TeacherTypeSelectionPage() {
                             </div>
                             <h3 className="text-2xl font-black text-gray-900 mb-4 uppercase tracking-tight group-hover:text-[#f39c12] transition-colors">Individual Mentor</h3>
                             <p className="text-gray-700 font-bold leading-relaxed text-xs mb-8 uppercase flex-1">
-                                Apply with us to become a mentor via our applications portal.
+                                Apply with us to become an individual mentor on Mentozy.
                             </p>
                             <div className="w-full py-4 border-4 border-gray-900 bg-[#f39c12] text-gray-900 text-sm font-black uppercase shadow-[4px_4px_0px_rgba(0,0,0,1)] group-hover:bg-[#e08e0b] transition-all flex items-center justify-center gap-2">
-                                Apply <ChevronRight className="w-5 h-5" />
+                                Apply Now <ChevronRight className="w-5 h-5" />
                             </div>
                         </div>
 
-                        {/* Organisation Card */}
+                        {/* Organisation / Partner Card */}
                         <div
                             onClick={() => navigate('/org-onboarding')}
                             className="bg-white p-10 border-4 border-gray-900 cursor-pointer shadow-[8px_8px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[4px_4px_0px_rgba(0,0,0,1)] transition-all duration-300 flex flex-col items-center text-center group"
@@ -69,13 +69,23 @@ export function TeacherTypeSelectionPage() {
                             <div className="w-20 h-20 bg-[#eff3ff] border-4 border-gray-900 flex items-center justify-center text-gray-900 mb-8 shadow-[4px_4px_0px_rgba(0,0,0,1)] group-hover:scale-105 transition-transform duration-300">
                                 <Building className="w-10 h-10" />
                             </div>
-                            <h3 className="text-2xl font-black text-gray-900 mb-4 uppercase tracking-tight group-hover:text-[#f39c12] transition-colors">Organisation</h3>
+                            <h3 className="text-2xl font-black text-gray-900 mb-4 uppercase tracking-tight group-hover:text-[#f39c12] transition-colors">Organisation / Partner</h3>
                             <p className="text-gray-700 font-bold leading-relaxed text-xs mb-8 uppercase flex-1">
-                                For institutes, schools, and coaching centers managing multiple students and staff.
+                                For institutes, schools, academies, and communities interested in partnering with Mentozy.
                             </p>
-                            <div className="w-full py-4 border-4 border-gray-900 bg-[#f39c12] text-gray-900 text-sm font-black uppercase shadow-[4px_4px_0px_rgba(0,0,0,1)] group-hover:bg-[#e08e0b] transition-all flex items-center justify-center gap-2">
-                                Onboard <ChevronRight className="w-5 h-5" />
+                            <div className="w-full py-4 border-4 border-gray-900 bg-[#FFE600] text-gray-900 text-sm font-black uppercase shadow-[4px_4px_0px_rgba(0,0,0,1)] group-hover:bg-[#ffe100] transition-all flex items-center justify-center gap-2 mb-3">
+                                Partner With Us <ChevronRight className="w-5 h-5" />
                             </div>
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate('/org-login');
+                                }}
+                                className="text-xs font-bold text-zinc-600 hover:text-black underline uppercase"
+                            >
+                                Existing Partner? Organization Login →
+                            </button>
                         </div>
                     </div>
                 </div>

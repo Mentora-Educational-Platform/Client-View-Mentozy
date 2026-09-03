@@ -155,7 +155,7 @@ export function CareerPage() {
 
               <div className="flex items-center justify-between pt-6 border-t-4 border-gray-900">
                 <div className="text-xs text-gray-500 font-bold uppercase">
-                  Submissions go to applications.mentozy.app
+                  Verified Mentozy Application Portal
                 </div>
                 <button
                   type="button"

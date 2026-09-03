@@ -38,6 +38,15 @@ export function TeacherSuccessPage() {
                 </p>
 
                 <div className="space-y-3">
+                    {isMentor && isPending && (
+                        <button
+                            onClick={() => navigate('/mentor/application')}
+                            className="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold shadow-lg shadow-amber-500/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                        >
+                            Open Mentor Applicant Portal <ArrowRight className="w-4 h-4" />
+                        </button>
+                    )}
+
                     {!isPending && (
                         <button
                             onClick={() => navigate(dashPath)}
@@ -47,14 +56,12 @@ export function TeacherSuccessPage() {
                         </button>
                     )}
 
-                    {isPending && (
-                        <button
-                            onClick={() => navigate('/')}
-                            className="w-full py-3.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-bold transition-all"
-                        >
-                            Back to Home
-                        </button>
-                    )}
+                    <button
+                        onClick={() => navigate('/')}
+                        className="w-full py-3.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-bold transition-all"
+                    >
+                        Back to Home
+                    </button>
 
                     {!isPending && (
                         <button

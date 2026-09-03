@@ -1,22 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getUserProfile } from '../../lib/api';
 import { getSupabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
-import { FullScreenLoader } from '../components/FullScreenLoader';
 
 export function LoginPage() {
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
+    const { user, role, isAdmin, loading: authLoading } = useAuth();
+    const [submitting, setSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: ''
     });
 
-    useAuth(); // Keep auth context active
+    // Automatically route authenticated users if they visit /login
+    useEffect(() => {
+        if (user && !authLoading) {
+            if (isAdmin || role === 'admin') {
+                navigate('/admin', { replace: true });
+            } else if (role === 'mentor' || role === 'teacher') {
+                navigate('/mentor-dashboard', { replace: true });
+            } else if (role === 'org') {
+                navigate('/org-dashboard', { replace: true });
+            }
+        }
+    }, [user, isAdmin, role, authLoading, navigate]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -24,47 +34,83 @@ export function LoginPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
+        setSubmitting(true);
 
         try {
             const supabase = getSupabase();
-            if (!supabase) throw new Error("Supabase client not initialized");
+            if (!supabase) {
+                toast.error("Database connection unavailable");
+                setSubmitting(false);
+                return;
+            }
 
-            const loginPromise = supabase.auth.signInWithPassword({
-                email: formData.email,
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: formData.email.trim(),
                 password: formData.password,
             });
-            const delayPromise = new Promise(resolve => setTimeout(resolve, 2500));
 
-            const [loginResult] = await Promise.all([loginPromise, delayPromise]);
-            const { data, error } = loginResult;
+            if (error) {
+                toast.error(error.message || "Failed to sign in");
+                setSubmitting(false);
+                return;
+            }
 
-            if (error) throw error;
+            if (data?.user) {
+                // Fetch profile directly from database
+                const { data: profileData } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', data.user.id)
+                    .maybeSingle();
 
-            if (data.user) {
-                const profile = await getUserProfile(data.user.id);
-                const role = profile?.role || data.user.user_metadata?.role;
-                const isOrg = data.user.user_metadata?.is_org;
+                const resolvedRole = profileData?.role || data.user.user_metadata?.role || data.user.app_metadata?.role;
+                const isOrg = data.user.user_metadata?.is_org || resolvedRole === 'org';
 
+                setSubmitting(false);
+
+                if (resolvedRole === 'admin' || data.user.app_metadata?.role === 'admin') {
+                    toast.success("Welcome back, Administrator!");
+                    navigate('/admin', { replace: true });
+                    return;
+                }
+                
                 if (isOrg) {
-                    navigate('/org-dashboard');
                     toast.success("Welcome back, Organisation!");
-                } else if (role === 'mentor' || role === 'teacher') {
-                    navigate('/mentor-dashboard');
+                    navigate('/org-dashboard', { replace: true });
+                    return;
+                }
+                
+                if (resolvedRole === 'mentor' || resolvedRole === 'teacher') {
                     toast.success("Welcome back, Mentor!");
+                    navigate('/mentor-dashboard', { replace: true });
+                    return;
+                }
+
+                // Check if user has an active mentor application
+                const { data: applicationData } = await supabase
+                    .from('mentor_applications')
+                    .select('status')
+                    .eq('user_id', data.user.id)
+                    .order('submitted_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+
+                if (applicationData && applicationData.status !== 'approved') {
+                    toast.success("Welcome to your Application Portal!");
+                    navigate('/mentor/application', { replace: true });
                 } else {
-                    navigate('/student-dashboard');
                     toast.success("Successfully logged in!");
+                    navigate('/student-dashboard', { replace: true });
                 }
             } else {
-                navigate('/student-dashboard'); // Fallback
+                setSubmitting(false);
+                navigate('/student-dashboard', { replace: true });
             }
 
         } catch (error: any) {
             console.error('Login Error:', error);
             toast.error(error.message || "Failed to login");
-        } finally {
-            setLoading(false);
+            setSubmitting(false);
         }
     };
 
@@ -89,7 +135,6 @@ export function LoginPage() {
 
     return (
         <div className="min-h-screen bg-[#FAF9F6] flex font-mono text-gray-900">
-            {loading && <FullScreenLoader />}
             {/* Left Side - Visual / Brand Area */}
             <div className="hidden lg:flex lg:w-1/2 bg-white items-center justify-center relative overflow-hidden border-r-4 border-gray-900">
                 <div className="absolute inset-0 z-0">
@@ -116,11 +161,11 @@ export function LoginPage() {
             </div>
 
             {/* Right Side - Login Form */}
-            <div className="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-20 xl:px-24 bg-[#FAF9F6] relative">
+            <div className="flex-1 flex flex-col justify-center px-4 sm:px-8 md:px-12 lg:px-16 xl:px-20 py-8 lg:py-12 bg-[#FAF9F6] relative min-w-0">
                 {/* Mobile Back/Home Button */}
-                <div className="absolute top-8 left-8 lg:hidden">
+                <div className="mb-6 lg:hidden flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2">
-                        <span className="text-2xl font-black tracking-tight text-gray-900 uppercase">Mentozy</span>
+                        <span className="text-xl font-black tracking-tight text-gray-900 uppercase">Mentozy</span>
                         <div className="w-3 h-3 bg-[#f39c12] border-2 border-gray-900 shadow-[1px_1px_0px_rgba(0,0,0,1)]"></div>
                     </Link>
                 </div>
@@ -133,24 +178,24 @@ export function LoginPage() {
                     </Link>
                 </div>
 
-                <div className="mx-auto w-full max-w-sm lg:w-96">
-                    <div className="mb-8 md:mb-10 bg-[#eff3ff] border-4 border-gray-900 p-6 shadow-[4px_4px_0px_rgba(0,0,0,1)]">
-                        <h1 className="text-2xl font-black text-gray-900 uppercase tracking-tight mb-2">Welcome back</h1>
+                <div className="mx-auto w-full max-w-sm lg:w-96 min-w-0">
+                    <div className="mb-6 sm:mb-8 bg-[#eff3ff] border-2 sm:border-4 border-gray-900 p-4 sm:p-6 shadow-[3px_3px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                        <h1 className="text-xl sm:text-2xl font-black text-gray-900 uppercase tracking-tight mb-1 sm:mb-2">Welcome back</h1>
                         <p className="text-xs text-gray-700 font-bold uppercase">
                             Please enter your details to sign in.
                         </p>
                     </div>
 
-                    <form className="space-y-6" onSubmit={handleSubmit}>
-                        <div className="space-y-5">
+                    <form className="space-y-5" onSubmit={handleSubmit}>
+                        <div className="space-y-4">
                             {/* Email Field */}
                             <div>
-                                <label htmlFor="email" className="block text-sm font-black text-gray-900 uppercase mb-1.5">
+                                <label htmlFor="email" className="block text-xs sm:text-sm font-black text-gray-900 uppercase mb-1.5">
                                     Email address
                                 </label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                        <Mail className="h-5 w-5 text-gray-900" aria-hidden="true" />
+                                        <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-gray-900" aria-hidden="true" />
                                     </div>
                                     <input
                                         id="email"
@@ -158,7 +203,7 @@ export function LoginPage() {
                                         type="email"
                                         autoComplete="email"
                                         required
-                                        className="block w-full pl-11 pr-4 py-3 border-2 border-gray-900 focus:outline-none focus:bg-[#eff3ff] bg-white text-gray-900 font-bold text-sm shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+                                        className="block w-full pl-10 sm:pl-11 pr-4 py-3 min-h-[48px] border-2 border-gray-900 focus:outline-none focus:bg-[#eff3ff] bg-white text-gray-900 font-bold text-xs sm:text-sm shadow-[2px_2px_0px_rgba(0,0,0,1)]"
                                         placeholder="you@example.com"
                                         value={formData.email}
                                         onChange={handleChange}
@@ -169,16 +214,16 @@ export function LoginPage() {
                             {/* Password Field */}
                             <div>
                                 <div className="flex items-center justify-between mb-1.5">
-                                    <label htmlFor="password" className="block text-sm font-black text-gray-900 uppercase">
+                                    <label htmlFor="password" className="block text-xs sm:text-sm font-black text-gray-900 uppercase">
                                         Password
                                     </label>
-                                    <Link to="/forgot-password" className="text-xs font-black text-[#f39c12] hover:text-[#f39c12]/80 uppercase">
+                                    <Link to="/forgot-password" className="text-[11px] sm:text-xs font-black text-[#f39c12] hover:text-[#f39c12]/80 uppercase">
                                         Forgot password?
                                     </Link>
                                 </div>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                        <Lock className="h-5 w-5 text-gray-900" aria-hidden="true" />
+                                        <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-900" aria-hidden="true" />
                                     </div>
                                     <input
                                         id="password"
@@ -186,17 +231,18 @@ export function LoginPage() {
                                         type={showPassword ? "text" : "password"}
                                         autoComplete="current-password"
                                         required
-                                        className="block w-full pl-11 pr-11 py-3 border-2 border-gray-900 focus:outline-none focus:bg-[#eff3ff] bg-white text-gray-900 font-bold text-sm shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+                                        className="block w-full pl-10 sm:pl-11 pr-11 py-3 min-h-[48px] border-2 border-gray-900 focus:outline-none focus:bg-[#eff3ff] bg-white text-gray-900 font-bold text-xs sm:text-sm shadow-[2px_2px_0px_rgba(0,0,0,1)]"
                                         placeholder="••••••••"
                                         value={formData.password}
                                         onChange={handleChange}
                                     />
                                     <button
                                         type="button"
-                                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center cursor-pointer text-gray-900"
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center justify-center min-w-[44px] min-h-[44px] cursor-pointer text-gray-900"
                                         onClick={() => setShowPassword(!showPassword)}
+                                        aria-label={showPassword ? "Hide password" : "Show password"}
                                     >
-                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                        {showPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
                                     </button>
                                 </div>
                             </div>
@@ -205,36 +251,36 @@ export function LoginPage() {
                         <div className="pt-2">
                             <button
                                 type="submit"
-                                disabled={loading}
-                                className="group w-full flex justify-center py-4 bg-[#eff3ff] border-4 border-gray-900 font-black text-sm text-gray-900 shadow-[4px_4px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none hover:bg-[#eff3ff]/80 transition-all uppercase"
+                                disabled={submitting}
+                                className="group w-full flex justify-center items-center py-3.5 sm:py-4 min-h-[48px] bg-[#eff3ff] border-2 sm:border-4 border-gray-900 font-black text-xs sm:text-sm text-gray-900 shadow-[3px_3px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none hover:bg-[#eff3ff]/80 transition-all uppercase disabled:opacity-50 cursor-pointer"
                             >
-                                {loading ? (
+                                {submitting ? (
                                     <Loader2 className="w-5 h-5 animate-spin" />
                                 ) : (
                                     <span className="flex items-center gap-2">
-                                        Sign in <ArrowRight className="w-5 h-5" />
+                                        Sign in <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </span>
                                 )}
                             </button>
                         </div>
                     </form>
 
-                    <div className="mt-8">
+                    <div className="mt-6 sm:mt-8">
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center">
                                 <div className="w-full border-t-2 border-gray-900" />
                             </div>
-                            <div className="relative flex justify-center text-xs font-black uppercase">
+                            <div className="relative flex justify-center text-[10px] sm:text-xs font-black uppercase">
                                 <span className="px-3 bg-[#FAF9F6] text-gray-500">Or continue with</span>
                             </div>
                         </div>
 
-                        <div className="mt-6">
+                        <div className="mt-5 sm:mt-6">
                             <button
                                 onClick={handleGoogleLogin}
-                                className="w-full flex items-center justify-center px-4 py-3.5 border-2 border-gray-900 bg-white text-gray-900 font-black text-xs shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all uppercase"
+                                className="w-full flex items-center justify-center px-4 py-3 min-h-[48px] border-2 border-gray-900 bg-white text-gray-900 font-black text-xs shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all uppercase cursor-pointer"
                             >
-                                <svg className="h-5 w-5 mr-3" viewBox="0 0 24 24">
+                                <svg className="h-4 w-4 sm:h-5 sm:w-5 mr-3 shrink-0" viewBox="0 0 24 24">
                                     <path
                                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                                         fill="#4285F4"
@@ -257,13 +303,11 @@ export function LoginPage() {
                         </div>
                     </div>
 
-                    <div className="mt-8 text-center">
-                        <p className="text-sm font-bold text-gray-600 uppercase">
+                    {/* Sign Up Link Footer */}
+                    <div className="mt-6 text-center">
+                        <p className="text-xs font-bold text-gray-600 uppercase">
                             Don't have an account?{' '}
-                            <Link
-                                to="/signup"
-                                className="font-black text-gray-900 hover:text-[#f39c12] transition-colors underline decoration-2 underline-offset-4"
-                            >
+                            <Link to="/signup" className="font-black text-[#f39c12] hover:underline">
                                 Sign up
                             </Link>
                         </p>

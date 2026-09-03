@@ -1,510 +1,339 @@
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  Building2,
+  Mail,
+  Copy,
+  Check,
+  ArrowRight,
+  Sparkles,
+  Users,
+  GraduationCap,
+  ShieldCheck,
+  CheckCircle2,
+  Calendar,
+  MessageSquare,
+  FileCheck,
+  Layers,
+  ChevronRight,
+  ExternalLink
+} from 'lucide-react';
 
-import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Globe, MapPin, UploadCloud, Loader2 } from 'lucide-react';
-import { getSupabase } from '../../lib/supabase';
-import { toast } from 'sonner';
+export const OrganisationTeacherOnboardingPage: React.FC = () => {
+  const [copied, setCopied] = useState(false);
 
-type Step = 1 | 2 | 3 | 4 | 5 | 6;
-type OrgType = 'online' | 'offline';
+  const contactEmail = 'founder@mentozy.app';
+  const emailSubject = 'Mentozy Organization Partnership Inquiry';
+  const emailBodyTemplate = `Hello Mentozy Partnerships Team,
 
-export function OrganisationTeacherOnboardingPage() {
-    const navigate = useNavigate();
-    const [step, setStep] = useState<Step>(1);
-    const [loading, setLoading] = useState(false);
+We are interested in exploring an institutional partnership with Mentozy. Here are our initial organization details:
 
-    // Branching Logic State
-    const [orgType, setOrgType] = useState<OrgType | null>(null);
+1. Organization Name: [Your Organization / School / Academy Name]
+2. Organization Type: [School / College / Academy / EdTech / Community / Company]
+3. What We Do: [Brief summary of your mission, courses, or audience]
+4. Expected Users / Learners: [Approximate number of students/mentors]
+5. Primary Use Case for Mentozy: [e.g., Live Cohorts, Mentorship Programs, Course Delivery, Student Tracking]
+6. Partnership Idea & Goals: [How you envision collaborating with Mentozy]
+7. Contact Person & Role: [Full Name, Title, Phone Number]
+8. Timeline & Specific Requirements: [Target launch date, integrations needed, etc.]
 
-    const [formData, setFormData] = useState({
-        orgName: '',
-        orgType: '' as OrgType | '',
-        officialEmail: '',
-        password: '',
-        role: '', // Founder, Admin, Instructor, Manager
-        teachingDomain: '', // Single/Multi
-        website: '',
-        founderName: '',
-        address: '',
-        logoUrl: '',
-    });
+We look forward to meeting up and discussing further.
 
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+Best regards,
+[Your Name / Team]`;
 
-    const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+  const mailtoLink = `mailto:${contactEmail}?subject=${encodeURIComponent(
+    emailSubject
+  )}&body=${encodeURIComponent(emailBodyTemplate)}`;
 
-        setIsUploadingLogo(true);
-        try {
-            const supabase = getSupabase();
-            if (!supabase) throw new Error("Supabase not initialized");
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText(contactEmail);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
 
-            const fileExt = file.name.split('.').pop();
-            const fileName = `logos/${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+  const lifecycleStages = [
+    { step: '01', title: 'INTERESTED', desc: 'Identify your institution’s mentorship or cohort needs' },
+    { step: '02', title: 'CONTACT MENTOZY', desc: 'Send your partnership inquiry directly to founder@mentozy.app' },
+    { step: '03', title: 'PARTNERSHIP DISCUSSION', desc: 'Align on cohorts, curriculum requirements & custom workflows' },
+    { step: '04', title: 'APPROVED BY MENTOZY', desc: 'Partnership structure finalized and agreement validated' },
+    { step: '05', title: 'ACCOUNT PROVISIONED', desc: 'Mentozy admin sets up your secure, dedicated workspace' },
+    { step: '06', title: 'ORGANIZATION LOGIN', desc: 'Access your portal with official credentials at /org-login' },
+    { step: '07', title: 'ORGANIZATION DASHBOARD', desc: 'Manage your teachers, enroll students, and launch courses' }
+  ];
 
-            const { error: uploadError } = await supabase.storage
-                .from('avatars')
-                .upload(fileName, file);
+  const partnershipChecklist = [
+    { label: 'Organization Name & Type', desc: 'School, College, Academy, Community, or Enterprise initiative' },
+    { label: 'Core Mission & Audience', desc: 'Who you teach and what domains you specialize in' },
+    { label: 'Expected Cohort Volume', desc: 'Estimated student and mentor roster capacity' },
+    { label: 'Key Learning Use Cases', desc: 'Live sessions, mentor matching, grading, or certificate tracking' },
+    { label: 'Lead Contact Information', desc: 'Direct email and phone for partnership coordinator' }
+  ];
 
-            if (uploadError) throw uploadError;
-
-            const { data } = supabase.storage
-                .from('avatars')
-                .getPublicUrl(fileName);
-
-            updateData('logoUrl', data.publicUrl);
-            toast.success("Logo uploaded successfully");
-        } catch (error: any) {
-            console.error("Upload error:", error);
-            toast.error(error.message || "Failed to upload logo");
-        } finally {
-            setIsUploadingLogo(false);
-        }
-    };
-
-    const [errors, setErrors] = useState<Record<string, string>>({});
-
-    const updateData = <K extends keyof typeof formData>(field: K, value: typeof formData[K]) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-        if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
-    };
-
-    const handleNext = () => {
-        const newErrors: Record<string, string> = {};
-
-        if (step === 1) {
-            if (!formData.orgName) newErrors.orgName = "Organisation Name is required";
-        }
-
-        if (step === 2) {
-            if (!formData.orgType) newErrors.orgType = "Please select an organisation type";
-        }
-
-        // Branch A: Online Institute
-        if (orgType === 'online') {
-            if (step === 3) {
-                // Email Validation: .com, .in, .edu, .app, .dev, .live only
-                const emailRegex = /^[^\s@]+@[^\s@]+\.(com|in|edu|app|dev|live)$/;
-                if (!formData.officialEmail || !emailRegex.test(formData.officialEmail)) {
-                    newErrors.officialEmail = "Enter a valid official email (.com, .in, .edu, .app, .dev, .live)";
-                }
-                if (!formData.password || formData.password.length < 6) {
-                    newErrors.password = "Password must be at least 6 characters";
-                }
-            }
-            if (step === 4) {
-                if (!formData.role) newErrors.role = "Please select your role";
-            }
-        }
-
-        // Branch B: Offline Campus
-        if (orgType === 'offline') {
-            if (step === 4) { // Step 3 is just a notice
-                if (!formData.founderName) newErrors.founderName = "Founder Name is required";
-                if (!formData.officialEmail) newErrors.officialEmail = "Email is required";
-                if (!formData.password || formData.password.length < 6) newErrors.password = "Password is required (min 6 chars)";
-                if (!formData.address) newErrors.address = "Address is required";
-            }
-        }
-
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            return;
-        }
-
-        // Navigation Logic
-        // Navigation Logic
-        if (step === 2) {
-            setOrgType(formData.orgType as OrgType);
-            setStep(3);
-            return;
-        }
-
-        const isFinishedOnline = orgType === 'online' && step === 6;
-        const isFinishedOffline = orgType === 'offline' && step === 5;
-
-        if (isFinishedOnline || isFinishedOffline) {
-            handleSubmit();
-        } else {
-            setStep(prev => (prev + 1) as Step);
-        }
-    };
-
-    const handleSubmit = async () => {
-        setLoading(true);
-        try {
-            const supabase = getSupabase();
-            if (!supabase) throw new Error("Supabase not initialized");
-
-            // Clear existing session so new signup actually logs them in
-            await supabase.auth.signOut();
-
-            // Signup Logic
-            let { data: authData, error: authError } = await supabase.auth.signUp({
-                email: formData.officialEmail,
-                password: formData.password,
-                options: {
-                    data: {
-                        full_name: formData.orgName,
-                        role: 'mentor',
-                        is_org: true
-                    }
-                }
-            });
-
-            if (authError && authError.message.includes("already registered")) {
-                // Attempt login instead
-                const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                    email: formData.officialEmail,
-                    password: formData.password,
-                });
-                if (signInError) throw new Error("Account already exists for this email, but incorrect password provided.");
-                authData = signInData as any;
-            } else if (authError) {
-                throw authError;
-            }
-            if (!authData.user) throw new Error("No user created");
-
-            // Create Profile
-            await supabase.from('profiles').upsert({
-                id: authData.user.id,
-                full_name: formData.orgName,
-                role: 'mentor',
-                avatar_url: formData.logoUrl,
-            }, { onConflict: 'id' });
-
-            // Create Parent Organisation Entity
-            try {
-                await supabase.from('organisations').upsert({
-                    id: authData.user.id,
-                    name: formData.orgName,
-                    slug: formData.orgName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-                    owner_id: authData.user.id,
-                    logo_url: formData.logoUrl,
-                    description: `${formData.orgName} Educational Organisation`
-                }, { onConflict: 'id' });
-            } catch (orgErr) {
-                console.warn('Could not insert parent organisation record:', orgErr);
-            }
-
-            // Create Mentor (Org) Record
-            const status = orgType === 'online' ? 'active' : 'pending';
-
-            await supabase.from('mentors').upsert({
-                user_id: authData.user.id,
-                company: formData.orgName,
-                bio: JSON.stringify({
-                    type: orgType,
-                    role: formData.role,
-                    website: formData.website,
-                    domain: formData.teachingDomain,
-                    address: formData.address,
-                    founder: formData.founderName,
-                    status: status,
-                    logo: formData.logoUrl
-                }),
-                rating: 0,
-            }, { onConflict: 'user_id' });
-
-            // Redirect based on status
-            navigate(`/teacher-success?status=${status}&type=org`);
-
-        } catch (error: any) {
-            console.error(error);
-            toast.error(error.message || "Failed");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-            {/* Header */}
-            <div className="bg-white border-b border-gray-200 px-6 py-4">
-                <div className="max-w-3xl mx-auto flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <span className="text-xl font-bold tracking-tight text-gray-900">Mentozy Org</span>
-                        <div className="h-4 w-[1px] bg-gray-300"></div>
-                        <span className="text-sm font-medium text-gray-500">Partner Onboarding</span>
-                    </div>
-                </div>
-            </div>
-
-            <div className="flex-grow flex justify-center p-6">
-                <div className="max-w-3xl w-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-                    <div className="p-8 md:p-12 flex-grow">
-
-                        {/* Step 1: Identity */}
-                        {step === 1 && (
-                            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
-                                <h1 className="text-3xl font-bold text-gray-900">Tell us about your organisation</h1>
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-700">Organisation Name</label>
-                                        <input
-                                            value={formData.orgName}
-                                            onChange={(e) => updateData('orgName', e.target.value)}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
-                                            placeholder="e.g. Springfield Academy"
-                                        />
-                                        {errors.orgName && <p className="text-xs text-red-500">{errors.orgName}</p>}
-                                    </div>
-                                    <div>
-                                        <input
-                                            type="file"
-                                            ref={fileInputRef}
-                                            onChange={handleLogoUpload}
-                                            accept="image/*"
-                                            className="hidden"
-                                        />
-                                        <div
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className="border-2 border-dashed border-gray-200 rounded-xl p-8 flex flex-col items-center justify-center text-gray-400 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer overflow-hidden relative min-h-[140px]"
-                                        >
-                                            {isUploadingLogo ? (
-                                                <Loader2 className="w-8 h-8 mb-2 animate-spin text-blue-500" />
-                                            ) : formData.logoUrl ? (
-                                                <img src={formData.logoUrl} alt="Logo" className="max-h-[100px] object-contain p-2" />
-                                            ) : (
-                                                <>
-                                                    <UploadCloud className="w-8 h-8 mb-2" />
-                                                    <span className="text-sm font-medium">Upload Organisation Logo</span>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Step 2: Type Selection */}
-                        {step === 2 && (
-                            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
-                                <h1 className="text-3xl font-bold text-gray-900">What type of organisation are you?</h1>
-                                <div className="grid grid-cols-1 gap-4">
-                                    <button
-                                        onClick={() => updateData('orgType', 'online')}
-                                        className={`p-6 rounded-xl border-2 text-left transition-all flex items-center gap-4 ${formData.orgType === 'online' ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-gray-100 hover:border-blue-200'}`}
-                                    >
-                                        <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                                            <Globe className="w-6 h-6" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-gray-900">Online Institute / New Institute</h3>
-                                            <p className="text-sm text-gray-500">For digital-first academies and coaching centers.</p>
-                                        </div>
-                                    </button>
-
-                                    <button
-                                        onClick={() => updateData('orgType', 'offline')}
-                                        className={`p-6 rounded-xl border-2 text-left transition-all flex items-center gap-4 ${formData.orgType === 'offline' ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-gray-100 hover:border-blue-200'}`}
-                                    >
-                                        <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
-                                            <MapPin className="w-6 h-6" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-gray-900">Offline Public Campus</h3>
-                                            <p className="text-sm text-gray-500">For physical schools, universities, and campuses.</p>
-                                        </div>
-                                    </button>
-                                </div>
-                                {errors.orgType && <p className="text-xs text-red-500">{errors.orgType}</p>}
-                            </div>
-                        )}
-
-                        {/* BRANCH A: Online Institute Steps */}
-                        {orgType === 'online' && step === 3 && (
-                            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
-                                <h2 className="text-2xl font-bold text-gray-900">Organisation verification</h2>
-                                <div className="p-4 bg-blue-50 text-blue-800 rounded-lg text-sm border border-blue-100">
-                                    Please use an official organisation email (e.g. admin@academy.com). Generic emails like gmail.com are not accepted.
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">Official Email Address</label>
-                                    <input
-                                        type="email"
-                                        value={formData.officialEmail}
-                                        onChange={(e) => updateData('officialEmail', e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
-                                        placeholder="admin@myinstitute.com"
-                                    />
-                                    {errors.officialEmail && <p className="text-xs text-red-500">{errors.officialEmail}</p>}
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">Create Password</label>
-                                    <input
-                                        type="password"
-                                        value={formData.password}
-                                        onChange={(e) => updateData('password', e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
-                                        placeholder="Min. 6 characters"
-                                    />
-                                    {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
-                                </div>
-                            </div>
-                        )}
-
-                        {orgType === 'online' && step === 4 && (
-                            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
-                                <h2 className="text-2xl font-bold text-gray-900">Your role</h2>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">Role in Organisation</label>
-                                    <select
-                                        value={formData.role}
-                                        onChange={(e) => updateData('role', e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-white"
-                                    >
-                                        <option value="">Select Role</option>
-                                        <option value="Founder">Founder</option>
-                                        <option value="Admin">Administrator</option>
-                                        <option value="Manager">Manager</option>
-                                        <option value="Instructor">Head Instructor</option>
-                                    </select>
-                                    {errors.role && <p className="text-xs text-red-500">{errors.role}</p>}
-                                </div>
-                            </div>
-                        )}
-
-                        {orgType === 'online' && step === 5 && (
-                            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
-                                <h2 className="text-2xl font-bold text-gray-900">Organisation Profile</h2>
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-700">What does your organisation teach?</label>
-                                        <input
-                                            value={formData.teachingDomain}
-                                            onChange={(e) => updateData('teachingDomain', e.target.value)}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
-                                            placeholder="e.g. Coding, Business, Design"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-700">Website <span className="text-gray-400 font-normal">(Optional)</span></label>
-                                        <input
-                                            value={formData.website}
-                                            onChange={(e) => updateData('website', e.target.value)}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
-                                            placeholder="https://"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {orgType === 'online' && step === 6 && (
-                            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
-                                <h2 className="text-2xl font-bold text-gray-900">Review & Join</h2>
-                                <div className="bg-gray-50 rounded-xl p-6 space-y-3">
-                                    <p><span className="font-semibold">Org Name:</span> {formData.orgName}</p>
-                                    <p><span className="font-semibold">Email:</span> {formData.officialEmail}</p>
-                                    <p><span className="font-semibold">Role:</span> {formData.role}</p>
-                                </div>
-                                <p className="text-sm text-gray-500">Creating your account will grant you immediate access to the Partner Dashboard.</p>
-                            </div>
-                        )}
-
-                        {/* BRANCH B: Offline Campus Steps */}
-                        {orgType === 'offline' && step === 3 && (
-                            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
-                                <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
-                                    <h3 className="text-lg font-bold text-amber-800 mb-2">Application Required</h3>
-                                    <p className="text-amber-700">
-                                        Public offline campuses require manual verification before onboarding on Mentozy.
-                                        You will need to submit an application with supporting documents.
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-
-                        {orgType === 'offline' && step === 4 && (
-                            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
-                                <h2 className="text-2xl font-bold text-gray-900">Application Form</h2>
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-700">Founder / Head of Institution</label>
-                                        <input
-                                            value={formData.founderName}
-                                            onChange={(e) => updateData('founderName', e.target.value)}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
-                                        />
-                                        {errors.founderName && <p className="text-xs text-red-500">{errors.founderName}</p>}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-700">Official Email</label>
-                                        <input
-                                            type="email"
-                                            value={formData.officialEmail}
-                                            onChange={(e) => updateData('officialEmail', e.target.value)}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
-                                        />
-                                        {errors.officialEmail && <p className="text-xs text-red-500">{errors.officialEmail}</p>}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-700">Create Password</label>
-                                        <input
-                                            type="password"
-                                            value={formData.password}
-                                            onChange={(e) => updateData('password', e.target.value)}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
-                                            placeholder="Min. 6 characters"
-                                        />
-                                        {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-700">Address</label>
-                                        <textarea
-                                            value={formData.address}
-                                            onChange={(e) => updateData('address', e.target.value)}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
-                                        />
-                                        {errors.address && <p className="text-xs text-red-500">{errors.address}</p>}
-                                    </div>
-                                    <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center cursor-pointer hover:bg-gray-50">
-                                        <p className="text-sm font-medium text-blue-600">Upload Registration / Legal Documents</p>
-                                        <p className="text-xs text-gray-400 mt-1">PDF, JPG up to 10MB</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {orgType === 'offline' && step === 5 && (
-                            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
-                                <h2 className="text-2xl font-bold text-gray-900">Confirm Submission</h2>
-                                <p className="text-gray-600">
-                                    Your application for <strong>{formData.orgName}</strong> is ready to submit.
-                                    Our team will review your documents and contact you at <strong>{formData.officialEmail}</strong>.
-                                </p>
-                            </div>
-                        )}
-
-                    </div>
-
-                    {/* Footer */}
-                    <div className="bg-gray-50 p-6 border-t border-gray-100 flex justify-between items-center">
-                        <button
-                            onClick={() => step === 1 ? navigate('/teacher-type') : setStep(prev => (prev - 1) as Step)}
-                            className="px-6 py-2.5 rounded-xl font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-200 transition-colors"
-                        >
-                            Back
-                        </button>
-                        <button
-                            onClick={handleNext}
-                            disabled={loading}
-                            className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 transition-all flex items-center gap-2"
-                        >
-                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                                <>
-                                    {(orgType === 'offline' && step === 5) || (orgType === 'online' && step === 6) ? 'Submit' : 'Next'}
-                                    <ArrowRight className="w-4 h-4" />
-                                </>
-                            )}
-                        </button>
-                    </div>
-
-                </div>
-            </div>
+  return (
+    <div className="min-h-screen bg-[#FAF9F6] text-black selection:bg-[#FFE600] selection:text-black">
+      {/* Top Banner */}
+      <div className="bg-black text-white py-2.5 px-4 text-xs font-mono tracking-wider border-b-3 border-black">
+        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#FFE600] animate-pulse" />
+            <span className="font-black text-[#FFE600]">INSTITUTIONAL ONBOARDING</span>
+            <span className="text-zinc-400 hidden md:inline">• Dedicated Partner Program</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-zinc-400 hidden sm:inline">Already an approved partner?</span>
+            <Link
+              to="/org-login"
+              className="text-[#FFE600] hover:underline font-black flex items-center gap-1"
+            >
+              Organization Login <ArrowRight className="w-3 h-3 inline" />
+            </Link>
+          </div>
         </div>
-    );
-}
+      </div>
+
+      {/* Main Container */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+        {/* Navigation Breadcrumb */}
+        <div className="flex items-center gap-2 text-xs font-mono font-bold text-zinc-500 mb-8">
+          <Link to="/" className="hover:text-black underline">Home</Link>
+          <span>/</span>
+          <Link to="/teachers/select-type" className="hover:text-black underline">Join Mentozy</Link>
+          <span>/</span>
+          <span className="text-black bg-[#FFE600] px-2 py-0.5 border border-black font-black">
+            Organizations
+          </span>
+        </div>
+
+        {/* HERO SECTION: WANNA PARTNER WITH US? */}
+        <div className="bg-[#FFE600] border-4 border-black shadow-[10px_10px_0px_0px_#000] p-6 sm:p-10 lg:p-12 mb-12 relative overflow-hidden">
+          {/* Decorative Badge */}
+          <div className="inline-flex items-center gap-2 bg-black text-white px-3 py-1 text-xs font-mono font-black uppercase tracking-wider mb-6 border-2 border-black">
+            <Sparkles className="w-3.5 h-3.5 text-[#FFE600]" />
+            OFFICIAL PARTNERSHIPS ONLY • NO PUBLIC REGISTRATION
+          </div>
+
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-none text-black mb-4">
+            WANNA PARTNER WITH US?
+          </h1>
+          <p className="text-xl sm:text-2xl font-black text-black/80 font-mono tracking-tight mb-6">
+            Why wait? Let's meet up.
+          </p>
+
+          <p className="text-base sm:text-lg text-black font-medium leading-relaxed max-w-3xl mb-8">
+            Are you an organization, institution, school, academy, community, or initiative interested in partnering with Mentozy? Tell us what you need and how you'd like to work with us. Our team will review your request and get back to you very soon.
+          </p>
+
+          {/* Action CTAs */}
+          <div className="flex flex-col sm:flex-row flex-wrap gap-4 pt-2">
+            {/* Primary CTA: Contact Us */}
+            <a
+              href={mailtoLink}
+              className="inline-flex items-center justify-center gap-3 bg-black text-white hover:bg-zinc-800 active:translate-x-0.5 active:translate-y-0.5 border-3 border-black shadow-[4px_4px_0px_0px_#fff] active:shadow-none font-black text-sm uppercase tracking-wider py-4 px-8 min-h-[52px] transition-all cursor-pointer text-center"
+            >
+              <Mail className="w-5 h-5 text-[#FFE600]" />
+              CONTACT US →
+            </a>
+
+            {/* Copy Email Button */}
+            <button
+              type="button"
+              onClick={handleCopyEmail}
+              className="inline-flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-100 active:translate-x-0.5 active:translate-y-0.5 border-3 border-black shadow-[4px_4px_0px_0px_#000] active:shadow-none font-black text-sm uppercase tracking-wider py-4 px-6 min-h-[52px] transition-all cursor-pointer"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-600" />
+                  COPIED: founder@mentozy.app
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  COPY EMAIL ({contactEmail})
+                </>
+              )}
+            </button>
+
+            {/* Secondary CTA: Organization Login */}
+            <Link
+              to="/org-login"
+              className="inline-flex items-center justify-center gap-2 bg-zinc-900/10 hover:bg-black hover:text-white active:translate-x-0.5 active:translate-y-0.5 border-3 border-black font-black text-sm uppercase tracking-wider py-4 px-6 min-h-[52px] transition-all text-center"
+            >
+              <Building2 className="w-4 h-4" />
+              ORGANIZATION LOGIN
+            </Link>
+          </div>
+        </div>
+
+        {/* 7-STAGE LIFECYCLE TRACK */}
+        <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_#000] p-6 sm:p-10 mb-12">
+          <div className="border-b-3 border-black pb-4 mb-8">
+            <span className="text-xs font-mono font-black text-zinc-500 uppercase tracking-widest block mb-1">
+              PROVISIONING LIFECYCLE
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-black">
+              HOW ORGANIZATION ONBOARDING WORKS
+            </h2>
+            <p className="text-sm font-bold text-zinc-600 mt-1">
+              Organization accounts cannot be self-created online. Here is our direct partnership path:
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {lifecycleStages.map((stage, idx) => (
+              <div
+                key={stage.step}
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border-3 border-black bg-[#FAF9F6] hover:bg-[#FFFDF0] transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-black text-[#FFE600] font-black font-mono flex items-center justify-center text-sm border-2 border-black flex-shrink-0">
+                    {stage.step}
+                  </div>
+                  <div>
+                    <h3 className="font-black text-sm sm:text-base tracking-tight text-black">
+                      {stage.title}
+                    </h3>
+                    <p className="text-xs text-zinc-600 font-medium mt-0.5">
+                      {stage.desc}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="hidden sm:flex items-center text-xs font-mono font-black text-zinc-400">
+                  {idx < lifecycleStages.length - 1 ? (
+                    <span className="text-zinc-400 font-bold">NEXT STEP ↓</span>
+                  ) : (
+                    <span className="bg-emerald-100 text-emerald-800 px-2 py-1 border border-emerald-800 font-black">
+                      ACTIVE PARTNER
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* WHAT TO INCLUDE IN YOUR EMAIL PROPOSAL */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          {/* Left Column: Questionnaire checklist */}
+          <div className="bg-[#EFF6FF] border-4 border-black shadow-[6px_6px_0px_0px_#000] p-6 sm:p-8 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 bg-blue-600 text-white border-2 border-black flex items-center justify-center font-bold">
+                  <MessageSquare className="w-4 h-4" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-black uppercase tracking-tight text-black">
+                  What to Include In Your Inquiry
+                </h3>
+              </div>
+              <p className="text-xs text-zinc-700 font-bold mb-6">
+                When emailing <code className="bg-white px-1.5 py-0.5 border border-black font-mono">founder@mentozy.app</code>, please provide:
+              </p>
+
+              <ul className="space-y-3 mb-6">
+                {partnershipChecklist.map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 bg-white p-3 border-2 border-black">
+                    <CheckCircle2 className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <span className="text-xs font-black text-black block">{item.label}</span>
+                      <span className="text-xs text-zinc-600 font-medium">{item.desc}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <a
+              href={mailtoLink}
+              className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white border-3 border-black font-black text-xs uppercase tracking-wider py-3.5 px-4 shadow-[3px_3px_0px_0px_#000] active:shadow-none transition-all text-center"
+            >
+              <Mail className="w-4 h-4" />
+              Open Pre-Filled Inquiry Email →
+            </a>
+          </div>
+
+          {/* Right Column: Why Partner with Mentozy */}
+          <div className="bg-white border-4 border-black shadow-[6px_6px_0px_0px_#000] p-6 sm:p-8 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 bg-[#FFE600] text-black border-2 border-black flex items-center justify-center font-bold">
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-black uppercase tracking-tight text-black">
+                  Institutional Capabilities
+                </h3>
+              </div>
+              <p className="text-xs text-zinc-600 font-bold mb-6">
+                Everything your educational team needs in one custom branded command center:
+              </p>
+
+              <div className="space-y-3 mb-6">
+                <div className="p-3 bg-[#FAF9F6] border-2 border-black">
+                  <div className="flex items-center gap-2 text-xs font-black text-black mb-1">
+                    <Users className="w-3.5 h-3.5 text-zinc-700" />
+                    Custom Faculty & Mentor Workspaces
+                  </div>
+                  <p className="text-xs text-zinc-600">
+                    Assign teachers, manage mentor availability, and review student progress reports in real time.
+                  </p>
+                </div>
+
+                <div className="p-3 bg-[#FAF9F6] border-2 border-black">
+                  <div className="flex items-center gap-2 text-xs font-black text-black mb-1">
+                    <GraduationCap className="w-3.5 h-3.5 text-zinc-700" />
+                    Dedicated Student Cohorts
+                  </div>
+                  <p className="text-xs text-zinc-600">
+                    Bulk-enroll students, track attendance, and deliver structured 1-on-1 and group mentorship.
+                  </p>
+                </div>
+
+                <div className="p-3 bg-[#FAF9F6] border-2 border-black">
+                  <div className="flex items-center gap-2 text-xs font-black text-black mb-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-zinc-700" />
+                    Secure Admin-Provisioned Access
+                  </div>
+                  <p className="text-xs text-zinc-600">
+                    Isolated institutional database records protected by verified role guards and audit logging.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3 bg-zinc-100 border-2 border-dashed border-zinc-400 text-center">
+              <span className="text-xs font-mono font-black text-zinc-700">
+                Official Contact: founder@mentozy.app
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* BOTTOM CALLOUT */}
+        <div className="bg-black text-white border-4 border-black shadow-[8px_8px_0px_0px_#FFE600] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+          <div>
+            <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              Ready to collaborate with Mentozy?
+            </h3>
+            <p className="text-xs sm:text-sm font-medium text-zinc-300 mt-1 max-w-xl">
+              Send us your requirements today. We will schedule a direct alignment call within 24–48 hours.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 justify-center">
+            <a
+              href={mailtoLink}
+              className="bg-[#FFE600] text-black hover:bg-[#ffe100] font-black text-xs uppercase tracking-wider py-3.5 px-6 border-2 border-black shadow-[3px_3px_0px_0px_#fff] active:shadow-none transition-all cursor-pointer"
+            >
+              SEND INQUIRY EMAIL →
+            </a>
+            <Link
+              to="/org-login"
+              className="bg-transparent hover:bg-white/10 text-white font-black text-xs uppercase tracking-wider py-3.5 px-5 border-2 border-white transition-colors"
+            >
+              ORGANIZATION LOGIN
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
