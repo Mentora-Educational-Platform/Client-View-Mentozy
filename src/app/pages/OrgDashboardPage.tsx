@@ -14,7 +14,10 @@ import {
   X, 
   Loader2,
   Clock,
-  Sparkles
+  Sparkles,
+  CheckCircle2,
+  ArrowRight,
+  FileText
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
@@ -31,12 +34,16 @@ export function OrgDashboardPage() {
     const [staff, setStaff] = useState<any[]>([]);
     const [students, setStudents] = useState<any[]>([]);
     const [orgProfile, setOrgProfile] = useState<any>(null);
+    const [recentSubmissions, setRecentSubmissions] = useState<any[]>([]);
+    const [pendingSubmissionsCount, setPendingSubmissionsCount] = useState<number>(0);
 
     // Task board states
     const [taskName, setTaskName] = useState('');
     const [taskDeadline, setTaskDeadline] = useState('');
     const [isSavingTask, setIsSavingTask] = useState(false);
     const editorRef = useRef<HTMLDivElement>(null);
+
+    const targetOrgId = activeOrganization?.id || user?.id;
 
     const handleAssignTask = async () => {
         if (!taskName.trim()) {
@@ -58,7 +65,7 @@ export function OrgDashboardPage() {
         setIsSavingTask(true);
         try {
             const { error } = await client.from('org_tasks').insert({
-                org_id: user?.id,
+                org_id: targetOrgId,
                 title: taskName,
                 content: taskHtml,
                 deadline: taskDeadline ? new Date(taskDeadline).toISOString() : null
@@ -132,11 +139,12 @@ export function OrgDashboardPage() {
             const client = supabase;
             if (!user?.id || !client) return;
 
-            // Strict redirect logic
+            // Strict redirect logic: allow Org Admin and active Org Teachers
             const profile = await getUserProfile(user.id);
-            const isOrgUser = user.user_metadata?.is_org || profile?.role === 'org' || profile?.role === 'admin';
+            const isOrgAdmin = Boolean(user.user_metadata?.is_org) || profile?.role === 'org' || profile?.role === 'admin';
+            const isOrgTeacher = activeOrganization?.role === 'teacher';
             
-            if (!isOrgUser) {
+            if (!isOrgAdmin && !isOrgTeacher) {
                 if (profile?.role === 'student') {
                     navigate('/student-dashboard', { replace: true });
                 } else {
@@ -145,24 +153,65 @@ export function OrgDashboardPage() {
                 return;
             }
 
-            const targetOrgId = activeOrganization?.id || user.id;
+            const currentOrgId = activeOrganization?.id || user.id;
 
-            const { data } = await client.from('mentors').select('company, bio').eq('user_id', user.id).single();
+            const { data } = await client.from('mentors').select('company, bio').eq('user_id', currentOrgId).maybeSingle();
             if (data) setOrgProfile(data);
 
-            const teachersData = await getOrgTeachers(targetOrgId);
+            const teachersData = await getOrgTeachers(currentOrgId);
             if (teachersData) setStaff(teachersData);
 
-            const studentsData = await getOrgStudents(targetOrgId);
+            const studentsData = await getOrgStudents(currentOrgId);
             if (studentsData) setStudents(studentsData);
+
+            // Fetch tasks and recent student submissions
+            try {
+                const { data: dbTasks } = await client.from('org_tasks').select('id, title').eq('org_id', currentOrgId);
+                if (dbTasks && dbTasks.length > 0) {
+                    const taskIds = dbTasks.map(t => t.id);
+                    const taskTitleMap: Record<string, string> = {};
+                    dbTasks.forEach(t => { taskTitleMap[t.id] = t.title; });
+
+                    const { data: subsData } = await client
+                        .from('org_task_submissions')
+                        .select('*')
+                        .in('task_id', taskIds)
+                        .order('created_at', { ascending: false });
+
+                    if (subsData) {
+                        setPendingSubmissionsCount(subsData.filter(s => s.status === 'pending').length);
+                        
+                        // Fetch profiles for recent 5 submissions
+                        const studentIds = Array.from(new Set(subsData.slice(0, 5).map(s => s.student_id)));
+                        const profilesMap: Record<string, any> = {};
+                        if (studentIds.length > 0) {
+                            const { data: pData } = await client.from('profiles').select('id, full_name, avatar_url, email').in('id', studentIds);
+                            (pData || []).forEach(p => { profilesMap[p.id] = p; });
+                        }
+
+                        setRecentSubmissions(subsData.slice(0, 5).map(s => ({
+                            id: s.id,
+                            taskId: s.task_id,
+                            taskTitle: taskTitleMap[s.task_id] || 'Task',
+                            studentName: profilesMap[s.student_id]?.full_name || 'Student',
+                            studentAvatar: profilesMap[s.student_id]?.avatar_url,
+                            status: s.status,
+                            submittedAt: new Date(s.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                        })));
+                    }
+                }
+            } catch (sErr) {
+                console.warn('Could not query org submissions for dashboard:', sErr);
+            }
         };
         fetchOrgDetails();
-    }, [user, activeOrganization?.id, navigate]);
+    }, [user, activeOrganization?.id, activeOrganization?.role, navigate]);
 
-    let orgName = orgProfile?.company || user?.user_metadata?.full_name || 'Organisation';
-    let founderRole = 'Founder';
+    const isTeacher = !user?.user_metadata?.is_org && activeOrganization?.role === 'teacher';
+    let orgName = activeOrganization?.name || orgProfile?.company || user?.user_metadata?.full_name || 'Organisation';
+    let founderRole = isTeacher ? 'Teacher' : 'Founder';
 
-    if (orgProfile?.bio) {
+    if (!isTeacher && orgProfile?.bio) {
         try {
             const bioData = typeof orgProfile.bio === 'string' ? JSON.parse(orgProfile.bio) : orgProfile.bio;
             founderRole = bioData?.role || 'Admin';
@@ -171,7 +220,7 @@ export function OrgDashboardPage() {
         }
     }
 
-    const canManageStaff = founderRole === 'Founder' || founderRole === 'Admin' || founderRole === 'Administrator';
+    const canManageStaff = !isTeacher && (founderRole === 'Founder' || founderRole === 'Admin' || founderRole === 'Administrator');
 
     // Invite triggers
     const handleSendInvite = (targetUser: Profile) => {
@@ -206,7 +255,7 @@ export function OrgDashboardPage() {
             const { error } = await supabase
                 .from('live_sessions')
                 .insert({
-                    org_id: user.id,
+                    org_id: targetOrgId,
                     topic: meetingTopic,
                     description: meetingDesc,
                     scheduled_at: meetingDate,
@@ -285,7 +334,7 @@ export function OrgDashboardPage() {
                 </div>
 
                 {/* Top Stat Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div className="bg-white p-6 rounded-2xl border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] flex items-center gap-4">
                         <div className="w-12 h-12 rounded-xl bg-[#EFF3FF] border-2 border-gray-900 flex items-center justify-center text-blue-600 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
                             <GraduationCap className="w-6 h-6" />
@@ -304,6 +353,26 @@ export function OrgDashboardPage() {
                             <h3 className="text-2xl font-black text-gray-900 mt-1">{staff.length} Active</h3>
                         </div>
                     </div>
+                    <Link 
+                        to="/org-submissions"
+                        className="bg-white p-6 rounded-2xl border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] flex items-center justify-between hover:border-indigo-600 transition-all group"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-[#FEF9C3] border-2 border-gray-900 flex items-center justify-center text-amber-600 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] group-hover:scale-105 transition-transform">
+                                <CheckCircle2 className="w-6 h-6 text-amber-600" />
+                            </div>
+                            <div>
+                                <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Submissions</p>
+                                <h3 className="text-2xl font-black text-gray-900 mt-1 flex items-center gap-2">
+                                    {pendingSubmissionsCount}
+                                    <span className="text-[10px] font-extrabold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                                        Pending
+                                    </span>
+                                </h3>
+                            </div>
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+                    </Link>
                     <div className="bg-white p-6 rounded-2xl border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] flex items-center gap-4">
                         <div className="w-12 h-12 rounded-xl bg-[#DCFCE7] border-2 border-gray-900 flex items-center justify-center text-green-600 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
                             <DollarSign className="w-6 h-6" />
@@ -386,13 +455,57 @@ export function OrgDashboardPage() {
 
                     {/* Right Column: Widgets */}
                     <div className="space-y-8">
-                        {/* Recent Registrations */}
+                        {/* Recent Submissions Card */}
                         <div className="bg-white rounded-3xl border-2 border-gray-900 p-6 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
-                            <h2 className="text-md font-black uppercase tracking-tight text-gray-900 mb-4">Recent Enrollments</h2>
-                            <div className="space-y-4">
-                                <div className="py-8 text-center text-gray-400 font-bold italic border-2 border-dashed border-gray-300 rounded-2xl bg-[#FAF9F6]">
-                                    No recent enrollments
-                                </div>
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-md font-black uppercase tracking-tight text-gray-900 flex items-center gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-indigo-600" />
+                                    Recent Submissions
+                                </h2>
+                                <Link 
+                                    to="/org-submissions" 
+                                    className="text-[10px] font-black uppercase tracking-wider text-indigo-600 hover:underline flex items-center gap-1"
+                                >
+                                    View All ({pendingSubmissionsCount}) <ArrowRight className="w-3 h-3" />
+                                </Link>
+                            </div>
+                            <div className="space-y-3">
+                                {recentSubmissions.length > 0 ? (
+                                    recentSubmissions.map(sub => (
+                                        <div 
+                                            key={sub.id} 
+                                            className="p-3 bg-[#FAF9F6] rounded-xl border border-gray-300 flex items-center justify-between gap-3 hover:border-gray-900 transition-all"
+                                        >
+                                            <div className="flex items-center gap-2.5 min-w-0">
+                                                {sub.studentAvatar ? (
+                                                    <img src={sub.studentAvatar} className="w-8 h-8 rounded-full border border-gray-300 shrink-0 object-cover" />
+                                                ) : (
+                                                    <div className="w-8 h-8 rounded-full bg-indigo-50 border-2 border-gray-900 flex items-center justify-center font-black text-indigo-700 text-xs shrink-0">
+                                                        {sub.studentName.charAt(0)}
+                                                    </div>
+                                                )}
+                                                <div className="min-w-0">
+                                                    <p className="text-xs font-black text-gray-900 truncate">{sub.studentName}</p>
+                                                    <p className="text-[10px] font-bold text-gray-500 truncate">{sub.taskTitle}</p>
+                                                </div>
+                                            </div>
+                                            <div className="shrink-0 flex items-center gap-2">
+                                                <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded border uppercase ${
+                                                    sub.status === 'passed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                                    sub.status === 'redo' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                                                    'bg-amber-50 text-amber-700 border-amber-200'
+                                                }`}>
+                                                    {sub.status}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="py-6 text-center text-gray-400 font-bold italic border-2 border-dashed border-gray-300 rounded-2xl bg-[#FAF9F6]">
+                                        <p className="text-xs">No submissions yet</p>
+                                        <p className="text-[10px] text-gray-400 mt-0.5">Assigned tasks will appear here once submitted.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

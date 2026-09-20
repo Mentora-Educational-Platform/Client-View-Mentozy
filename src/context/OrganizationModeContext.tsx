@@ -47,48 +47,16 @@ export function OrganizationModeProvider({ children }: { children: React.ReactNo
         }
 
         try {
-            // Fetch organizations where user is a student (from org_students table)
-            const { data: studentOrgs, error: studentError } = await supabase
-                .from('org_students')
-                .select(`
-                    org_id,
-                    profiles!org_students_org_id_fkey (
-                        id,
-                        full_name,
-                        avatar_url
-                    )
-                `)
-                .eq('student_id', user.id)
-                .eq('status', 'Active');
-
-            if (studentError) {
-                console.error('Error fetching student orgs:', studentError);
-            }
-
-            // Fetch organizations where user is a teacher (from org_teachers table if it exists)
-            // For now, we'll check if the user is invited as a teacher
-            const { data: teacherOrgs, error: teacherError } = await supabase
-                .from('org_teachers')
-                .select(`
-                    org_id,
-                    profiles!org_teachers_org_id_fkey (
-                        id,
-                        full_name,
-                        avatar_url
-                    )
-                `)
-                .eq('teacher_id', user.id)
-                .eq('status', 'Active');
-
             // Build organization list
             const organizations: Organization[] = [];
             const addedOrgIds = new Set<string>();
 
-            // 1. Fetch top-level organisations (Mentozy, Krishnaite, etc.)
+            // 1. Fetch top-level organisations where user is owner
             try {
                 const { data: dbOrgs } = await supabase
                     .from('organisations')
-                    .select('id, name, logo_url, owner_id');
+                    .select('id, name, logo_url, owner_id')
+                    .eq('owner_id', user.id);
 
                 if (dbOrgs && dbOrgs.length > 0) {
                     dbOrgs.forEach((org: any) => {
@@ -98,7 +66,7 @@ export function OrganizationModeProvider({ children }: { children: React.ReactNo
                                 id: org.id,
                                 name: org.name || 'Organization',
                                 avatar_url: org.logo_url,
-                                role: org.owner_id === user.id ? 'teacher' : 'student'
+                                role: 'teacher'
                             });
                         }
                     });
@@ -107,19 +75,129 @@ export function OrganizationModeProvider({ children }: { children: React.ReactNo
                 console.warn('organisations table query fallback:', err);
             }
 
-            // 2. Add student organizations
-            if (studentOrgs) {
-                studentOrgs.forEach((item: any) => {
-                    if (item.profiles && !addedOrgIds.has(item.profiles.id)) {
-                        addedOrgIds.add(item.profiles.id);
-                        organizations.push({
-                            id: item.profiles.id,
-                            name: item.profiles.full_name || 'Unknown Organization',
-                            avatar_url: item.profiles.avatar_url,
-                            role: 'student',
+            // 2. Fetch organizations where user is a teacher (from org_teachers)
+            try {
+                const { data: teacherRecords, error: teacherError } = await supabase
+                    .from('org_teachers')
+                    .select('org_id, role, status')
+                    .eq('teacher_id', user.id)
+                    .eq('status', 'Active');
+
+                if (teacherError) {
+                    console.error('Error fetching teacher orgs:', teacherError);
+                }
+
+                if (teacherRecords && teacherRecords.length > 0) {
+                    const orgIds = teacherRecords.map((t: any) => t.org_id).filter(Boolean);
+                    if (orgIds.length > 0) {
+                        const { data: orgProfiles } = await supabase
+                            .from('profiles')
+                            .select('id, full_name, avatar_url')
+                            .in('id', orgIds);
+
+                        const profileMap: Record<string, any> = {};
+                        (orgProfiles || []).forEach((p: any) => {
+                            profileMap[p.id] = p;
+                        });
+
+                        teacherRecords.forEach((t: any) => {
+                            if (!addedOrgIds.has(t.org_id)) {
+                                addedOrgIds.add(t.org_id);
+                                const p = profileMap[t.org_id];
+                                organizations.push({
+                                    id: t.org_id,
+                                    name: p?.full_name || 'Organization Workspace',
+                                    avatar_url: p?.avatar_url,
+                                    role: 'teacher'
+                                });
+                            }
                         });
                     }
-                });
+                }
+            } catch (err) {
+                console.error('Error in teacher orgs processing:', err);
+            }
+
+            // 2b. Also include organizations where mentor accepted invitation in org_invitations
+            try {
+                const { data: acceptedInvites } = await supabase
+                    .from('org_invitations')
+                    .select('org_id')
+                    .eq('mentor_id', user.id)
+                    .eq('status', 'accepted');
+
+                if (acceptedInvites && acceptedInvites.length > 0) {
+                    const newOrgIds = acceptedInvites.map((i: any) => i.org_id).filter((id: string) => id && !addedOrgIds.has(id));
+                    if (newOrgIds.length > 0) {
+                        const { data: orgProfiles } = await supabase
+                            .from('profiles')
+                            .select('id, full_name, avatar_url')
+                            .in('id', newOrgIds);
+
+                        const profileMap: Record<string, any> = {};
+                        (orgProfiles || []).forEach((p: any) => {
+                            profileMap[p.id] = p;
+                        });
+
+                        newOrgIds.forEach((orgId: string) => {
+                            if (!addedOrgIds.has(orgId)) {
+                                addedOrgIds.add(orgId);
+                                const p = profileMap[orgId];
+                                organizations.push({
+                                    id: orgId,
+                                    name: p?.full_name || 'Organization Workspace',
+                                    avatar_url: p?.avatar_url,
+                                    role: 'teacher'
+                                });
+                            }
+                        });
+                    }
+                }
+            } catch (err) {
+                console.warn('Accepted teacher invites query note:', err);
+            }
+
+            // 3. Fetch organizations where user is a student (from org_students)
+            try {
+                const { data: studentRecords, error: studentError } = await supabase
+                    .from('org_students')
+                    .select('org_id, status')
+                    .eq('student_id', user.id)
+                    .eq('status', 'Active');
+
+                if (studentError) {
+                    console.error('Error fetching student orgs:', studentError);
+                }
+
+                if (studentRecords && studentRecords.length > 0) {
+                    const orgIds = studentRecords.map((s: any) => s.org_id).filter(Boolean);
+                    if (orgIds.length > 0) {
+                        const { data: orgProfiles } = await supabase
+                            .from('profiles')
+                            .select('id, full_name, avatar_url')
+                            .in('id', orgIds);
+
+                        const profileMap: Record<string, any> = {};
+                        (orgProfiles || []).forEach((p: any) => {
+                            profileMap[p.id] = p;
+                        });
+
+                        studentRecords.forEach((s: any) => {
+                            if (!addedOrgIds.has(s.org_id)) {
+                                addedOrgIds.add(s.org_id);
+                                const p = profileMap[s.org_id];
+                                organizations.push({
+                                    id: s.org_id,
+                                    name: p?.full_name || 'Organization',
+                                    avatar_url: p?.avatar_url,
+                                    role: 'student'
+                                });
+                            }
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error('Error in student orgs processing:', err);
             }
 
             // 4. If current user is an organisation admin/owner, include their organisation profile

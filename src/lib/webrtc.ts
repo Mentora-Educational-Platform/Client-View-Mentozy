@@ -171,3 +171,123 @@ export function formatCallDuration(seconds: number): string {
   const ss = secs < 10 ? `0${secs}` : `${secs}`;
   return `${mm}:${ss}`;
 }
+
+/**
+ * Detects whether the current client is a mobile device, tablet, or touch-constrained viewport.
+ */
+export function isMobileDevice(): boolean {
+  if (typeof window === 'undefined') return false;
+  const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera || '';
+  const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(userAgent);
+  const isTouchScreen = typeof navigator.maxTouchPoints === 'number' && navigator.maxTouchPoints > 1;
+  const isSmallViewport = window.innerWidth < 768;
+  return isMobileUA || (isTouchScreen && isSmallViewport);
+}
+
+export interface MediaConstraintOptions {
+  isMobile?: boolean;
+  videoDeviceId?: string;
+  audioDeviceId?: string;
+  facingMode?: 'user' | 'environment';
+}
+
+/**
+ * Returns optimal media constraints.
+ * Desktop retains the exact existing HD (1280x720) settings.
+ * Mobile uses resilient, battery-efficient resolution and native audio processing.
+ */
+export function getOptimalMediaConstraints(options: MediaConstraintOptions = {}): MediaStreamConstraints {
+  const isMobile = options.isMobile ?? isMobileDevice();
+
+  if (isMobile) {
+    return {
+      video: options.videoDeviceId
+        ? { deviceId: { exact: options.videoDeviceId } }
+        : {
+            facingMode: options.facingMode || 'user',
+            width: { ideal: 640, max: 1280 },
+            height: { ideal: 480, max: 720 },
+            frameRate: { ideal: 24, max: 30 }
+          },
+      audio: options.audioDeviceId
+        ? { deviceId: { exact: options.audioDeviceId } }
+        : {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+    };
+  }
+
+  // Desktop (Preserved exactly as existing)
+  return {
+    video: options.videoDeviceId
+      ? { deviceId: { exact: options.videoDeviceId } }
+      : { width: { ideal: 1280 }, height: { ideal: 720 } },
+    audio: options.audioDeviceId
+      ? { deviceId: { exact: options.audioDeviceId } }
+      : true
+  };
+}
+
+/**
+ * Resilient getUserMedia wrapper with multi-tier fallback for mobile browsers.
+ */
+export async function resilientGetUserMedia(
+  constraints: MediaStreamConstraints,
+  isMobile: boolean = isMobileDevice()
+): Promise<MediaStream> {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    throw new Error('getUserMedia is not supported on this browser.');
+  }
+
+  try {
+    return await navigator.mediaDevices.getUserMedia(constraints);
+  } catch (initialErr: any) {
+    // If not mobile or not a constraint issue, bubble the error
+    if (!isMobile || (initialErr.name !== 'OverconstrainedError' && initialErr.name !== 'ConstraintNotSatisfiedError')) {
+      throw initialErr;
+    }
+
+    console.warn('[WebRTC] Mobile constraint error, falling back to relaxed constraints:', initialErr);
+
+    // Tier 2 Fallback: relaxed facingMode or basic constraints
+    try {
+      return await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' },
+        audio: { echoCancellation: true }
+      });
+    } catch (fallbackErr: any) {
+      console.warn('[WebRTC] Tier 2 fallback failed, attempting basic media:', fallbackErr);
+      // Tier 3 Fallback: most permissive
+      return await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      });
+    }
+  }
+}
+
+/**
+ * Mobile Screen Wake Lock helper to keep display alive during video call.
+ */
+export async function requestScreenWakeLock(): Promise<any> {
+  if (typeof navigator !== 'undefined' && 'wakeLock' in navigator && (navigator as any).wakeLock?.request) {
+    try {
+      const sentinel = await (navigator as any).wakeLock.request('screen');
+      console.log('[WebRTC] Screen Wake Lock acquired');
+      return sentinel;
+    } catch (err) {
+      console.warn('[WebRTC] Could not acquire Wake Lock:', err);
+      return null;
+    }
+  }
+  return null;
+}
+
+export function releaseScreenWakeLock(sentinel: any): void {
+  if (sentinel && typeof sentinel.release === 'function') {
+    sentinel.release().catch((e: any) => console.warn('[WebRTC] Wake lock release error:', e));
+    console.log('[WebRTC] Screen Wake Lock released');
+  }
+}

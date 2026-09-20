@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
     BookOpen, ChevronRight, Clock, Calendar, Bell,
     GraduationCap, Building2, Users, CheckCircle2,
     TrendingUp, Award, HelpCircle, Dna, FlaskConical, 
     Calculator, Atom, Briefcase, Plus, CheckSquare, 
-    CalendarRange, FileText, Check, Dumbbell, Sparkles, Pin, ExternalLink
+    CalendarRange, FileText, Check, Dumbbell, Sparkles, Pin, ExternalLink,
+    Video, ArrowRight
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useOrganizationMode } from '../../../context/OrganizationModeContext';
-import { getStudentEnrollments, getStudentBookings, Enrollment, Booking } from '../../../lib/api';
+import { 
+    getStudentEnrollments, getStudentBookings, Enrollment, Booking,
+    StudentUpcomingLiveSession, getUpcomingStudentLiveSessions 
+} from '../../../lib/api';
 import { getSupabase } from '../../../lib/supabase';
 import { toast } from 'sonner';
 
@@ -21,10 +25,12 @@ interface Submission {
 export function OrgStudentDashboard() {
     const { user } = useAuth();
     const { activeOrganization } = useOrganizationMode();
+    const navigate = useNavigate();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [orgTasks, setOrgTasks] = useState<any[]>([]);
     const [orgTeachers, setOrgTeachers] = useState<any[]>([]);
     const [taskSubmissions, setTaskSubmissions] = useState<Record<string, string>>({});
+    const [upcomingLiveSessions, setUpcomingLiveSessions] = useState<StudentUpcomingLiveSession[]>([]);
     const [loading, setLoading] = useState(true);
 
     const orgName = activeOrganization?.name || 'Your Organization';
@@ -105,6 +111,19 @@ export function OrgStudentDashboard() {
                     } catch (coursesErr) {
                         console.warn('Could not query courses for dashboard:', coursesErr);
                     }
+
+                    // Fetch upcoming WebRTC live sessions
+                    try {
+                        const sessions = await getUpcomingStudentLiveSessions(user.id, activeOrganization.id);
+                        if (sessions && sessions.length > 0) {
+                            setUpcomingLiveSessions(sessions);
+                        } else {
+                            const allSessions = await getUpcomingStudentLiveSessions(user.id);
+                            setUpcomingLiveSessions(allSessions);
+                        }
+                    } catch (sessErr) {
+                        console.warn('Could not query live sessions for student:', sessErr);
+                    }
                 }
             } catch (e) {
                 console.error('Error loading org student data:', e);
@@ -113,7 +132,67 @@ export function OrgStudentDashboard() {
             }
         };
         loadData();
+
+        // Subscribe to live_sessions realtime changes
+        const supabase = getSupabase();
+        if (supabase && user?.id) {
+            const channel = supabase
+                .channel(`org_student_live_sessions_${user.id}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'live_sessions'
+                    },
+                    async () => {
+                        const sessions = await getUpcomingStudentLiveSessions(user.id, activeOrganization?.id);
+                        if (sessions && sessions.length > 0) {
+                            setUpcomingLiveSessions(sessions);
+                        } else {
+                            const allSessions = await getUpcomingStudentLiveSessions(user.id);
+                            setUpcomingLiveSessions(allSessions);
+                        }
+                    }
+                )
+                .subscribe();
+
+            return () => {
+                supabase.removeChannel(channel);
+            };
+        }
     }, [user?.id, activeOrganization?.id]);
+
+    const formatLiveSessionTime = (dateStr: string) => {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return { dateLabel: 'Upcoming', timeLabel: '', status: 'Upcoming', isLive: false, isSoon: false };
+
+        const now = new Date();
+        const isToday = d.toDateString() === now.toDateString();
+        
+        const tomorrow = new Date(now);
+        tomorrow.setDate(now.getDate() + 1);
+        const isTomorrow = d.toDateString() === tomorrow.toDateString();
+
+        const dateLabel = isToday ? 'Today' : isTomorrow ? 'Tomorrow' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const timeLabel = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+        const diffMinutes = Math.floor((d.getTime() - Date.now()) / (1000 * 60));
+
+        let status = 'Upcoming';
+        let isLive = false;
+        let isSoon = false;
+
+        if (diffMinutes <= 0 && diffMinutes > -90) {
+            status = 'Live';
+            isLive = true;
+        } else if (diffMinutes > 0 && diffMinutes <= 15) {
+            status = 'Starting soon';
+            isSoon = true;
+        }
+
+        return { dateLabel, timeLabel, status, isLive, isSoon };
+    };
 
     // Calculate completions & progress from tasks
     const totalTasks = orgTasks.length;
@@ -176,15 +255,147 @@ export function OrgStudentDashboard() {
 
             {/* Main Workspace Layout */}
             <div className="max-w-7xl mx-auto space-y-8">
-                    
-                    {/* Tasks Section Styled like the Courses card in the screenshot */}
-                    <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
+
+                {/* Live Sessions Card (Dynamic - Upcoming session or friendly empty state) */}
+                {!loading && (
+                    upcomingLiveSessions.length > 0 ? (() => {
+                        const primarySession = upcomingLiveSessions[0];
+                        const { dateLabel, timeLabel, status, isLive, isSoon } = formatLiveSessionTime(primarySession.scheduled_at);
+
+                        return (
+                            <div className="bg-white dark:bg-gray-900 border-2 border-gray-900 dark:border-gray-700 rounded-3xl p-5 sm:p-6 shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)] relative overflow-hidden transition-all">
+                                {/* Top accent bar */}
+                                <div className={`absolute top-0 left-0 right-0 h-1.5 ${isLive ? 'bg-red-500 animate-pulse' : isSoon ? 'bg-amber-400' : 'bg-[#818CF8]'}`} />
+
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div className="flex-1 min-w-0">
+                                        {/* Header info / live indicators */}
+                                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                                                <span className={`w-2 h-2 rounded-full ${isLive ? 'bg-red-500 animate-ping' : isSoon ? 'bg-amber-500 animate-pulse' : 'bg-[#818CF8]'}`} />
+                                                UPCOMING LIVE SESSION
+                                            </span>
+
+                                            <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border border-gray-900 dark:border-gray-600 ${
+                                                isLive 
+                                                    ? 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-500 font-extrabold' 
+                                                    : isSoon 
+                                                    ? 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-500 font-extrabold' 
+                                                    : 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/40 font-bold'
+                                            }`}>
+                                                {status}
+                                            </span>
+
+                                            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 flex items-center gap-1">
+                                                <Video className="w-3 h-3 text-indigo-600 dark:text-indigo-400" /> VIDEO SESSION
+                                            </span>
+                                        </div>
+
+                                        {/* Session Title with 🎥 */}
+                                        <h3 className="text-lg sm:text-xl font-black text-gray-900 dark:text-white leading-tight uppercase truncate flex items-center gap-2">
+                                            <span>🎥</span>
+                                            <span className="truncate">{primarySession.topic}</span>
+                                        </h3>
+
+                                        {/* Mentor Name & Scheduled Time */}
+                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-300">
+                                            <span>with <span className="text-gray-900 dark:text-white font-extrabold">{primarySession.hostName}</span></span>
+                                            <span className="text-gray-300 dark:text-gray-700 hidden sm:inline">•</span>
+                                            <span className="flex items-center gap-1 text-gray-900 dark:text-white">
+                                                <Clock className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                                                {dateLabel} · {timeLabel}
+                                            </span>
+                                            {primarySession.duration && (
+                                                <>
+                                                    <span className="text-gray-300 dark:text-gray-700 hidden sm:inline">•</span>
+                                                    <span className="text-gray-500 dark:text-gray-400 text-xs">({primarySession.duration})</span>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Action Button */}
+                                    <div className="shrink-0 flex items-center">
+                                        <button
+                                            onClick={() => navigate(`/live/${primarySession.room_id}`)}
+                                            className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 sm:py-3 rounded-2xl border-2 border-gray-900 text-sm font-black text-white shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer ${
+                                                isLive 
+                                                    ? 'bg-red-600 hover:bg-red-700' 
+                                                    : isSoon 
+                                                    ? 'bg-[#5763f6] hover:bg-indigo-700' 
+                                                    : 'bg-gray-900 hover:bg-black'
+                                            }`}
+                                        >
+                                            <span>{isLive ? 'Join Live Session' : 'Join Session'}</span>
+                                            <ArrowRight className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Multiple Sessions Notice */}
+                                {upcomingLiveSessions.length > 1 && (
+                                    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-[11px] font-bold">
+                                        <span className="text-gray-500 dark:text-gray-400">
+                                            + {upcomingLiveSessions.length - 1} more upcoming session{upcomingLiveSessions.length > 2 ? 's' : ''}
+                                        </span>
+                                        <Link 
+                                            to="/org-calendar" 
+                                            className="text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1"
+                                        >
+                                            View all sessions <ChevronRight className="w-3 h-3" />
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })() : (
+                        /* Friendly Empty State */
+                        <div className="bg-white dark:bg-gray-900 border-2 border-gray-900 dark:border-gray-700 rounded-3xl p-5 sm:p-6 shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)] relative overflow-hidden transition-all">
+                            {/* Top accent bar */}
+                            <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#818CF8]" />
+
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                                    <Video className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                                    LIVE SESSIONS
+                                </span>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <h3 className="text-base sm:text-lg font-black text-gray-900 dark:text-white leading-tight flex items-center gap-2">
+                                        <span>✨</span> Great! You don't have any upcoming sessions.
+                                    </h3>
+                                    <p className="text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 mt-1">
+                                        When a mentor invites you to a live video session, it will appear here.
+                                    </p>
+                                </div>
+
+                                <Link
+                                    to="/org-calendar"
+                                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-2xl border-2 border-gray-900 text-xs font-black text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-750 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-none transition-all cursor-pointer whitespace-nowrap"
+                                >
+                                    <span>Check Calendar</span>
+                                    <ChevronRight className="w-3.5 h-3.5" />
+                                </Link>
+                            </div>
+                        </div>
+                    )
+                )}
+
+                {/* Tasks Section Styled like the Courses card in the screenshot */}
+                <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
                         <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4 mb-6">
                             <h2 className="text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
                                 <GraduationCap className="w-5 h-5 text-indigo-600" />
                                 Active Task Spaces
                             </h2>
-                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Assigned Tasks</span>
+                            <Link 
+                                to="/org-submissions" 
+                                className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                            >
+                                My Submissions →
+                            </Link>
                         </div>
 
                         {loading ? (

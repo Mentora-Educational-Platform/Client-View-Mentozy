@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useOrganizationMode, Organization } from '../../../context/OrganizationModeContext';
 import { useAuth } from '../../../context/AuthContext';
 import { Building2, User, ChevronDown, Check } from 'lucide-react';
@@ -9,6 +10,8 @@ interface ModeToggleProps {
 
 export function ModeToggle({ compact = false }: ModeToggleProps) {
     const { user } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
     const {
         mode,
         activeOrganization,
@@ -42,12 +45,29 @@ export function ModeToggle({ compact = false }: ModeToggleProps) {
         } else {
             setMode(newMode);
             setIsDropdownOpen(false);
+            if (newMode === 'organization') {
+                const targetOrg = activeOrganization || userOrganizations[0];
+                if (targetOrg?.role === 'teacher') {
+                    navigate('/org-dashboard');
+                } else {
+                    navigate('/student-dashboard');
+                }
+            } else {
+                if (location.pathname.startsWith('/org-')) {
+                    navigate(user?.user_metadata?.role === 'mentor' ? '/mentor-dashboard' : '/student-dashboard');
+                }
+            }
         }
     };
 
     const handleOrgSelect = (org: Organization) => {
         setActiveOrganization(org);
         setIsDropdownOpen(false);
+        if (org.role === 'teacher') {
+            navigate('/org-dashboard');
+        } else {
+            navigate('/student-dashboard');
+        }
     };
 
     // Organisation Admin layout: render active organisation selector without personal toggle

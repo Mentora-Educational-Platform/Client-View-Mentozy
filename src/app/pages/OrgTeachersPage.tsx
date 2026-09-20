@@ -3,10 +3,12 @@ import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { Search, Plus, UserCheck, UserX, Mail, MapPin, Briefcase, X, Loader2, Phone } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
+import { useOrganizationMode } from '../../context/OrganizationModeContext';
 import { getOrgTeachers, searchMentorsForOrg, sendOrgMentorInvite, Profile } from '../../lib/api';
 
 export function OrgTeachersPage() {
     const { user } = useAuth();
+    const { activeOrganization } = useOrganizationMode();
     const [searchTerm, setSearchTerm] = useState('');
     const [teachers, setTeachers] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -18,17 +20,20 @@ export function OrgTeachersPage() {
     const [mentorResults, setMentorResults] = useState<Profile[]>([]);
     const [isSearching, setIsSearching] = useState(false);
 
+    const targetOrgId = activeOrganization?.id || user?.id;
+    const isTeacher = !user?.user_metadata?.is_org && activeOrganization?.role === 'teacher';
+
     useEffect(() => {
         async function loadTeachers() {
-            if (user) {
+            if (targetOrgId) {
                 setIsLoading(true);
-                const data = await getOrgTeachers(user.id);
+                const data = await getOrgTeachers(targetOrgId);
                 setTeachers(data);
                 setIsLoading(false);
             }
         }
         loadTeachers();
-    }, [user]);
+    }, [targetOrgId]);
 
     // Mentor Search Effect
     useEffect(() => {
@@ -53,10 +58,10 @@ export function OrgTeachersPage() {
     );
 
     const handleSendMentorInvite = async (mentor: Profile) => {
-        if (!user) return;
+        if (!targetOrgId || isTeacher) return;
         try {
             setIsSubmitting(true);
-            const success = await sendOrgMentorInvite(user.id, mentor.id);
+            const success = await sendOrgMentorInvite(targetOrgId, mentor.id);
             if (success) {
                 toast.success(`Invitation sent successfully to ${mentor.full_name}!`);
                 setIsModalOpen(false);
@@ -81,15 +86,19 @@ export function OrgTeachersPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-gray-900 pb-6 mb-6">
                     <div>
                         <h1 className="text-3xl font-black uppercase tracking-tight text-gray-900">Staff & Teachers</h1>
-                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-1">Manage all educators and staff members in your organisation.</p>
+                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-1">
+                            {isTeacher ? 'View all educators and staff members in your organisation.' : 'Manage all educators and staff members in your organisation.'}
+                        </p>
                     </div>
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="flex items-center justify-center gap-2 px-5 py-3 bg-[#818CF8] text-white border-2 border-gray-900 rounded-xl font-extrabold text-xs shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Invite New Teacher
-                    </button>
+                    {!isTeacher && (
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="flex items-center justify-center gap-2 px-5 py-3 bg-[#818CF8] text-white border-2 border-gray-900 rounded-xl font-extrabold text-xs shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Invite New Teacher
+                        </button>
+                    )}
                 </div>
 
                 {/* Toolbar */}

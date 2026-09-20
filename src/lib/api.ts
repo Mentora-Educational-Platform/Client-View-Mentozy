@@ -1261,6 +1261,106 @@ export const markAllAsRead = async (senderId: string, receiverId: string): Promi
     }
 };
 
+export const getUnreadMessageCount = async (userId: string): Promise<number> => {
+    try {
+        const supabase = getSupabase();
+        if (!supabase || !userId) return 0;
+
+        const { count, error } = await supabase
+            .from('messages')
+            .select('id', { count: 'exact', head: true })
+            .eq('receiver_id', userId)
+            .eq('is_read', false);
+
+        if (error) {
+            console.error("Error fetching unread message count:", error);
+            return 0;
+        }
+
+        return count || 0;
+    } catch (e) {
+        console.error("Unexpected error in getUnreadMessageCount:", e);
+        return 0;
+    }
+};
+
+export interface StudentUpcomingLiveSession {
+    id: string;
+    topic: string;
+    description?: string;
+    duration: string;
+    room_id: string;
+    scheduled_at: string;
+    status?: string;
+    hostName: string;
+    hostAvatar?: string;
+}
+
+export const getUpcomingStudentLiveSessions = async (userId: string, orgId?: string): Promise<StudentUpcomingLiveSession[]> => {
+    try {
+        const supabase = getSupabase();
+        if (!supabase || !userId) return [];
+
+        let query = supabase
+            .from('live_sessions')
+            .select(`
+                id,
+                org_id,
+                topic,
+                description,
+                duration,
+                room_id,
+                scheduled_at,
+                invited_student_ids,
+                profiles:org_id (full_name, avatar_url)
+            `)
+            .contains('invited_student_ids', [userId]);
+
+        if (orgId) {
+            query = query.eq('org_id', orgId);
+        }
+
+        const { data, error } = await query.order('scheduled_at', { ascending: true });
+
+        if (error) {
+            console.error("Error fetching student live sessions:", error);
+            return [];
+        }
+
+        if (!data || data.length === 0) return [];
+
+        const now = Date.now();
+        const activeUpcoming = data
+            .map((s: any) => {
+                const hostProfile = s.profiles as any;
+                const hostName = hostProfile?.full_name || 'Host / Mentor';
+                return {
+                    id: s.id,
+                    topic: s.topic,
+                    description: s.description,
+                    duration: s.duration || '45 mins',
+                    room_id: s.room_id,
+                    scheduled_at: s.scheduled_at,
+                    status: s.status,
+                    hostName,
+                    hostAvatar: hostProfile?.avatar_url
+                };
+            })
+            .filter((s: StudentUpcomingLiveSession) => {
+                if (s.status === 'cancelled' || s.status === 'completed' || s.status === 'ended') return false;
+                const sessionTime = new Date(s.scheduled_at).getTime();
+                if (isNaN(sessionTime)) return false;
+                // Exclude sessions ended more than 90 mins ago
+                return sessionTime > (now - 90 * 60 * 1000);
+            });
+
+        return activeUpcoming;
+    } catch (e) {
+        console.error("Unexpected error in getUpcomingStudentLiveSessions:", e);
+        return [];
+    }
+};
+
 export const getContacts = async (userId: string, role: string): Promise<Contact[]> => {
     try {
         const supabase = getSupabase();
@@ -1418,9 +1518,29 @@ export const sendOrgMentorInvite = async (orgId: string, mentorId: string): Prom
     try {
         const supabase = getSupabase();
         if(!supabase) return false;
+
+        // Authorization check: verify current user is org admin/owner
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (!currentUser) return false;
+        let isOrgAdmin = Boolean(currentUser.user_metadata?.is_org) || currentUser.id === orgId;
+        if (!isOrgAdmin) {
+            // Check if current user is owner of organisation
+            const { data: orgRecord } = await supabase
+                .from('organisations')
+                .select('owner_id')
+                .eq('id', orgId)
+                .maybeSingle();
+            if (orgRecord?.owner_id === currentUser.id) {
+                isOrgAdmin = true;
+            }
+        }
+        if (!isOrgAdmin) {
+            console.error("Unauthorized: only Organization Admins can invite teachers.");
+            return false;
+        }
         
         // Check if already a teacher
-        const { count: teacherCount } = await supabase.from('org_teachers').select('id', {count: 'exact', head: true}).eq('org_id', orgId).eq('mentor_id', mentorId);
+        const { count: teacherCount } = await supabase.from('org_teachers').select('id', {count: 'exact', head: true}).eq('org_id', orgId).eq('teacher_id', mentorId);
         if (teacherCount && teacherCount > 0) return false; // Already a teacher
         
         // Remove old stranded invites
@@ -1435,6 +1555,28 @@ export const sendOrgMentorInvite = async (orgId: string, mentorId: string): Prom
             });
             
         if (error) throw error;
+
+        // Also add to org_teacher_invitations if table exists
+        try {
+            await supabase.from('org_teacher_invitations').upsert({
+                org_id: orgId,
+                teacher_id: mentorId,
+                status: 'pending'
+            }, { onConflict: 'org_id,teacher_id' });
+        } catch { }
+
+        // Org Admin has insert rights on org_teachers, pre-create membership
+        try {
+            await supabase.from('org_teachers').upsert({
+                org_id: orgId,
+                teacher_id: mentorId,
+                status: 'Active',
+                role: 'Teacher'
+            }, { onConflict: 'org_id,teacher_id' });
+        } catch (tErr) {
+            console.warn("Notice: org_teachers pre-upsert note:", tErr);
+        }
+
         return true;
     } catch(e) {
         console.error("Error sending org invite:", e);
@@ -1449,54 +1591,127 @@ export const getPendingOrgInvitesForMentor = async (mentorId: string): Promise<a
         
         const { data, error } = await supabase
             .from('org_invitations')
-            .select('id, org_id, mentor_id, status, created_at, org:profiles!org_invitations_org_id_fkey(full_name, avatar_url)')
+            .select('id, org_id, mentor_id, status, created_at')
             .eq('mentor_id', mentorId)
             .eq('status', 'pending');
             
-        if (error) {
-            console.error("error:", error);
-            // Note: If foreign key is ambiguous, we'll try without explicit fkey mapping
-            const fallback = await supabase.from('org_invitations').select('id, org_id, mentor_id, status, created_at').eq('mentor_id', mentorId).eq('status', 'pending');
-            return fallback.data || [];
+        if (error || !data) {
+            console.error("Error getting pending org invites:", error);
+            return [];
         }
-        return data || [];
+
+        const orgIds = data.map((d: any) => d.org_id).filter(Boolean);
+        if (orgIds.length === 0) return [];
+
+        const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, full_name, avatar_url')
+            .in('id', orgIds);
+
+        const profilesMap: Record<string, any> = {};
+        (profiles || []).forEach((p: any) => {
+            profilesMap[p.id] = p;
+        });
+
+        return data.map((invite: any) => ({
+            ...invite,
+            org: profilesMap[invite.org_id] || { full_name: 'Organisation', avatar_url: undefined }
+        }));
     } catch(e) {
         console.error("Error getting pending org invites:", e);
         return [];
     }
 }
 
-export const respondToOrgInvite = async (inviteId: string, orgId: string, mentorId: string, accept: boolean): Promise<boolean> => {
+export const respondToOrgInvite = async (
+    inviteId: string, 
+    orgId: string, 
+    mentorId: string, 
+    accept: boolean
+): Promise<{ success: boolean; error?: string }> => {
     try {
         const supabase = getSupabase();
-        if(!supabase) return false;
-        
+        if(!supabase) return { success: false, error: "Database client unavailable" };
+
         const status = accept ? 'accepted' : 'rejected';
-        const { error } = await supabase
-            .from('org_invitations')
-            .update({ status })
-            .eq('id', inviteId);
+        
+        // 1. Update invitation status in org_invitations
+        let updated = false;
+        if (inviteId) {
+            const { error: inviteError } = await supabase
+                .from('org_invitations')
+                .update({ status })
+                .eq('id', inviteId);
+            if (!inviteError) {
+                updated = true;
+            } else {
+                console.warn("Could not update org_invitations by id:", inviteError);
+            }
+        }
             
-        if (error) throw error;
+        if (!updated) {
+            // Fallback: try by mentor_id and org_id
+            const { error: fallbackError } = await supabase
+                .from('org_invitations')
+                .update({ status })
+                .eq('org_id', orgId)
+                .eq('mentor_id', mentorId);
+            if (!fallbackError) updated = true;
+        }
+
+        // Also update org_teacher_invitations if table exists
+        try {
+            await supabase
+                .from('org_teacher_invitations')
+                .update({ status })
+                .eq('id', inviteId);
+        } catch { }
+
+        try {
+            await supabase
+                .from('org_teacher_invitations')
+                .update({ status })
+                .eq('org_id', orgId)
+                .eq('teacher_id', mentorId);
+        } catch { }
         
         if (accept) {
-            // Add to org_teachers
-            const { error: insertError } = await supabase.from('org_teachers').insert({
-                org_id: orgId,
-                mentor_id: mentorId,
-                status: 'Active',
-                role: 'Instructor',
-                department: 'General'
-            });
-            if (insertError) throw insertError;
+            // 2. Add or activate record in org_teachers
+            try {
+                const { data: existing } = await supabase
+                    .from('org_teachers')
+                    .select('id')
+                    .eq('org_id', orgId)
+                    .eq('teacher_id', mentorId)
+                    .maybeSingle();
+
+                if (!existing) {
+                    const { error: insertError } = await supabase.from('org_teachers').insert({
+                        org_id: orgId,
+                        teacher_id: mentorId,
+                        status: 'Active',
+                        role: 'Teacher'
+                    });
+                    if (insertError) {
+                        console.warn("org_teachers insert RLS policy restriction note:", insertError.message);
+                    }
+                } else {
+                    await supabase
+                        .from('org_teachers')
+                        .update({ status: 'Active' })
+                        .eq('id', existing.id);
+                }
+            } catch (tErr) {
+                console.warn("Non-fatal org_teachers sync note:", tErr);
+            }
         }
         
-        return true;
-    } catch(e) {
+        return { success: true };
+    } catch(e: any) {
         console.error("Error responding to org invite:", e);
-        return false;
+        return { success: false, error: e?.message || "Unexpected error occurred" };
     }
-}
+};
 
 export const getOrgTeachers = async (orgId: string): Promise<any[]> => {
     try {
@@ -1505,32 +1720,50 @@ export const getOrgTeachers = async (orgId: string): Promise<any[]> => {
         
         const { data, error } = await supabase
             .from('org_teachers')
-            .select('id, status, department, role, joined_at, mentor_id, mentor:profiles!mentor_id(full_name, avatar_url, phone)')
+            .select('id, status, role, joined_at, teacher_id')
             .eq('org_id', orgId);
             
         if (error) {
-            console.error(error);
+            console.error("Error fetching org teachers:", error);
             return [];
         }
+
+        const teacherList = data || [];
+        if (teacherList.length === 0) return [];
+
+        const teacherIds = teacherList.map((t: any) => t.teacher_id).filter(Boolean);
+        const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('id, full_name, avatar_url, phone, email')
+            .in('id', teacherIds);
+
+        const profilesMap: Record<string, any> = {};
+        (profilesData || []).forEach((p: any) => {
+            profilesMap[p.id] = p;
+        });
         
-        return (data || []).map((t: any) => ({
-            id: t.id,
-            mentor_id: t.mentor_id,
-            name: t.mentor?.full_name || 'Teacher',
-            email: t.mentor?.email || 'No email',
-            phone: t.mentor?.phone || '',
-            avatar: t.mentor?.avatar_url,
-            department: t.department,
-            role: t.role,
-            status: t.status,
-            joinDate: new Date(t.joined_at).toISOString().split('T')[0],
-            classes: 0
-        }));
+        return teacherList.map((t: any) => {
+            const profile = profilesMap[t.teacher_id];
+            return {
+                id: t.id,
+                teacher_id: t.teacher_id,
+                mentor_id: t.teacher_id,
+                name: profile?.full_name || 'Teacher',
+                email: profile?.email || 'No email',
+                phone: profile?.phone || '',
+                avatar: profile?.avatar_url,
+                department: 'General',
+                role: t.role || 'Teacher',
+                status: t.status || 'Active',
+                joinDate: t.joined_at ? new Date(t.joined_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                classes: 0
+            };
+        });
     } catch(e) {
         console.error("Error fetching org teachers:", e);
         return [];
     }
-}
+};
 
 export const getOrgStudents = async (orgId: string): Promise<any[]> => {
     try {
@@ -1620,6 +1853,15 @@ export const sendOrgStudentInvite = async (orgId: string, studentId: string): Pr
     try {
         const supabase = getSupabase();
         if(!supabase) return false;
+
+        // Authorization check: verify current user is org admin/owner
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (!currentUser) return false;
+        const isOrgAdmin = Boolean(currentUser.user_metadata?.is_org) || currentUser.id === orgId;
+        if (!isOrgAdmin) {
+            console.error("Unauthorized: only Organization Admins can invite or manage students.");
+            return false;
+        }
         
         // Check if already a student
         const { count: studentCount } = await supabase.from('org_students').select('id', {count: 'exact', head: true}).eq('org_id', orgId).eq('student_id', studentId);
@@ -1672,22 +1914,48 @@ export const respondToOrgStudentInvite = async (inviteId: string, orgId: string,
         if(!supabase) return false;
         
         const status = accept ? 'accepted' : 'rejected';
-        const { error } = await supabase
-            .from('org_student_invitations')
-            .update({ status })
-            .eq('id', inviteId);
-            
-        if (error) throw error;
+        let updated = false;
+        if (inviteId) {
+            const { error } = await supabase
+                .from('org_student_invitations')
+                .update({ status })
+                .eq('id', inviteId);
+            if (!error) updated = true;
+        }
+
+        if (!updated) {
+            await supabase
+                .from('org_student_invitations')
+                .update({ status })
+                .eq('org_id', orgId)
+                .eq('student_id', studentId);
+        }
         
         if (accept) {
-            // Add to org_students
-            const { error: insertError } = await supabase.from('org_students').insert({
-                org_id: orgId,
-                student_id: studentId,
-                status: 'Active',
-                grade: 'General'
-            });
-            if (insertError) throw insertError;
+            // Check if already in org_students
+            const { data: existing } = await supabase
+                .from('org_students')
+                .select('id')
+                .eq('org_id', orgId)
+                .eq('student_id', studentId)
+                .maybeSingle();
+
+            if (!existing) {
+                const { error: insertError } = await supabase.from('org_students').insert({
+                    org_id: orgId,
+                    student_id: studentId,
+                    status: 'Active',
+                    grade: 'General'
+                });
+                if (insertError) {
+                    console.warn("Notice: org_students insert warning:", insertError);
+                }
+            } else {
+                await supabase
+                    .from('org_students')
+                    .update({ status: 'Active' })
+                    .eq('id', existing.id);
+            }
         }
         
         return true;

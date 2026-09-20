@@ -82,6 +82,8 @@ export function OrgStudentsPage() {
         }
     };
 
+    const isTeacher = !user?.user_metadata?.is_org && activeOrganization?.role === 'teacher';
+
     return (
         <DashboardLayout>
             <div className="font-mono text-gray-900 min-h-screen bg-[#FAF9F6] p-4 sm:p-8 rounded-3xl border-2 border-gray-900 shadow-[2px_2px_0px_rgba(0,0,0,1)] select-none">
@@ -90,15 +92,19 @@ export function OrgStudentsPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-gray-900 pb-6 mb-6">
                     <div>
                         <h1 className="text-3xl font-black uppercase tracking-tight text-gray-900">Students Directory</h1>
-                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-1">Manage and view all students enrolled in your organisation.</p>
+                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-1">
+                            {isTeacher ? 'View and track all students enrolled in your organisation.' : 'Manage and view all students enrolled in your organisation.'}
+                        </p>
                     </div>
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="flex items-center justify-center gap-2 px-5 py-3 bg-[#818CF8] text-white border-2 border-gray-900 rounded-xl font-extrabold text-xs shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Invite New Student
-                    </button>
+                    {!isTeacher && (
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="flex items-center justify-center gap-2 px-5 py-3 bg-[#818CF8] text-white border-2 border-gray-900 rounded-xl font-extrabold text-xs shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Invite New Student
+                        </button>
+                    )}
                 </div>
 
                 {/* Filters and Search */}

@@ -19,7 +19,7 @@ import { AcceptSessionModal } from '../components/booking/AcceptSessionModal';
 
 export function MentorDashboardPage() {
     const { user } = useAuth();
-    const { mode, activeOrganization } = useOrganizationMode();
+    const { mode, activeOrganization, setMode, setActiveOrganization, refreshOrganizations } = useOrganizationMode();
     const navigate = useNavigate();
 
     // State
@@ -37,6 +37,35 @@ export function MentorDashboardPage() {
     const [liveSessionParticipantName, setLiveSessionParticipantName] = useState('Student');
     const [acceptModalOpen, setAcceptModalOpen] = useState(false);
     const [bookingToAccept, setBookingToAccept] = useState<Booking | null>(null);
+
+    const handleOrgInviteResponse = async (inviteId: string, orgId: string, accept: boolean) => {
+        if(!user) return;
+        setProcessingId(inviteId);
+        try {
+            const inviteObj = orgInvites.find(i => i.id === inviteId);
+            const res = await respondToOrgInvite(inviteId, orgId, user.id, accept);
+            if(res.success) {
+                toast.success(accept ? "Joined Organization successfully! Switching to workspace..." : "Invitation declined.");
+                setOrgInvites(prev => prev.filter(i => i.id !== inviteId));
+                if (accept) {
+                    await refreshOrganizations();
+                    const newOrg = {
+                        id: orgId,
+                        name: inviteObj?.org?.full_name || 'Organization Workspace',
+                        avatar_url: inviteObj?.org?.avatar_url,
+                        role: 'teacher' as const
+                    };
+                    setActiveOrganization(newOrg);
+                    setMode('organization');
+                    navigate('/org-dashboard');
+                }
+            } else {
+                toast.error(res.error || "Failed to respond to invitation.");
+            }
+        } finally {
+            setProcessingId(null);
+        }
+    };
 
     // Derived State
     const pendingBookings = bookings.filter(b => b.status === 'pending');
@@ -138,21 +167,6 @@ export function MentorDashboardPage() {
         }
     };
 
-    const handleOrgInviteResponse = async (inviteId: string, orgId: string, accept: boolean) => {
-        if(!user) return;
-        setProcessingId(inviteId);
-        try {
-            const success = await respondToOrgInvite(inviteId, orgId, user.id, accept);
-            if(success) {
-                toast.success(accept ? "Joined Organization successfully!" : "Invitation declined.");
-                setOrgInvites(prev => prev.filter(i => i.id !== inviteId));
-            } else {
-                toast.error("Failed to respond to invitation.");
-            }
-        } finally {
-            setProcessingId(null);
-        }
-    };
 
     const handleAcceptBooking = async (note: string) => {
         if (!bookingToAccept) return false;

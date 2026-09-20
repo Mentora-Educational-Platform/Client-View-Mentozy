@@ -23,17 +23,27 @@ import {
   Volume2,
   AlertCircle,
   CheckCircle2,
-  X
+  X,
+  SwitchCamera,
+  MoreVertical,
+  Layout,
+  Layers
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
+import { useIsMobile } from '../components/ui/use-mobile';
 import { 
   getIceServers, 
   formatWebRtcError, 
   enumerateMediaDevices, 
   calculateConnectionQuality, 
   formatCallDuration,
+  isMobileDevice,
+  getOptimalMediaConstraints,
+  resilientGetUserMedia,
+  requestScreenWakeLock,
+  releaseScreenWakeLock,
   CallState, 
   ConnectionQuality, 
   DeviceList 
@@ -53,6 +63,8 @@ export function LiveSessionPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isMobileViewport = useIsMobile();
+  const isMobile = isMobileViewport || isMobileDevice();
 
   // Lobby/Preview Screen State
   const [hasJoined, setHasJoined] = useState(false);
@@ -67,6 +79,7 @@ export function LiveSessionPage() {
   const [isMicOn, setIsMicOn] = useState(true);
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
 
   // Call State & Health Monitoring
   const [callState, setCallState] = useState<CallState>('idle');
@@ -76,17 +89,26 @@ export function LiveSessionPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   
   // Interactive Overlays & Modals
-  const [isChatOpen, setIsChatOpen] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(() => !isMobileDevice());
   const [isParticipantsOpen, setIsParticipantsOpen] = useState(false);
   const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);
   const [hasHandRaised, setHasHandRaised] = useState(false);
   const [isDeviceSettingsOpen, setIsDeviceSettingsOpen] = useState(false);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+
+  // Mobile-specific UI states
+  const [mobileLayoutMode, setMobileLayoutMode] = useState<'stacked' | 'pip'>('stacked');
+  const [isSwappedView, setIsSwappedView] = useState(false);
+  const [isMobileMoreOpen, setIsMobileMoreOpen] = useState(false);
 
   // Media Devices State
   const [devices, setDevices] = useState<DeviceList>({ videoInputs: [], audioInputs: [], audioOutputs: [] });
   const [selectedVideoDeviceId, setSelectedVideoDeviceId] = useState<string>('');
   const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState<string>('');
   const [selectedAudioOutputId, setSelectedAudioOutputId] = useState<string>('');
+
+  // Mobile Wake Lock Ref
+  const wakeLockRef = useRef<any>(null);
 
   // Stream Refs
   const localVideoRef = useRef<HTMLVideoElement>(null);
@@ -252,6 +274,9 @@ export function LiveSessionPage() {
           filter: `session_id=eq.${session.id}`
         }, (payload) => {
           const newMsg = payload.new;
+          if (newMsg.sender_id !== user?.id && !isChatOpen) {
+            setUnreadChatCount(prev => prev + 1);
+          }
           setChatList(prev => {
             if (prev.some(m => m.id === newMsg.id)) return prev;
             return [...prev, {
@@ -275,7 +300,14 @@ export function LiveSessionPage() {
         client.removeChannel(subscription);
       }
     };
-  }, [roomId, user]);
+  }, [roomId, user, isChatOpen]);
+
+  // Clear unread count when chat opens
+  useEffect(() => {
+    if (isChatOpen) {
+      setUnreadChatCount(0);
+    }
+  }, [isChatOpen]);
 
   // 3. Load Connected Media Devices
   useEffect(() => {
@@ -772,14 +804,17 @@ export function LiveSessionPage() {
   }, [remoteStream, presenceUsers, user, remoteTracksCount]);
 
   // 13. Start Media Session (Acquires Camera & Mic)
-  const startSession = async () => {
+  const startSession = async (customFacing?: 'user' | 'environment') => {
     try {
-      const constraints: MediaStreamConstraints = {
-        audio: selectedAudioDeviceId ? { deviceId: { exact: selectedAudioDeviceId } } : true,
-        video: selectedVideoDeviceId ? { deviceId: { exact: selectedVideoDeviceId } } : { width: { ideal: 1280 }, height: { ideal: 720 } }
-      };
+      const activeFacing = customFacing || facingMode;
+      const constraints = getOptimalMediaConstraints({
+        isMobile,
+        videoDeviceId: selectedVideoDeviceId,
+        audioDeviceId: selectedAudioDeviceId,
+        facingMode: activeFacing
+      });
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      const stream = await resilientGetUserMedia(constraints, isMobile);
       localStreamRef.current = stream;
       cameraTrackRef.current = stream.getVideoTracks()[0] || null;
       micTrackRef.current = stream.getAudioTracks()[0] || null;
@@ -803,6 +838,54 @@ export function LiveSessionPage() {
     return () => cleanupWebRTC();
   }, []);
 
+  // 13b. Mobile Screen Wake Lock: Keeps display active during live call
+  useEffect(() => {
+    if (callState === 'connected' && isMobile) {
+      requestScreenWakeLock().then(lock => {
+        wakeLockRef.current = lock;
+      });
+    }
+
+    return () => {
+      if (wakeLockRef.current) {
+        releaseScreenWakeLock(wakeLockRef.current);
+        wakeLockRef.current = null;
+      }
+    };
+  }, [callState, isMobile]);
+
+  // 13c. Mobile Visibility & App Switching Lifecycle
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        // Pausing camera on background saves battery and prevents mobile OS camera lock
+        if (cameraTrackRef.current && isCameraOn) {
+          cameraTrackRef.current.enabled = false;
+        }
+        if (wakeLockRef.current) {
+          releaseScreenWakeLock(wakeLockRef.current);
+          wakeLockRef.current = null;
+        }
+      } else if (document.visibilityState === 'visible') {
+        if (cameraTrackRef.current && isCameraOn) {
+          cameraTrackRef.current.enabled = true;
+        }
+        if (callState === 'connected') {
+          requestScreenWakeLock().then(lock => {
+            wakeLockRef.current = lock;
+          });
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isMobile, isCameraOn, callState]);
+
   // 14. Toggle Microphone / Camera (Track enable without renegotiation)
   const toggleTrack = (kind: 'audio' | 'video') => {
     const stream = localStreamRef.current;
@@ -822,6 +905,54 @@ export function LiveSessionPage() {
       const newCameraState = !isCameraOn;
       setIsCameraOn(newCameraState);
       if (cameraTrackRef.current) cameraTrackRef.current.enabled = newCameraState;
+    }
+  };
+
+  // 14b. Mobile Camera Flip (Front vs Rear)
+  const handleFlipCamera = async () => {
+    if (!isMobile) return;
+    const nextFacing: 'user' | 'environment' = facingMode === 'user' ? 'environment' : 'user';
+    setFacingMode(nextFacing);
+
+    try {
+      const constraints = getOptimalMediaConstraints({
+        isMobile: true,
+        facingMode: nextFacing
+      });
+
+      const newStream = await resilientGetUserMedia(constraints, true);
+      const newVideoTrack = newStream.getVideoTracks()[0];
+      if (!newVideoTrack) return;
+
+      if (cameraTrackRef.current) {
+        cameraTrackRef.current.stop();
+      }
+      cameraTrackRef.current = newVideoTrack;
+      newVideoTrack.enabled = isCameraOn;
+
+      if (localStreamRef.current) {
+        const oldTrack = localStreamRef.current.getVideoTracks()[0];
+        if (oldTrack) localStreamRef.current.removeTrack(oldTrack);
+        localStreamRef.current.addTrack(newVideoTrack);
+      }
+
+      // Seamlessly replace track on existing RTCPeerConnection video sender without renegotiation
+      if (!isScreenSharing && pcRef.current) {
+        const videoSender = pcRef.current.getSenders().find(s => s.track?.kind === 'video' || s.track === null);
+        if (videoSender) {
+          await videoSender.replaceTrack(newVideoTrack);
+        }
+      }
+
+      if (localVideoRef.current && localStreamRef.current) {
+        localVideoRef.current.srcObject = localStreamRef.current;
+      }
+
+      toast.success(nextFacing === 'user' ? 'Front camera active' : 'Rear camera active');
+    } catch (err: any) {
+      console.warn("[WebRTC] Camera flip error:", err);
+      toast.error('Could not switch camera');
+      setFacingMode(facingMode);
     }
   };
 
@@ -856,8 +987,12 @@ export function LiveSessionPage() {
     } else {
       try {
         if (!navigator.mediaDevices?.getDisplayMedia) {
-          toast.error('Screen sharing is not supported on this browser.');
+          toast.error('Screen sharing is not supported on this mobile browser.');
           return;
+        }
+
+        if (isMobile) {
+          toast.info('Mobile screen sharing is subject to OS permissions. Desktop is recommended.');
         }
 
         const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
@@ -1125,6 +1260,55 @@ export function LiveSessionPage() {
     isDrawing.current = false;
   };
 
+  // Mobile Touch Event Drawing Handlers
+  const startDrawingTouch = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    isDrawing.current = true;
+    const rect = canvas.getBoundingClientRect();
+    ctx.beginPath();
+    ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+  };
+
+  const drawOnTouch = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing.current) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    const rect = canvas.getBoundingClientRect();
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = drawColor;
+    
+    ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+    ctx.stroke();
+  };
+
+  const stopDrawingTouch = () => {
+    isDrawing.current = false;
+  };
+
+  // Ensure canvas internal coordinate resolution matches DOM bounds
+  useEffect(() => {
+    if (isWhiteboardOpen && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+      }
+    }
+  }, [isWhiteboardOpen]);
+
   const clearCanvasBoard = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -1199,6 +1383,17 @@ export function LiveSessionPage() {
               >
                 {isCameraOn ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
               </button>
+
+              {/* Flip Camera button on mobile */}
+              {isMobile && (
+                <button
+                  onClick={handleFlipCamera}
+                  className="p-3 rounded-full transition-all border bg-slate-850 border-slate-700 text-white hover:bg-slate-800 cursor-pointer"
+                  title="Flip camera (Front/Rear)"
+                >
+                  <SwitchCamera className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
 
@@ -1245,238 +1440,565 @@ export function LiveSessionPage() {
       )}
 
       {/* 1. Header Toolbar */}
-      <div className="bg-slate-900 border-b border-slate-800 px-6 py-3.5 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-600/20">
-            <Sparkles className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-extrabold tracking-tight text-white">{meetingTopic}</span>
-              
-              {/* Call State Badge */}
-              <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider border flex items-center gap-1 ${
-                callState === 'connected' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
-                callState === 'connecting' || callState === 'reconnecting' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30 animate-pulse' :
-                callState === 'failed' ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' :
-                'bg-slate-800 text-slate-400 border-slate-700'
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${
-                  callState === 'connected' ? 'bg-emerald-400' :
-                  callState === 'connecting' || callState === 'reconnecting' ? 'bg-amber-400' :
-                  callState === 'failed' ? 'bg-rose-400' : 'bg-slate-400'
-                }`} />
-                {callState === 'connected' ? `LIVE · ${formatCallDuration(callDuration)}` : callState.toUpperCase()}
-              </span>
-
-              {/* Quality Indicator */}
-              {callState === 'connected' && (
-                <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700 font-semibold" title="Connection Quality">
-                  Quality: <span className={connectionQuality === 'excellent' || connectionQuality === 'good' ? 'text-emerald-400 font-bold' : connectionQuality === 'fair' ? 'text-amber-400 font-bold' : 'text-rose-400 font-bold'}>{connectionQuality}</span>
-                </span>
-              )}
+      {isMobile ? (
+        <div className="bg-slate-900 border-b border-slate-800 px-3 py-2 flex items-center justify-between flex-shrink-0 z-20">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-white shrink-0 shadow-md">
+              <Sparkles className="w-4 h-4" />
             </div>
-            <p className="text-[10px] text-slate-400 mt-0.5 font-semibold">Room: {roomId}</p>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold text-white truncate max-w-[110px]">{meetingTopic}</span>
+                <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border flex items-center gap-1 shrink-0 ${
+                  callState === 'connected' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
+                  callState === 'connecting' || callState === 'reconnecting' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30 animate-pulse' :
+                  callState === 'failed' ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' :
+                  'bg-slate-800 text-slate-400 border-slate-700'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${
+                    callState === 'connected' ? 'bg-emerald-400' :
+                    callState === 'connecting' || callState === 'reconnecting' ? 'bg-amber-400' :
+                    callState === 'failed' ? 'bg-rose-400' : 'bg-slate-400'
+                  }`} />
+                  {callState === 'connected' ? formatCallDuration(callDuration) : callState.toUpperCase()}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            {/* View Mode Toggle: Stacked vs PIP */}
+            <button
+              onClick={() => setMobileLayoutMode(prev => prev === 'stacked' ? 'pip' : 'stacked')}
+              className="p-2 bg-slate-800 text-slate-300 hover:text-white rounded-lg border border-slate-700 text-xs font-medium flex items-center gap-1 cursor-pointer"
+              title={`Switch to ${mobileLayoutMode === 'stacked' ? 'Picture-in-Picture' : 'Stacked'} view`}
+            >
+              {mobileLayoutMode === 'stacked' ? <Layers className="w-4 h-4 text-emerald-400" /> : <Layout className="w-4 h-4 text-indigo-400" />}
+              <span className="text-[10px] font-bold">{mobileLayoutMode === 'stacked' ? 'PIP' : 'Split'}</span>
+            </button>
+
+            {/* Active Roster */}
+            <button
+              onClick={() => { setIsParticipantsOpen(true); setIsChatOpen(false); }}
+              className="p-2 bg-slate-800 text-slate-300 hover:text-white rounded-lg border border-slate-700 text-xs font-bold flex items-center gap-1 cursor-pointer"
+              title="Active Participants"
+            >
+              <Users className="w-4 h-4" />
+              <span className="text-[10px] font-bold">{participantsList.length}</span>
+            </button>
+
+            {/* Device Settings */}
+            <button
+              onClick={() => setIsDeviceSettingsOpen(true)}
+              className="p-2 bg-slate-800 text-slate-300 hover:text-white rounded-lg border border-slate-700 cursor-pointer"
+              title="Media Device Settings"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
           </div>
         </div>
+      ) : (
+        <div className="bg-slate-900 border-b border-slate-800 px-6 py-3.5 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-600/20">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-extrabold tracking-tight text-white">{meetingTopic}</span>
+                
+                {/* Call State Badge */}
+                <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider border flex items-center gap-1 ${
+                  callState === 'connected' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
+                  callState === 'connecting' || callState === 'reconnecting' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30 animate-pulse' :
+                  callState === 'failed' ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' :
+                  'bg-slate-800 text-slate-400 border-slate-700'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${
+                    callState === 'connected' ? 'bg-emerald-400' :
+                    callState === 'connecting' || callState === 'reconnecting' ? 'bg-amber-400' :
+                    callState === 'failed' ? 'bg-rose-400' : 'bg-slate-400'
+                  }`} />
+                  {callState === 'connected' ? `LIVE · ${formatCallDuration(callDuration)}` : callState.toUpperCase()}
+                </span>
 
-        {/* Action Controls in Header */}
-        <div className="flex items-center gap-2">
-          {/* Reconnect button if disconnected or failed */}
-          {(callState === 'failed' || callState === 'reconnecting') && (
+                {/* Quality Indicator */}
+                {callState === 'connected' && (
+                  <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700 font-semibold" title="Connection Quality">
+                    Quality: <span className={connectionQuality === 'excellent' || connectionQuality === 'good' ? 'text-emerald-400 font-bold' : connectionQuality === 'fair' ? 'text-amber-400 font-bold' : 'text-rose-400 font-bold'}>{connectionQuality}</span>
+                  </span>
+                )}
+              </div>
+              <p className="text-[10px] text-slate-400 mt-0.5 font-semibold">Room: {roomId}</p>
+            </div>
+          </div>
+
+          {/* Action Controls in Header */}
+          <div className="flex items-center gap-2">
+            {/* Reconnect button if disconnected or failed */}
+            {(callState === 'failed' || callState === 'reconnecting') && (
+              <button 
+                onClick={handleManualReconnect}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold rounded-lg transition-all cursor-pointer shadow-md"
+              >
+                <RefreshCw className="w-3.5 h-3.5" /> Reconnect
+              </button>
+            )}
+
+            {/* Device Settings Button */}
             <button 
-              onClick={handleManualReconnect}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold rounded-lg transition-all cursor-pointer shadow-md"
+              onClick={() => setIsDeviceSettingsOpen(true)}
+              className="p-2 bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white rounded-lg border border-slate-700 transition-all cursor-pointer"
+              title="Media Device Settings"
             >
-              <RefreshCw className="w-3.5 h-3.5" /> Reconnect
+              <Settings className="w-4 h-4" />
             </button>
-          )}
 
-          {/* Device Settings Button */}
-          <button 
-            onClick={() => setIsDeviceSettingsOpen(true)}
-            className="p-2 bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white rounded-lg border border-slate-700 transition-all cursor-pointer"
-            title="Media Device Settings"
-          >
-            <Settings className="w-4 h-4" />
-          </button>
+            {/* Fullscreen Button */}
+            <button 
+              onClick={toggleFullscreen}
+              className="p-2 bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white rounded-lg border border-slate-700 transition-all cursor-pointer"
+              title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+            >
+              {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+            </button>
 
-          {/* Fullscreen Button */}
-          <button 
-            onClick={toggleFullscreen}
-            className="p-2 bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white rounded-lg border border-slate-700 transition-all cursor-pointer"
-            title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-          >
-            {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
-          </button>
-
-          {/* Active Roster Toggle */}
-          <button 
-            onClick={() => { setIsParticipantsOpen(prev => !prev); setIsChatOpen(false); }}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer ${isParticipantsOpen ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:text-white'}`}
-          >
-            <Users className="w-4 h-4" />
-            {participantsList.length} Active
-          </button>
-          
-          {/* Chat Toggle */}
-          <button 
-            onClick={() => { setIsChatOpen(prev => !prev); setIsParticipantsOpen(false); }}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer ${isChatOpen ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:text-white'}`}
-          >
-            <MessageSquare className="w-4 h-4" />
-            Live Chat
-          </button>
+            {/* Active Roster Toggle */}
+            <button 
+              onClick={() => { setIsParticipantsOpen(prev => !prev); setIsChatOpen(false); }}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer ${isParticipantsOpen ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:text-white'}`}
+            >
+              <Users className="w-4 h-4" />
+              {participantsList.length} Active
+            </button>
+            
+            {/* Chat Toggle */}
+            <button 
+              onClick={() => { setIsChatOpen(prev => !prev); setIsParticipantsOpen(false); }}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer ${isChatOpen ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:text-white'}`}
+            >
+              <MessageSquare className="w-4 h-4" />
+              Live Chat
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 2. Main Workstation Panel */}
       <div className="flex-1 flex overflow-hidden relative">
         
-        {/* Core Video Frame */}
-        <div className="flex-1 flex flex-col p-4 sm:p-6 items-center justify-center relative overflow-hidden bg-slate-950">
-          
-          <div className="w-full h-full max-w-5xl max-h-[85vh] relative flex gap-4 items-center justify-center">
+        {/* Mobile Video Stage */}
+        {isMobile ? (
+          <div className="flex-1 flex flex-col p-2 relative overflow-hidden bg-slate-950">
             
-            {/* Main Stage (Local Video / Whiteboard / Remote Screen) */}
-            <div className={`flex-1 h-full rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 relative group flex items-center justify-center ${isScreenSharing ? 'hidden lg:flex' : 'flex'}`}>
-              
-              {/* Whiteboard Overlay */}
-              {isWhiteboardOpen && (
-                <div className="absolute inset-0 z-20 bg-slate-900/95 backdrop-blur-sm animate-in fade-in duration-300 flex flex-col">
-                  <div className="bg-slate-950 p-3 border-b border-slate-800 flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-300 flex items-center gap-2">
-                      <PenTool className="w-4 h-4 text-indigo-400" /> Interactive Whiteboard Canvas
-                    </span>
-                    <div className="flex items-center gap-4">
-                      <div className="flex gap-2">
-                        {['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#ffffff'].map(c => (
-                          <button 
-                            key={c}
-                            onClick={() => setDrawColor(c)}
-                            className={`w-6 h-6 rounded-full border transition-transform cursor-pointer ${drawColor === c ? 'scale-125 border-white' : 'border-slate-800'}`}
-                            style={{ backgroundColor: c }}
-                          />
-                        ))}
-                      </div>
-                      <div className="h-4 w-[1px] bg-slate-800"></div>
-                      <button 
-                        onClick={clearCanvasBoard}
-                        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
-                      >
-                        <Eraser className="w-4 h-4" /> Clear Board
-                      </button>
+            {/* Mobile Whiteboard Overlay */}
+            {isWhiteboardOpen && (
+              <div className="absolute inset-0 z-40 bg-slate-950 flex flex-col animate-in fade-in duration-200">
+                <div className="bg-slate-900 px-3 py-2 border-b border-slate-800 flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                    <PenTool className="w-3.5 h-3.5 text-indigo-400" /> Whiteboard
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1.5">
+                      {['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#ffffff'].map(c => (
+                        <button
+                          key={c}
+                          onClick={() => setDrawColor(c)}
+                          className={`w-5 h-5 rounded-full border transition-transform cursor-pointer ${drawColor === c ? 'scale-125 border-white ring-1 ring-white' : 'border-slate-700'}`}
+                          style={{ backgroundColor: c }}
+                        />
+                      ))}
                     </div>
-                  </div>
-                  
-                  <canvas 
-                    ref={canvasRef}
-                    width={800}
-                    height={500}
-                    className="flex-1 bg-transparent cursor-crosshair w-full h-full"
-                    onMouseDown={startDrawingCanvas}
-                    onMouseMove={drawOnCanvas}
-                    onMouseUp={stopDrawingCanvas}
-                    onMouseLeave={stopDrawingCanvas}
-                  />
-                </div>
-              )}
-
-              {/* Local Host Video Stream */}
-              <video 
-                ref={localVideoRef} 
-                autoPlay 
-                muted 
-                playsInline 
-                className={`w-full h-full object-cover z-10 ${isCameraOn && inSession && !isWhiteboardOpen ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`} 
-              />
-
-              {/* Avatar Fallback */}
-              {(!isCameraOn || !inSession) && !isWhiteboardOpen && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 space-y-4 animate-in fade-in duration-300">
-                  <div className="w-24 h-24 rounded-full bg-indigo-600/20 text-indigo-400 border-2 border-indigo-500/30 flex items-center justify-center text-3xl font-extrabold shadow-lg shadow-indigo-600/10 animate-bounce">
-                    {myInitials}
-                  </div>
-                  <div className="text-center">
-                    <h4 className="font-bold text-white text-base">{myName} (You)</h4>
-                    <p className="text-xs text-slate-500 mt-1 font-semibold">Camera is paused</p>
+                    <button
+                      onClick={clearCanvasBoard}
+                      className="p-1.5 bg-slate-800 text-slate-300 rounded-lg text-xs font-bold hover:text-white cursor-pointer"
+                      title="Clear"
+                    >
+                      <Eraser className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setIsWhiteboardOpen(false)}
+                      className="p-1.5 bg-slate-800 text-slate-300 rounded-lg hover:text-white cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-              )}
-
-              {/* Tag Overlay */}
-              <div className="absolute bottom-4 left-4 z-30 bg-slate-950/70 border border-white/5 backdrop-blur-md px-3.5 py-1.5 rounded-xl flex items-center gap-2">
-                <div className={`w-2.5 h-2.5 rounded-full ${isCurrentUserHost ? 'bg-indigo-500' : 'bg-emerald-500'} animate-ping`}></div>
-                <span className="text-xs font-bold text-white">
-                  {isCurrentUserHost ? 'Host (Instructor)' : 'Student'} · {myName}
-                </span>
+                <canvas
+                  ref={canvasRef}
+                  className="flex-1 bg-slate-950 cursor-crosshair w-full h-full"
+                  style={{ touchAction: 'none' }}
+                  onMouseDown={startDrawingCanvas}
+                  onMouseMove={drawOnCanvas}
+                  onMouseUp={stopDrawingCanvas}
+                  onMouseLeave={stopDrawingCanvas}
+                  onTouchStart={startDrawingTouch}
+                  onTouchMove={drawOnTouch}
+                  onTouchEnd={stopDrawingTouch}
+                  onTouchCancel={stopDrawingTouch}
+                />
               </div>
-            </div>
+            )}
 
-            {/* Screen Sharing Stage */}
+            {/* Screen Sharing stream if active */}
             {isScreenSharing && (
-              <div className="flex-1 h-full rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 relative flex items-center justify-center z-10 animate-in zoom-in-95 duration-300">
-                <video ref={screenVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-                <div className="absolute bottom-4 left-4 bg-slate-950/80 backdrop-blur-md px-3.5 py-1.5 rounded-xl flex items-center gap-2 border border-white/10">
-                  <Tv className="w-4.5 h-4.5 text-amber-500" />
-                  <span className="text-xs font-bold text-white">Broadcasting Screen Space</span>
+              <div className="w-full h-44 rounded-xl overflow-hidden bg-slate-900 border border-slate-800 mb-2 relative flex-shrink-0">
+                <video ref={screenVideoRef} autoPlay playsInline muted className="w-full h-full object-contain" />
+                <div className="absolute bottom-2 left-2 bg-slate-950/80 px-2 py-0.5 rounded text-[10px] font-bold text-amber-400 flex items-center gap-1 border border-white/10">
+                  <Tv className="w-3 h-3" /> Screen Share
                 </div>
               </div>
             )}
 
-            {/* Remote Peer Video Card */}
-            {activeRemoteUser && (
-              <div className="absolute top-4 right-4 w-48 sm:w-56 aspect-video rounded-2xl overflow-hidden bg-slate-950/80 border border-white/10 shadow-2xl z-30 pointer-events-auto animate-in zoom-in-95 duration-300">
-                <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 relative">
-                  
-                  {/* Remote Stream Video */}
-                  <video 
-                    ref={remoteVideoRef} 
-                    autoPlay 
-                    playsInline 
-                    className={`w-full h-full object-cover z-10 ${isRemoteVideoActive && activeRemoteUser.isCameraOn !== false ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`} 
+            {/* Mobile Layout Mode: STACKED (50/50 Portrait Split) */}
+            {mobileLayoutMode === 'stacked' ? (
+              <div className="flex-1 flex flex-col gap-2 min-h-0 w-full">
+                {/* Top Tile: Remote Peer */}
+                <div className="flex-1 rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 relative flex items-center justify-center min-h-0">
+                  <video
+                    ref={remoteVideoRef}
+                    autoPlay
+                    playsInline
+                    className={`w-full h-full object-cover z-10 ${isRemoteVideoActive && activeRemoteUser?.isCameraOn !== false ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`}
                   />
 
-                  {/* Fallback avatar if remote camera is paused */}
-                  {(!isRemoteVideoActive || activeRemoteUser.isCameraOn === false) && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 z-20 space-y-2 animate-in fade-in duration-300">
-                      <div className="w-10 h-10 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/25 flex items-center justify-center text-xs font-bold shadow-md shadow-purple-600/10 animate-pulse">
-                        {activeRemoteUser.avatar}
+                  {(!isRemoteVideoActive || activeRemoteUser?.isCameraOn === false) && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/95 z-20 space-y-2 p-4 text-center">
+                      <div className="w-16 h-16 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center justify-center text-xl font-bold shadow-lg">
+                        {activeRemoteUser ? activeRemoteUser.avatar : '...'}
                       </div>
-                      <span className="text-[9px] font-bold text-slate-300">{activeRemoteUser.name}</span>
-                      <p className="text-[8px] text-slate-500">Camera is paused</p>
+                      <div>
+                        <h4 className="font-bold text-white text-sm">
+                          {activeRemoteUser ? activeRemoteUser.name : 'Waiting for partner...'}
+                        </h4>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {activeRemoteUser ? 'Camera is paused' : `Room ID: ${roomId}`}
+                        </p>
+                      </div>
                     </div>
                   )}
 
-                  {/* Remote mic & status badge */}
-                  <div className="absolute bottom-2 left-2 bg-slate-950/80 px-2 py-0.5 rounded border border-white/5 flex items-center gap-1.5 z-30">
-                    {activeRemoteUser.isMicOn === false ? (
-                      <MicOff className="w-2.5 h-2.5 text-rose-400" />
+                  <div className="absolute bottom-3 left-3 z-30 bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded-lg flex items-center gap-1.5 border border-white/10">
+                    {activeRemoteUser?.isMicOn === false ? (
+                      <MicOff className="w-3 h-3 text-rose-400" />
                     ) : (
                       <div className="flex gap-0.5">
-                        <div className="w-0.5 h-2 bg-emerald-500 animate-pulse"></div>
-                        <div className="w-0.5 h-3 bg-emerald-500 animate-pulse"></div>
-                        <div className="w-0.5 h-1.5 bg-emerald-500 animate-pulse"></div>
+                        <div className="w-0.5 h-2 bg-emerald-500 animate-pulse" />
+                        <div className="w-0.5 h-2.5 bg-emerald-500 animate-pulse" />
                       </div>
                     )}
-                    <span className="text-[8px] text-emerald-400 font-extrabold uppercase">
-                      {activeRemoteUser.isMicOn === false ? 'Muted' : 'Live'}
+                    <span className="text-[11px] font-bold text-white truncate max-w-[120px]">
+                      {activeRemoteUser ? activeRemoteUser.name : 'Waiting...'}
                     </span>
+                  </div>
+                </div>
+
+                {/* Bottom Tile: Local User */}
+                <div className="flex-1 rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 relative flex items-center justify-center min-h-0">
+                  <video
+                    ref={localVideoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    className={`w-full h-full object-cover z-10 ${isCameraOn && inSession ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`}
+                  />
+
+                  {(!isCameraOn || !inSession) && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/95 z-20 space-y-2 p-4 text-center">
+                      <div className="w-16 h-16 rounded-full bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center text-xl font-bold shadow-lg">
+                        {myInitials}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-white text-sm">{myName} (You)</h4>
+                        <p className="text-xs text-slate-400 mt-0.5">Camera paused</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="absolute bottom-3 left-3 z-30 bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded-lg flex items-center gap-1.5 border border-white/10">
+                    <div className={`w-2 h-2 rounded-full ${isCurrentUserHost ? 'bg-indigo-500' : 'bg-emerald-500'}`} />
+                    <span className="text-[11px] font-bold text-white">
+                      {myName} (You)
+                    </span>
+                    {!isMicOn && <MicOff className="w-3 h-3 text-rose-400 ml-1" />}
+                  </div>
+
+                  {/* Fast Camera Flip Button on Local Tile */}
+                  <button
+                    onClick={handleFlipCamera}
+                    className="absolute top-3 right-3 z-30 p-2 rounded-full bg-slate-950/70 border border-white/10 text-white active:scale-95 transition-transform cursor-pointer"
+                    title="Flip camera"
+                  >
+                    <SwitchCamera className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Mobile Layout Mode: PIP (Picture-in-Picture with Tap-to-Swap) */
+              <div className="flex-1 w-full h-full rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 relative flex items-center justify-center min-h-0">
+                {/* Primary Large Stream */}
+                <div className="w-full h-full relative flex items-center justify-center">
+                  {isSwappedView ? (
+                    <>
+                      <video
+                        ref={localVideoRef}
+                        autoPlay
+                        muted
+                        playsInline
+                        className={`w-full h-full object-cover z-10 ${isCameraOn && inSession ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`}
+                      />
+                      {(!isCameraOn || !inSession) && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/95 z-20 space-y-2">
+                          <div className="w-20 h-20 rounded-full bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center text-2xl font-bold">
+                            {myInitials}
+                          </div>
+                          <h4 className="font-bold text-white text-sm">{myName} (You)</h4>
+                        </div>
+                      )}
+                      <div className="absolute bottom-3 left-3 z-30 bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded-lg flex items-center gap-1.5 border border-white/10">
+                        <span className="text-[11px] font-bold text-white">{myName} (You)</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <video
+                        ref={remoteVideoRef}
+                        autoPlay
+                        playsInline
+                        className={`w-full h-full object-cover z-10 ${isRemoteVideoActive && activeRemoteUser?.isCameraOn !== false ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`}
+                      />
+                      {(!isRemoteVideoActive || activeRemoteUser?.isCameraOn === false) && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/95 z-20 space-y-2">
+                          <div className="w-20 h-20 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center justify-center text-2xl font-bold">
+                            {activeRemoteUser ? activeRemoteUser.avatar : '...'}
+                          </div>
+                          <h4 className="font-bold text-white text-sm">
+                            {activeRemoteUser ? activeRemoteUser.name : 'Waiting for partner...'}
+                          </h4>
+                        </div>
+                      )}
+                      <div className="absolute bottom-3 left-3 z-30 bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded-lg flex items-center gap-1.5 border border-white/10">
+                        <span className="text-[11px] font-bold text-white">
+                          {activeRemoteUser ? activeRemoteUser.name : 'Waiting...'}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Floating PIP Corner Window */}
+                <div
+                  onClick={() => setIsSwappedView(prev => !prev)}
+                  className="absolute top-3 right-3 w-28 sm:w-36 aspect-[3/4] rounded-xl overflow-hidden bg-slate-950 border-2 border-indigo-500/60 shadow-2xl z-20 cursor-pointer active:scale-95 transition-transform"
+                  title="Tap to switch primary view"
+                >
+                  {!isSwappedView ? (
+                    <div className="w-full h-full relative flex items-center justify-center">
+                      <video
+                        ref={localVideoRef}
+                        autoPlay
+                        muted
+                        playsInline
+                        className={`w-full h-full object-cover ${isCameraOn && inSession ? 'opacity-100' : 'opacity-0 absolute'}`}
+                      />
+                      {(!isCameraOn || !inSession) && (
+                        <div className="absolute inset-0 bg-slate-900 flex items-center justify-center">
+                          <span className="text-xs font-bold text-indigo-400">{myInitials}</span>
+                        </div>
+                      )}
+                      <div className="absolute bottom-1 left-1 right-1 bg-slate-950/80 px-1 rounded text-[9px] font-bold text-center text-white truncate">
+                        You
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full h-full relative flex items-center justify-center">
+                      <video
+                        ref={remoteVideoRef}
+                        autoPlay
+                        playsInline
+                        className={`w-full h-full object-cover ${isRemoteVideoActive && activeRemoteUser?.isCameraOn !== false ? 'opacity-100' : 'opacity-0 absolute'}`}
+                      />
+                      {(!isRemoteVideoActive || activeRemoteUser?.isCameraOn === false) && (
+                        <div className="absolute inset-0 bg-slate-900 flex items-center justify-center">
+                          <span className="text-xs font-bold text-purple-300">
+                            {activeRemoteUser ? activeRemoteUser.avatar : '...'}
+                          </span>
+                        </div>
+                      )}
+                      <div className="absolute bottom-1 left-1 right-1 bg-slate-950/80 px-1 rounded text-[9px] font-bold text-center text-white truncate">
+                        {activeRemoteUser ? activeRemoteUser.name : 'Partner'}
+                      </div>
+                    </div>
+                  )}
+                  <div className="absolute top-1 left-1 bg-indigo-600/80 text-[8px] font-black px-1 rounded text-white">
+                    SWAP
                   </div>
                 </div>
               </div>
             )}
-
           </div>
-        </div>
+        ) : (
+          /* Desktop Core Video Frame */
+          <div className="flex-1 flex flex-col p-4 sm:p-6 items-center justify-center relative overflow-hidden bg-slate-950">
+            <div className="w-full h-full max-w-5xl max-h-[85vh] relative flex gap-4 items-center justify-center">
+              
+              {/* Main Stage (Local Video / Whiteboard / Remote Screen) */}
+              <div className={`flex-1 h-full rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 relative group flex items-center justify-center ${isScreenSharing ? 'hidden lg:flex' : 'flex'}`}>
+                
+                {/* Whiteboard Overlay */}
+                {isWhiteboardOpen && (
+                  <div className="absolute inset-0 z-20 bg-slate-900/95 backdrop-blur-sm animate-in fade-in duration-300 flex flex-col">
+                    <div className="bg-slate-950 p-3 border-b border-slate-800 flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-300 flex items-center gap-2">
+                        <PenTool className="w-4 h-4 text-indigo-400" /> Interactive Whiteboard Canvas
+                      </span>
+                      <div className="flex items-center gap-4">
+                        <div className="flex gap-2">
+                          {['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#ffffff'].map(c => (
+                            <button 
+                              key={c}
+                              onClick={() => setDrawColor(c)}
+                              className={`w-6 h-6 rounded-full border transition-transform cursor-pointer ${drawColor === c ? 'scale-125 border-white' : 'border-slate-800'}`}
+                              style={{ backgroundColor: c }}
+                            />
+                          ))}
+                        </div>
+                        <div className="h-4 w-[1px] bg-slate-800"></div>
+                        <button 
+                          onClick={clearCanvasBoard}
+                          className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                        >
+                          <Eraser className="w-4 h-4" /> Clear Board
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <canvas 
+                      ref={canvasRef}
+                      width={800}
+                      height={500}
+                      className="flex-1 bg-transparent cursor-crosshair w-full h-full"
+                      style={{ touchAction: 'none' }}
+                      onMouseDown={startDrawingCanvas}
+                      onMouseMove={drawOnCanvas}
+                      onMouseUp={stopDrawingCanvas}
+                      onMouseLeave={stopDrawingCanvas}
+                      onTouchStart={startDrawingTouch}
+                      onTouchMove={drawOnTouch}
+                      onTouchEnd={stopDrawingTouch}
+                      onTouchCancel={stopDrawingTouch}
+                    />
+                  </div>
+                )}
 
-        {/* 3. Live Chat Panel */}
+                {/* Local Host Video Stream */}
+                <video 
+                  ref={localVideoRef} 
+                  autoPlay 
+                  muted 
+                  playsInline 
+                  className={`w-full h-full object-cover z-10 ${isCameraOn && inSession && !isWhiteboardOpen ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`} 
+                />
+
+                {/* Avatar Fallback */}
+                {(!isCameraOn || !inSession) && !isWhiteboardOpen && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 space-y-4 animate-in fade-in duration-300">
+                    <div className="w-24 h-24 rounded-full bg-indigo-600/20 text-indigo-400 border-2 border-indigo-500/30 flex items-center justify-center text-3xl font-extrabold shadow-lg shadow-indigo-600/10 animate-bounce">
+                      {myInitials}
+                    </div>
+                    <div className="text-center">
+                      <h4 className="font-bold text-white text-base">{myName} (You)</h4>
+                      <p className="text-xs text-slate-500 mt-1 font-semibold">Camera is paused</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tag Overlay */}
+                <div className="absolute bottom-4 left-4 z-30 bg-slate-950/70 border border-white/5 backdrop-blur-md px-3.5 py-1.5 rounded-xl flex items-center gap-2">
+                  <div className={`w-2.5 h-2.5 rounded-full ${isCurrentUserHost ? 'bg-indigo-500' : 'bg-emerald-500'} animate-ping`}></div>
+                  <span className="text-xs font-bold text-white">
+                    {isCurrentUserHost ? 'Host (Instructor)' : 'Student'} · {myName}
+                  </span>
+                </div>
+              </div>
+
+              {/* Screen Sharing Stage */}
+              {isScreenSharing && (
+                <div className="flex-1 h-full rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 relative flex items-center justify-center z-10 animate-in zoom-in-95 duration-300">
+                  <video ref={screenVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                  <div className="absolute bottom-4 left-4 bg-slate-950/80 backdrop-blur-md px-3.5 py-1.5 rounded-xl flex items-center gap-2 border border-white/10">
+                    <Tv className="w-4.5 h-4.5 text-amber-500" />
+                    <span className="text-xs font-bold text-white">Broadcasting Screen Space</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Remote Peer Video Card */}
+              {activeRemoteUser && (
+                <div className="absolute top-4 right-4 w-48 sm:w-56 aspect-video rounded-2xl overflow-hidden bg-slate-950/80 border border-white/10 shadow-2xl z-30 pointer-events-auto animate-in zoom-in-95 duration-300">
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 relative">
+                    
+                    {/* Remote Stream Video */}
+                    <video 
+                      ref={remoteVideoRef} 
+                      autoPlay 
+                      playsInline 
+                      className={`w-full h-full object-cover z-10 ${isRemoteVideoActive && activeRemoteUser.isCameraOn !== false ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`} 
+                    />
+
+                    {/* Fallback avatar if remote camera is paused */}
+                    {(!isRemoteVideoActive || activeRemoteUser.isCameraOn === false) && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 z-20 space-y-2 animate-in fade-in duration-300">
+                        <div className="w-10 h-10 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/25 flex items-center justify-center text-xs font-bold shadow-md shadow-purple-600/10 animate-pulse">
+                          {activeRemoteUser.avatar}
+                        </div>
+                        <span className="text-[9px] font-bold text-slate-300">{activeRemoteUser.name}</span>
+                        <p className="text-[8px] text-slate-500">Camera is paused</p>
+                      </div>
+                    )}
+
+                    {/* Remote mic & status badge */}
+                    <div className="absolute bottom-2 left-2 bg-slate-950/80 px-2 py-0.5 rounded border border-white/5 flex items-center gap-1.5 z-30">
+                      {activeRemoteUser.isMicOn === false ? (
+                        <MicOff className="w-2.5 h-2.5 text-rose-400" />
+                      ) : (
+                        <div className="flex gap-0.5">
+                          <div className="w-0.5 h-2 bg-emerald-500 animate-pulse"></div>
+                          <div className="w-0.5 h-3 bg-emerald-500 animate-pulse"></div>
+                          <div className="w-0.5 h-1.5 bg-emerald-500 animate-pulse"></div>
+                        </div>
+                      )}
+                      <span className="text-[8px] text-emerald-400 font-extrabold uppercase">
+                        {activeRemoteUser.isMicOn === false ? 'Muted' : 'Live'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        )}
+
+        {/* 3. Live Chat Panel - Desktop Sidebar OR Mobile Fullscreen Drawer */}
         {isChatOpen && (
-          <div className="w-80 border-l border-slate-800 bg-slate-900 flex flex-col animate-in slide-in-from-right-4 duration-300">
-            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+          <div className={`${
+            isMobile 
+              ? 'fixed inset-0 z-50 bg-slate-900 flex flex-col animate-in slide-in-from-bottom duration-200' 
+              : 'w-80 border-l border-slate-800 bg-slate-900 flex flex-col animate-in slide-in-from-right-4 duration-300'
+          }`}>
+            <div className="p-3.5 sm:p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
               <h3 className="text-sm font-extrabold uppercase tracking-widest text-slate-200 flex items-center gap-1.5">
                 <MessageSquare className="w-4 h-4 text-indigo-400" /> Live Chat Space
               </h3>
+              {isMobile && (
+                <button
+                  onClick={() => setIsChatOpen(false)}
+                  className="p-1.5 bg-slate-800 text-slate-400 hover:text-white rounded-lg cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
             </div>
             
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -1511,7 +2033,7 @@ export function LiveSessionPage() {
               })}
             </div>
 
-            <div className="p-4 border-t border-slate-800 bg-slate-950/40">
+            <div className="p-3 sm:p-4 border-t border-slate-800 bg-slate-950/80 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
               <div className="relative">
                 <input 
                   type="text" 
@@ -1532,13 +2054,25 @@ export function LiveSessionPage() {
           </div>
         )}
 
-        {/* 4. Active Roster Panel */}
+        {/* 4. Active Roster Panel - Desktop Sidebar OR Mobile Fullscreen Drawer */}
         {isParticipantsOpen && (
-          <div className="w-80 border-l border-slate-800 bg-slate-900 flex flex-col animate-in slide-in-from-right-4 duration-300">
-            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+          <div className={`${
+            isMobile 
+              ? 'fixed inset-0 z-50 bg-slate-900 flex flex-col animate-in slide-in-from-bottom duration-200' 
+              : 'w-80 border-l border-slate-800 bg-slate-900 flex flex-col animate-in slide-in-from-right-4 duration-300'
+          }`}>
+            <div className="p-3.5 sm:p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
               <h3 className="text-sm font-extrabold uppercase tracking-widest text-slate-200 flex items-center gap-1.5">
                 <Users className="w-4 h-4 text-indigo-400" /> Active Roster
               </h3>
+              {isMobile && (
+                <button
+                  onClick={() => setIsParticipantsOpen(false)}
+                  className="p-1.5 bg-slate-800 text-slate-400 hover:text-white rounded-lg cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
             </div>
             
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -1563,20 +2097,14 @@ export function LiveSessionPage() {
       </div>
 
       {/* 5. Bottom Control Toolbar */}
-      <div className="bg-slate-900 border-t border-slate-800 px-6 py-4 flex items-center justify-between flex-shrink-0">
-        
-        {/* Left segment */}
-        <div className="hidden sm:flex items-center gap-2 text-slate-400 text-xs font-medium">
-          <span className="font-bold text-white">Topic:</span> {meetingTopic}
-        </div>
-
-        {/* Center Segment: Core WebRTC Media Switches */}
-        <div className="flex items-center gap-3 mx-auto sm:mx-0">
-          
+      {isMobile ? (
+        <div className="bg-slate-950/95 border-t border-slate-850 px-3 py-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex items-center justify-around flex-shrink-0 z-30">
           {/* Microphone Switch */}
           <button 
             onClick={() => toggleTrack('audio')}
-            className={`p-3 rounded-xl border transition-all cursor-pointer ${isMicOn ? 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-white' : 'bg-rose-500/20 border-rose-500/30 text-rose-400 hover:bg-rose-500/30'}`}
+            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+              isMicOn ? 'bg-slate-800 border border-slate-700 text-white active:bg-slate-700' : 'bg-rose-500/20 border border-rose-500/40 text-rose-400'
+            }`}
             title={isMicOn ? 'Mute Microphone' : 'Unmute Microphone'}
           >
             {isMicOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
@@ -1585,53 +2113,207 @@ export function LiveSessionPage() {
           {/* Camera Switch */}
           <button 
             onClick={() => toggleTrack('video')}
-            className={`p-3 rounded-xl border transition-all cursor-pointer ${isCameraOn ? 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-white' : 'bg-rose-500/20 border-rose-500/30 text-rose-400 hover:bg-rose-500/30'}`}
+            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+              isCameraOn ? 'bg-slate-800 border border-slate-700 text-white active:bg-slate-700' : 'bg-rose-500/20 border border-rose-500/40 text-rose-400'
+            }`}
             title={isCameraOn ? 'Pause Camera' : 'Start Camera'}
           >
             {isCameraOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
           </button>
 
-          {/* Screen Share Switch */}
-          <button 
-            onClick={handleToggleScreenShare}
-            className={`p-3 rounded-xl border transition-all cursor-pointer ${isScreenSharing ? 'bg-amber-500/20 border-amber-500/30 text-amber-400 hover:bg-amber-500/30' : 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-300 hover:text-white'}`}
-            title={isScreenSharing ? 'Stop Screen Share' : 'Share Screen'}
+          {/* Mobile Flip Camera */}
+          <button
+            onClick={handleFlipCamera}
+            className="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-center active:bg-slate-700 transition-all cursor-pointer"
+            title="Flip Camera (Front/Rear)"
           >
-            <MonitorPlay className="w-5 h-5" />
+            <SwitchCamera className="w-5 h-5" />
           </button>
 
-          {/* Whiteboard Toggle */}
-          <button 
-            onClick={() => setIsWhiteboardOpen(prev => !prev)}
-            className={`p-3 rounded-xl border transition-all cursor-pointer ${isWhiteboardOpen ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-300 hover:text-white'}`}
-            title="Toggle Whiteboard Canvas"
+          {/* Chat with Unread Badge */}
+          <button
+            onClick={() => { setIsChatOpen(true); setIsParticipantsOpen(false); setUnreadChatCount(0); }}
+            className="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-center active:bg-slate-700 relative transition-all cursor-pointer"
+            title="Live Chat"
           >
-            <PenTool className="w-5 h-5" />
+            <MessageSquare className="w-5 h-5" />
+            {unreadChatCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-indigo-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-950 animate-pulse">
+                {unreadChatCount > 9 ? '9+' : unreadChatCount}
+              </span>
+            )}
           </button>
 
-          {/* Raise Hand Toggle */}
-          <button 
-            onClick={handleRaiseHand}
-            className={`p-3 rounded-xl border transition-all cursor-pointer ${hasHandRaised ? 'bg-indigo-600 border-indigo-500 text-white animate-bounce' : 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-300 hover:text-white'}`}
-            title="Raise Hand"
+          {/* More Options */}
+          <button
+            onClick={() => setIsMobileMoreOpen(true)}
+            className="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-center active:bg-slate-700 transition-all cursor-pointer"
+            title="More Session Controls"
           >
-            <Hand className="w-5 h-5" />
+            <MoreVertical className="w-5 h-5" />
           </button>
 
-        </div>
-
-        {/* Right Segment: End Session Action */}
-        <div>
+          {/* End Call */}
           <button 
             onClick={handleExitMeeting}
-            className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-xs flex items-center gap-2 shadow-lg shadow-red-600/20 hover:-translate-y-0.5 transition-all cursor-pointer"
+            className="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg shadow-red-600/30 active:bg-red-700 transition-all cursor-pointer"
+            title="End Session"
           >
-            <PhoneOff className="w-4 h-4 animate-pulse" />
-            End Session
+            <PhoneOff className="w-5 h-5" />
           </button>
         </div>
+      ) : (
+        <div className="bg-slate-900 border-t border-slate-800 px-6 py-4 flex items-center justify-between flex-shrink-0">
+          
+          {/* Left segment */}
+          <div className="hidden sm:flex items-center gap-2 text-slate-400 text-xs font-medium">
+            <span className="font-bold text-white">Topic:</span> {meetingTopic}
+          </div>
 
-      </div>
+          {/* Center Segment: Core WebRTC Media Switches */}
+          <div className="flex items-center gap-3 mx-auto sm:mx-0">
+            
+            {/* Microphone Switch */}
+            <button 
+              onClick={() => toggleTrack('audio')}
+              className={`p-3 rounded-xl border transition-all cursor-pointer ${isMicOn ? 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-white' : 'bg-rose-500/20 border-rose-500/30 text-rose-400 hover:bg-rose-500/30'}`}
+              title={isMicOn ? 'Mute Microphone' : 'Unmute Microphone'}
+            >
+              {isMicOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+            </button>
+
+            {/* Camera Switch */}
+            <button 
+              onClick={() => toggleTrack('video')}
+              className={`p-3 rounded-xl border transition-all cursor-pointer ${isCameraOn ? 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-white' : 'bg-rose-500/20 border-rose-500/30 text-rose-400 hover:bg-rose-500/30'}`}
+              title={isCameraOn ? 'Pause Camera' : 'Start Camera'}
+            >
+              {isCameraOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+            </button>
+
+            {/* Screen Share Switch */}
+            <button 
+              onClick={handleToggleScreenShare}
+              className={`p-3 rounded-xl border transition-all cursor-pointer ${isScreenSharing ? 'bg-amber-500/20 border-amber-500/30 text-amber-400 hover:bg-amber-500/30' : 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-300 hover:text-white'}`}
+              title={isScreenSharing ? 'Stop Screen Share' : 'Share Screen'}
+            >
+              <MonitorPlay className="w-5 h-5" />
+            </button>
+
+            {/* Whiteboard Toggle */}
+            <button 
+              onClick={() => setIsWhiteboardOpen(prev => !prev)}
+              className={`p-3 rounded-xl border transition-all cursor-pointer ${isWhiteboardOpen ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-300 hover:text-white'}`}
+              title="Toggle Whiteboard Canvas"
+            >
+              <PenTool className="w-5 h-5" />
+            </button>
+
+            {/* Raise Hand Toggle */}
+            <button 
+              onClick={handleRaiseHand}
+              className={`p-3 rounded-xl border transition-all cursor-pointer ${hasHandRaised ? 'bg-indigo-600 border-indigo-500 text-white animate-bounce' : 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-300 hover:text-white'}`}
+              title="Raise Hand"
+            >
+              <Hand className="w-5 h-5" />
+            </button>
+
+          </div>
+
+          {/* Right Segment: End Session Action */}
+          <div>
+            <button 
+              onClick={handleExitMeeting}
+              className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-xs flex items-center gap-2 shadow-lg shadow-red-600/20 hover:-translate-y-0.5 transition-all cursor-pointer"
+            >
+              <PhoneOff className="w-4 h-4 animate-pulse" />
+              End Session
+            </button>
+          </div>
+
+        </div>
+      )}
+
+      {/* Mobile "More" Bottom Sheet Modal */}
+      {isMobile && isMobileMoreOpen && (
+        <div 
+          className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex flex-col justify-end animate-in fade-in duration-200"
+          onClick={() => setIsMobileMoreOpen(false)}
+        >
+          <div 
+            className="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 space-y-4 max-w-lg mx-auto w-full pb-[max(1.5rem,env(safe-area-inset-bottom))] animate-in slide-in-from-bottom duration-300"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-2" />
+            
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-200">
+                Session Controls
+              </h3>
+              <button
+                onClick={() => setIsMobileMoreOpen(false)}
+                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-xs font-bold">
+              {/* Whiteboard */}
+              <button
+                onClick={() => { setIsWhiteboardOpen(prev => !prev); setIsMobileMoreOpen(false); }}
+                className={`p-3.5 rounded-2xl border flex items-center gap-3 transition-all cursor-pointer ${
+                  isWhiteboardOpen ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-200 active:bg-slate-750'
+                }`}
+              >
+                <PenTool className="w-5 h-5 text-indigo-400" />
+                <span>{isWhiteboardOpen ? 'Close Canvas' : 'Whiteboard'}</span>
+              </button>
+
+              {/* Hand Raise */}
+              <button
+                onClick={() => { handleRaiseHand(); setIsMobileMoreOpen(false); }}
+                className={`p-3.5 rounded-2xl border flex items-center gap-3 transition-all cursor-pointer ${
+                  hasHandRaised ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-200 active:bg-slate-750'
+                }`}
+              >
+                <Hand className="w-5 h-5 text-amber-400" />
+                <span>{hasHandRaised ? 'Lower Hand' : 'Raise Hand'}</span>
+              </button>
+
+              {/* Layout Mode Toggle */}
+              <button
+                onClick={() => {
+                  setMobileLayoutMode(prev => prev === 'stacked' ? 'pip' : 'stacked');
+                  setIsMobileMoreOpen(false);
+                }}
+                className="p-3.5 rounded-2xl border bg-slate-800 border-slate-700 text-slate-200 flex items-center gap-3 active:bg-slate-750 cursor-pointer"
+              >
+                {mobileLayoutMode === 'stacked' ? <Layers className="w-5 h-5 text-emerald-400" /> : <Layout className="w-5 h-5 text-indigo-400" />}
+                <span>{mobileLayoutMode === 'stacked' ? 'Mode: Split' : 'Mode: PIP'}</span>
+              </button>
+
+              {/* Media Settings */}
+              <button
+                onClick={() => { setIsDeviceSettingsOpen(true); setIsMobileMoreOpen(false); }}
+                className="p-3.5 rounded-2xl border bg-slate-800 border-slate-700 text-slate-200 flex items-center gap-3 active:bg-slate-750 cursor-pointer"
+              >
+                <Settings className="w-5 h-5 text-sky-400" />
+                <span>Device Settings</span>
+              </button>
+
+              {/* Reconnect */}
+              <button
+                onClick={() => { handleManualReconnect(); setIsMobileMoreOpen(false); }}
+                className="p-3.5 rounded-2xl border bg-slate-800 border-slate-700 text-slate-200 flex items-center gap-3 active:bg-slate-750 col-span-2 cursor-pointer"
+              >
+                <RefreshCw className="w-5 h-5 text-amber-400" />
+                <span>Reconnect Signal</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 6. Device Settings Modal Dialog */}
       {isDeviceSettingsOpen && (

@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useOrganizationMode } from '../../../context/OrganizationModeContext';
-import { getUserProfile } from '../../../lib/api';
+import { getUserProfile, getUnreadMessageCount } from '../../../lib/api';
 import { getSupabase } from '../../../lib/supabase';
 import { toast } from 'sonner';
 
@@ -30,6 +30,9 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
     const [orgTaskCount, setOrgTaskCount] = useState(0);
     const [orgProgress, setOrgProgress] = useState(0);
 
+    // Dynamic authenticated student unread message count
+    const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
+
     useEffect(() => {
         if (user?.id) {
             getUserProfile(user.id).then(profile => {
@@ -40,24 +43,92 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
         }
     }, [user]);
 
-    // Query active organization task stats to populate the sidebar progress bar in real-time
+    // Fetch and subscribe to authenticated user's unread messages in real-time
+    useEffect(() => {
+        if (!user?.id) {
+            setUnreadMessagesCount(0);
+            return;
+        }
+
+        let isMounted = true;
+        const fetchUnread = async () => {
+            const count = await getUnreadMessageCount(user.id);
+            if (isMounted) {
+                setUnreadMessagesCount(count);
+            }
+        };
+
+        fetchUnread();
+
+        const supabase = getSupabase();
+        if (supabase) {
+            const channel = supabase
+                .channel(`sidebar_unread_messages_${user.id}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'messages',
+                        filter: `receiver_id=eq.${user.id}`
+                    },
+                    () => {
+                        fetchUnread();
+                    }
+                )
+                .subscribe();
+
+            const handleFocus = () => fetchUnread();
+            window.addEventListener('focus', handleFocus);
+
+            return () => {
+                isMounted = false;
+                supabase.removeChannel(channel);
+                window.removeEventListener('focus', handleFocus);
+            };
+        }
+    }, [user?.id, location.pathname]);
+
+    const [pendingSubmissionsCount, setPendingSubmissionsCount] = useState<number>(0);
+
+    // Query active organization task & submission stats to populate the sidebar in real-time
     useEffect(() => {
         if (mode === 'organization' && activeOrganization && user?.id) {
             const supabase = getSupabase();
             if (supabase) {
-                Promise.all([
-                    supabase.from('org_tasks').select('id').eq('org_id', activeOrganization.id),
-                    supabase.from('org_task_submissions').select('task_id, status').eq('student_id', user.id)
-                ]).then(([tasksRes, subsRes]) => {
+                const targetOrgId = activeOrganization.id;
+                supabase.from('org_tasks').select('id').eq('org_id', targetOrgId).then(async (tasksRes) => {
                     const tasks = tasksRes.data || [];
-                    const subs = subsRes.data || [];
                     setOrgTaskCount(tasks.length);
-                    const completed = subs.filter(s => s.status === 'passed').length;
-                    setOrgProgress(tasks.length > 0 ? Math.round((completed / tasks.length) * 100) : 0);
+
+                    if (activeOrganization.role === 'student') {
+                        const { data: subs } = await supabase
+                            .from('org_task_submissions')
+                            .select('task_id, status')
+                            .eq('student_id', user.id);
+                        const userSubs = subs || [];
+                        const completed = userSubs.filter(s => s.status === 'passed').length;
+                        setOrgProgress(tasks.length > 0 ? Math.round((completed / tasks.length) * 100) : 0);
+                        const needsRedo = userSubs.filter(s => s.status === 'redo').length;
+                        setPendingSubmissionsCount(needsRedo);
+                    } else {
+                        // Org Admin or Teacher: count pending submissions waiting for review
+                        if (tasks.length > 0) {
+                            const taskIds = tasks.map(t => t.id);
+                            const { count } = await supabase
+                                .from('org_task_submissions')
+                                .select('id', { count: 'exact', head: true })
+                                .in('task_id', taskIds)
+                                .eq('status', 'pending');
+                            setPendingSubmissionsCount(count || 0);
+                        } else {
+                            setPendingSubmissionsCount(0);
+                        }
+                    }
                 }).catch(err => console.warn('Could not query stats for sidebar', err));
             }
         }
-    }, [mode, activeOrganization?.id, user?.id, location.pathname]);
+    }, [mode, activeOrganization?.id, activeOrganization?.role, user?.id, location.pathname]);
 
     const isActive = (path: string) => location.pathname === path;
     const role = profileRole || user?.user_metadata?.role || 'student';
@@ -111,6 +182,7 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
         { icon: LayoutDashboard, label: 'Dashboard', path: '/student-dashboard' },
         { icon: BookOpen, label: 'My Courses', path: '/courses' },
         { icon: Calendar, label: 'Sessions', path: '/calendar' },
+        { icon: CheckCircle2, label: 'Submissions', path: '/org-submissions' },
         { icon: BookMarked, label: 'Study Materials', path: '/org-materials' },
         { icon: Terminal, label: 'IDE Sandbox', path: '/org-ide' },
         { icon: Bell, label: 'Announcements', path: '/org-announcements' },
@@ -123,18 +195,17 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
 
     // Organization mode navigation for teachers (viewing as org teacher)
     const orgTeacherItems = [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/mentor-dashboard' },
-        { icon: GraduationCap, label: 'My Students', path: '/org-students' },
-        { icon: BookOpen, label: 'My Courses', path: '/mentor-courses' },
+        { icon: LayoutDashboard, label: 'Dashboard', path: '/org-dashboard' },
+        { icon: GraduationCap, label: 'Students', path: '/org-students' },
+        { icon: BookOpen, label: 'Courses', path: '/org-courses' },
+        { icon: Calendar, label: 'Calendar', path: '/org-calendar' },
+        { icon: Users, label: 'Teachers', path: '/org-teachers' },
+        { icon: CalendarDays, label: 'Events', path: '/org-events' },
+        { icon: Bell, label: 'Announcements', path: '/org-announcements' },
+        { icon: CheckCircle2, label: 'Submissions', path: '/org-submissions' },
         { icon: BookMarked, label: 'Study Materials', path: '/org-materials' },
         { icon: Terminal, label: 'IDE Sandbox', path: '/org-ide' },
-        { icon: Calendar, label: 'Sessions', path: '/mentor-calendar' },
-        { icon: Bell, label: 'Announcements', path: '/org-announcements' },
-        { icon: MessageSquare, label: 'Messages', path: '/mentor-messages' },
-        { icon: Users, label: 'Community', path: '/mentor-community' },
-        { icon: User, label: 'Profile', path: '/mentor-profile' },
-        { icon: StickyNote, label: 'Notes', path: '/mentor-notes' },
-        { icon: Settings, label: 'Settings', path: '/mentor-settings' },
+        { icon: MessageSquare, label: 'Messages', path: '/messages' },
     ];
 
     const isMentorPath = location.pathname.startsWith('/mentor-');
@@ -157,7 +228,11 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
     };
 
     const getSubtitle = () => {
-        if (mode === 'organization') return 'WORKSPACE MODE';
+        if (mode === 'organization') {
+            if (activeOrganization?.role === 'teacher') return 'TEACHER WORKSPACE';
+            if (activeOrganization?.role === 'student') return 'STUDENT WORKSPACE';
+            return 'WORKSPACE MODE';
+        }
         if (isOrg) return 'ADMIN MODE';
         if (isMentor) return 'MENTOR MODE';
         return 'PERSONAL MODE';
@@ -166,9 +241,9 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
     const getQuickActions = () => {
         if (isOrg || activeOrganization?.role === 'teacher') {
             return [
-                { label: 'Create Course', icon: Plus, path: isOrg ? '/org-create-course' : '/mentor-create-course' },
-                { label: 'Schedule Session', icon: CalendarRange, path: isOrg ? '/org-calendar' : '/mentor-calendar' },
-                { label: 'Open Messages', icon: Users, path: isOrg ? '/messages' : '/mentor-messages' },
+                { label: 'Create Course', icon: Plus, path: '/org-create-course' },
+                { label: 'Schedule Session', icon: CalendarRange, path: '/org-calendar' },
+                { label: 'Open Messages', icon: Users, path: '/messages' },
             ];
         }
         if (isMentor) {
@@ -188,8 +263,16 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
     const getBadge = (label: string) => {
         if (label === 'Tasks' && orgTaskCount > 0) return orgTaskCount;
         if (label === 'Tasks') return null;
-        if (label === 'Submissions') return 3;
-        if (label === 'Messages') return 2;
+        if (label === 'Submissions') {
+            if (pendingSubmissionsCount > 99) return '99+';
+            if (pendingSubmissionsCount > 0) return pendingSubmissionsCount;
+            return null;
+        }
+        if (label === 'Messages') {
+            if (unreadMessagesCount > 99) return '99+';
+            if (unreadMessagesCount > 0) return unreadMessagesCount;
+            return null;
+        }
         return null;
     };
 
