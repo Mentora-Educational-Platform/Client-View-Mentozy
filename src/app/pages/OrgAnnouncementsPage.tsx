@@ -5,6 +5,9 @@ import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { useAuth } from '../../context/AuthContext';
 import { useOrganizationMode } from '../../context/OrganizationModeContext';
 import { getSupabase } from '../../lib/supabase';
+import { getOrgStudents, getOrgTeachers } from '../../lib/api';
+import { LinkifiedText } from '../components/common/LinkifiedText';
+import { notifyNewAnnouncement } from '../../lib/emailNotifications';
 
 interface Announcement {
     id: string;
@@ -121,9 +124,38 @@ export function OrgAnnouncementsPage() {
             if (error) throw error;
 
             toast.success('Announcement published successfully.');
+            const savedTitle = title.trim();
+            const savedContent = content.trim();
             setTitle('');
             setContent('');
             await loadAnnouncements();
+
+            // Background broadcast email to organization members
+            (async () => {
+                try {
+                    const [students, teachers] = await Promise.all([
+                        getOrgStudents(targetOrgId),
+                        getOrgTeachers(targetOrgId)
+                    ]);
+                    const memberEmails = Array.from(new Set([
+                        ...(students || []).map((s: any) => s.email),
+                        ...(teachers || []).map((t: any) => t.email)
+                    ])).filter(Boolean) as string[];
+
+                    if (memberEmails.length > 0) {
+                        await notifyNewAnnouncement({
+                            toEmails: memberEmails,
+                            orgName: activeOrganization?.name || 'Your Organization',
+                            title: savedTitle,
+                            content: savedContent,
+                            authorName: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Organization Admin',
+                            announcementUrl: window.location.href,
+                        });
+                    }
+                } catch (notifErr) {
+                    console.warn('[OrgAnnouncements] Broadcast email skipped:', notifErr);
+                }
+            })();
         } catch (error: any) {
             console.error('Error sharing announcement:', error);
             toast.error(error.message || 'Failed to share announcement. Please try again.');
@@ -277,7 +309,9 @@ export function OrgAnnouncementsPage() {
                                             )}
                                         </div>
                                     </div>
-                                    <p className="text-sm font-bold text-gray-800 whitespace-pre-wrap leading-relaxed">{announcement.content}</p>
+                                    <p className="text-sm font-bold text-gray-800 whitespace-pre-wrap leading-relaxed">
+                                        <LinkifiedText text={announcement.content} showIcon />
+                                    </p>
                                 </article>
                             ))}
                         </div>

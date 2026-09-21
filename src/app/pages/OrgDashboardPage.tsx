@@ -31,6 +31,7 @@ import { supabase } from '../../lib/supabase';
 import { getUserProfile, getOrgTeachers, getOrgStudents, searchStudentsForOrg, Profile } from '../../lib/api';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
+import { LinkifiedText } from '../components/common/LinkifiedText';
 
 export function OrgDashboardPage() {
     const { user } = useAuth();
@@ -614,7 +615,7 @@ export function OrgDashboardPage() {
                                                     {ann.title}
                                                 </h4>
                                                 <p className="text-xs text-gray-700 font-bold line-clamp-2 leading-relaxed">
-                                                    {ann.content}
+                                                    <LinkifiedText text={ann.content} />
                                                 </p>
                                             </div>
                                             <Link

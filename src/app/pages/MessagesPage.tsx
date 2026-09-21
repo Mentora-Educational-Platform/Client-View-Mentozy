@@ -18,6 +18,8 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useOrganizationMode } from '../../context/OrganizationModeContext';
 import { getSupabase } from '../../lib/supabase';
+import { LinkifiedText } from '../components/common/LinkifiedText';
+import { notifyNewDirectMessage } from '../../lib/emailNotifications';
 
 export function MessagesPage() {
     const { user } = useAuth();
@@ -224,6 +226,18 @@ export function MessagesPage() {
 
         if (sentMessage) {
             setChatMessages(prev => [...prev, sentMessage]);
+
+            // Dispatch background email notification to recipient
+            if (activeContact?.email) {
+                notifyNewDirectMessage({
+                    toEmail: activeContact.email,
+                    recipientName: activeContact.name,
+                    senderName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'A Mentozy Member',
+                    senderRole: isOrgMode ? 'Organization Member' : (isMentorView ? 'Mentor' : 'Student'),
+                    messageSnippet: textToSend || (uploadedAttachment ? `Sent an attachment: ${uploadedAttachment.name}` : 'Sent a message'),
+                    conversationUrl: window.location.href,
+                }).catch(err => console.warn('[MessagesPage] Email dispatch error:', err));
+            }
         } else {
             toast.error("Failed to send message. Recipient must belong to this organisation.");
             setMessageInput(textToSend); // Restore input on failure
@@ -488,7 +502,18 @@ export function MessagesPage() {
                                                     }`}>
                                                         
                                                         {/* Text Content */}
-                                                        {text && <p className="whitespace-pre-wrap font-bold leading-relaxed">{text}</p>}
+                                                        {text && (
+                                                            <p className="whitespace-pre-wrap font-bold leading-relaxed">
+                                                                <LinkifiedText
+                                                                    text={text}
+                                                                    linkClassName={
+                                                                        isMine
+                                                                            ? "text-sky-300 hover:text-sky-100 underline font-black break-words cursor-pointer"
+                                                                            : "text-indigo-600 hover:text-indigo-800 underline font-black break-words cursor-pointer"
+                                                                    }
+                                                                />
+                                                            </p>
+                                                        )}
 
                                                         {/* Attachment Content */}
                                                         {attachment && (

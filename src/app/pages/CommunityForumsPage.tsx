@@ -17,6 +17,9 @@ import {
     MessageCircle, ArrowLeft, Loader2, ShieldCheck, UserCheck, HelpCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { getSupabase } from '../../lib/supabase';
+import { LinkifiedText } from '../components/common/LinkifiedText';
+import { notifyNewForumReply } from '../../lib/emailNotifications';
 
 export function CommunityForumsPage() {
     const { user } = useAuth();
@@ -195,6 +198,7 @@ export function CommunityForumsPage() {
 
         if (newReply) {
             toast.success("Reply posted!");
+            const replyText = replyContent;
             setReplies(prev => [...prev, newReply]);
             setReplyContent('');
             setReplyFile(null);
@@ -203,6 +207,35 @@ export function CommunityForumsPage() {
             setPosts(prev => prev.map(p => p.id === selectedPostId ? { ...p, reply_count: p.reply_count + 1 } : p));
             if (activePost) {
                 setActivePost({ ...activePost, reply_count: activePost.reply_count + 1 });
+
+                // Dispatch background notification to post author if replier is someone else
+                if (activePost.author_id && activePost.author_id !== user.id) {
+                    (async () => {
+                        try {
+                            const supabase = getSupabase();
+                            if (supabase) {
+                                const { data: authorProfile } = await supabase
+                                    .from('profiles')
+                                    .select('email, full_name')
+                                    .eq('id', activePost.author_id)
+                                    .single();
+
+                                if (authorProfile?.email) {
+                                    await notifyNewForumReply({
+                                        toEmail: authorProfile.email,
+                                        recipientName: authorProfile.full_name || activePost.author_name,
+                                        authorName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'A community member',
+                                        postTitle: activePost.title,
+                                        replySnippet: replyText,
+                                        threadUrl: window.location.href,
+                                    });
+                                }
+                            }
+                        } catch (emailErr) {
+                            console.warn('[CommunityForums] Forum reply email notification skipped:', emailErr);
+                        }
+                    })();
+                }
             }
         } else {
             toast.error("Failed to post reply.");
@@ -443,7 +476,7 @@ export function CommunityForumsPage() {
                                     </h2>
 
                                     <p className="text-xs sm:text-sm font-semibold text-gray-700 line-clamp-3 leading-relaxed whitespace-pre-wrap">
-                                        {post.content}
+                                        <LinkifiedText text={post.content} />
                                     </p>
 
                                     {/* Attachment Preview Badge */}
@@ -737,7 +770,9 @@ export function CommunityForumsPage() {
                                         </div>
 
                                         <h1 className="text-2xl font-black text-gray-900 leading-snug">{activePost.title}</h1>
-                                        <p className="text-xs sm:text-sm font-semibold text-gray-800 leading-relaxed whitespace-pre-wrap">{activePost.content}</p>
+                                        <p className="text-xs sm:text-sm font-semibold text-gray-800 leading-relaxed whitespace-pre-wrap">
+                                            <LinkifiedText text={activePost.content} showIcon />
+                                        </p>
 
                                         {/* Post Attachment */}
                                         {activePost.attachment_url && (
@@ -809,7 +844,9 @@ export function CommunityForumsPage() {
                                                             </div>
                                                         </div>
 
-                                                        <p className="text-xs font-semibold text-gray-800 leading-relaxed whitespace-pre-wrap">{reply.content}</p>
+                                                        <p className="text-xs font-semibold text-gray-800 leading-relaxed whitespace-pre-wrap">
+                                                            <LinkifiedText text={reply.content} showIcon />
+                                                        </p>
 
                                                         {reply.attachment_url && (
                                                             <a

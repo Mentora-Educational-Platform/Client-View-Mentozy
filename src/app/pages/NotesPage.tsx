@@ -7,8 +7,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
-import { useOrganizationMode } from '../../context/OrganizationModeContext';
 import { useAuth } from '../../context/AuthContext';
+import { LinkifiedText } from '../components/common/LinkifiedText';
 
 interface Note {
     id: string;
@@ -500,7 +500,9 @@ export function NotesPage() {
                                                 </div>
                                             </div>
                                             <h3 className="text-base font-black text-gray-950 mb-2 leading-snug">{note.title}</h3>
-                                            <p className="text-xs text-gray-700 font-medium whitespace-pre-wrap mb-4">{note.content}</p>
+                                            <p className="text-xs text-gray-700 font-medium whitespace-pre-wrap mb-4">
+                                                <LinkifiedText text={note.content} showIcon />
+                                            </p>
                                         </div>
                                         <div className="text-[9px] text-gray-400 font-bold border-t pt-2 border-gray-900/10 flex items-center justify-between">
                                             <span>Updated: {new Date(note.updatedAt).toLocaleDateString()}</span>
@@ -554,7 +556,9 @@ export function NotesPage() {
                                                 </div>
                                             </div>
                                             <h3 className="text-base font-black text-gray-950 mb-2 leading-snug">{note.title}</h3>
-                                            <p className="text-xs text-gray-700 font-medium whitespace-pre-wrap mb-4">{note.content}</p>
+                                            <p className="text-xs text-gray-700 font-medium whitespace-pre-wrap mb-4">
+                                                <LinkifiedText text={note.content} showIcon />
+                                            </p>
                                         </div>
                                         <div className="text-[9px] text-gray-400 font-bold border-t pt-2 border-gray-900/10 flex items-center justify-between">
                                             <span>Updated: {new Date(note.updatedAt).toLocaleDateString()}</span>

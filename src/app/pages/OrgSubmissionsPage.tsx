@@ -9,6 +9,8 @@ import {
     ArrowUpRight, MessageSquare, Award, ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { LinkifiedText } from '../components/common/LinkifiedText';
+import { notifyTaskGraded } from '../../lib/emailNotifications';
 
 interface Submission {
     id: string;
@@ -240,13 +242,18 @@ export function OrgSubmissionsPage() {
 
             if (dbError) throw dbError;
 
+            const studentEmail = selectedSubmission.studentEmail;
+            const studentName = selectedSubmission.studentName;
+            const taskTitle = selectedSubmission.taskTitle;
+            const trimmedFeedback = feedbackText.trim();
+
             setSubmissions(prev => prev.map(s => {
                 if (s.id === selectedSubmission.id) {
                     return {
                         ...s,
                         status: nextStatus,
                         grade: gradeValue,
-                        feedback: feedbackText.trim(),
+                        feedback: trimmedFeedback,
                         gradedAt: new Date(gradedAtTime).toLocaleString()
                     };
                 }
@@ -256,6 +263,18 @@ export function OrgSubmissionsPage() {
             setReviewModalOpen(false);
             setSelectedSubmission(null);
             toast.success(`Submission evaluated successfully as "${gradeValue}"!`);
+
+            // Background email notification to student
+            if (studentEmail && studentEmail !== 'student@org.dev') {
+                notifyTaskGraded({
+                    toEmail: studentEmail,
+                    studentName: studentName,
+                    taskTitle: taskTitle,
+                    status: nextStatus as 'passed' | 'redo',
+                    feedbackNote: trimmedFeedback || undefined,
+                    taskUrl: window.location.origin + '/student-dashboard',
+                }).catch(err => console.warn('[OrgSubmissions] Grade notification email skipped:', err));
+            }
         } catch (err: any) {
             console.error('Failed to submit evaluation to database:', err);
             toast.error(err.message || 'Failed to submit evaluation. Check permissions.');
@@ -496,9 +515,9 @@ export function OrgSubmissionsPage() {
                                             {isStudent && (
                                                 <td className="p-4 border-r-2 border-gray-900">
                                                     {sub.feedback ? (
-                                                        <p className="text-xs text-gray-800 font-bold max-w-[200px] truncate" title={sub.feedback}>
-                                                            "{sub.feedback}"
-                                                        </p>
+                                                        <div className="text-xs text-gray-800 font-bold max-w-[200px] truncate" title={sub.feedback}>
+                                                            "<LinkifiedText text={sub.feedback} />"
+                                                        </div>
                                                     ) : (
                                                         <span className="text-[11px] text-gray-400 font-bold italic">
                                                             {sub.status === 'pending' ? 'Pending evaluation...' : 'No comments'}
@@ -583,7 +602,7 @@ export function OrgSubmissionsPage() {
                                         {isStudent ? 'Your Submission Notes' : 'Student Text Submission'}
                                     </span>
                                     <p className="text-sm font-bold text-gray-900 whitespace-pre-wrap leading-relaxed">
-                                        {selectedSubmission.submissionText}
+                                        <LinkifiedText text={selectedSubmission.submissionText} showIcon />
                                     </p>
                                 </div>
                             )}
@@ -695,9 +714,9 @@ export function OrgSubmissionsPage() {
                                         <div className="space-y-1.5 pt-1">
                                             <span className="text-xs font-black text-gray-500 uppercase block">Mentor Comments:</span>
                                             {selectedSubmission.feedback ? (
-                                                <p className="text-sm font-bold text-gray-900 bg-[#FAF9F6] border border-gray-900 p-3 leading-relaxed">
-                                                    "{selectedSubmission.feedback}"
-                                                </p>
+                                                <div className="text-sm font-bold text-gray-900 bg-[#FAF9F6] border border-gray-900 p-3 leading-relaxed">
+                                                    "<LinkifiedText text={selectedSubmission.feedback} showIcon />"
+                                                </div>
                                             ) : (
                                                 <p className="text-xs font-bold text-gray-400 italic">
                                                     {selectedSubmission.status === 'pending'

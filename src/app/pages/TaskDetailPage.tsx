@@ -6,6 +6,7 @@ import {
     Upload, X, FileText, Image, Loader2, CheckCircle2, AlertCircle, Award, ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { LinkifiedText } from '../components/common/LinkifiedText';
 
 export function TaskDetailPage() {
     const { taskId } = useParams<{ taskId: string }>();
@@ -389,7 +390,7 @@ export function TaskDetailPage() {
                                         {feedback && (
                                             <div className="text-xs text-emerald-900 bg-white/60 p-3 rounded-xl border border-emerald-100 whitespace-pre-wrap leading-relaxed font-medium">
                                                 <span className="font-bold text-emerald-950 block mb-0.5">Teacher Feedback:</span>
-                                                {feedback}
+                                                <LinkifiedText text={feedback} showIcon />
                                             </div>
                                         )}
                                     </div>
@@ -407,7 +408,7 @@ export function TaskDetailPage() {
                                         {feedback && (
                                             <div className="text-xs text-rose-900 bg-white/60 p-3 rounded-xl border border-rose-100 whitespace-pre-wrap leading-relaxed font-medium">
                                                 <span className="font-bold text-rose-950 block mb-0.5">Revision Notes:</span>
-                                                {feedback}
+                                                <LinkifiedText text={feedback} showIcon />
                                             </div>
                                         )}
                                     </div>

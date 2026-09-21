@@ -927,6 +927,7 @@ export const getMentorAvailability = async (mentorId: number, date: Date): Promi
 export interface Contact {
     id: string;
     name: string;
+    email?: string;
     role: string; // 'student' | 'mentor'
     avatar?: string;
     lastMessage?: string;
@@ -1372,7 +1373,7 @@ export const getContacts = async (userId: string, role: string): Promise<Contact
         // 1. Get Peer Contacts (Same Role)
         const { data: peers, error: peerError } = await supabase
             .from('profiles')
-            .select('id, full_name, avatar_url, role')
+            .select('id, full_name, avatar_url, role, email')
             .eq('role', role)
             .neq('id', userId);
 
@@ -1387,6 +1388,7 @@ export const getContacts = async (userId: string, role: string): Promise<Contact
         const peerContacts: Contact[] = (peers || []).map((p: any) => ({
             id: p.id,
             name: p.full_name || 'User',
+            email: p.email,
             role: p.role,
             avatar: p.avatar_url,
             status: 'offline', // Default, real-time presence would go here
@@ -1445,7 +1447,7 @@ export const getOrgContacts = async (orgId: string, currentUserId: string): Prom
         // 4. Fetch profiles for authorised member IDs only
         const { data: profiles, error: profileErr } = await supabase
             .from('profiles')
-            .select('id, full_name, avatar_url, role')
+            .select('id, full_name, avatar_url, role, email')
             .in('id', allMemberIds);
 
         if (profileErr || !profiles) {
@@ -1461,6 +1463,7 @@ export const getOrgContacts = async (orgId: string, currentUserId: string): Prom
             return {
                 id: p.id,
                 name: p.full_name || 'Member',
+                email: p.email,
                 role: memberRole,
                 avatar: p.avatar_url,
                 status: 'online',

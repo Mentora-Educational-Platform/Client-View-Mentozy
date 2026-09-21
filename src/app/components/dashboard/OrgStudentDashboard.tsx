@@ -16,6 +16,7 @@ import {
 } from '../../../lib/api';
 import { getSupabase } from '../../../lib/supabase';
 import { toast } from 'sonner';
+import { LinkifiedText } from '../common/LinkifiedText';
 
 interface Submission {
     task_id: string;
@@ -579,7 +580,7 @@ export function OrgStudentDashboard() {
                                                     </span>
                                                 </div>
                                                 <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
-                                                    {ann.content}
+                                                    <LinkifiedText text={ann.content} />
                                                 </p>
                                             </div>
                                         ))
