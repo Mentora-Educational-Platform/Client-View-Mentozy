@@ -25,8 +25,7 @@ serve(async (req: Request) => {
 
     // 1. Try Resend API
     if (resendApiKey) {
-      // First try with official domain
-      let sender = 'Mentozy Admissions <onboarding@resend.dev>';
+      const sender = 'Mentozy <no-reply@mentozy.app>';
       
       const resendResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',

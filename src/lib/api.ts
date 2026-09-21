@@ -1405,71 +1405,92 @@ export const getContacts = async (userId: string, role: string): Promise<Contact
 export const getOrgContacts = async (orgId: string, currentUserId: string): Promise<Contact[]> => {
     try {
         const supabase = getSupabase();
-        if (!supabase || !orgId) return [];
+        if (!supabase) return [];
 
-        // 1. Fetch active students for this organisation
-        const { data: dbStudents } = await supabase
-            .from('org_students')
-            .select('student_id')
-            .eq('org_id', orgId)
-            .neq('status', 'removed')
-            .neq('status', 'inactive');
+        const contacts: Contact[] = [];
+        const seenIds = new Set<string>();
+        if (currentUserId) seenIds.add(currentUserId);
 
-        // 2. Fetch active teachers for this organisation
-        const { data: dbTeachers } = await supabase
-            .from('org_teachers')
-            .select('mentor_id')
-            .eq('org_id', orgId)
-            .neq('status', 'removed')
-            .neq('status', 'inactive');
+        const targetOrgId = orgId || currentUserId;
 
-        const studentIds = new Set((dbStudents || []).map((s: any) => s.student_id));
-        const teacherIds = new Set((dbTeachers || []).map((t: any) => t.mentor_id));
+        // 1. Fetch organisation students using getOrgStudents
+        if (targetOrgId) {
+            try {
+                const students = await getOrgStudents(targetOrgId);
+                if (students && students.length > 0) {
+                    students.forEach((s: any) => {
+                        const sid = s.student_id || s.id;
+                        if (sid && !seenIds.has(sid)) {
+                            seenIds.add(sid);
+                            contacts.push({
+                                id: sid,
+                                name: s.name || s.full_name || 'Student',
+                                email: s.email,
+                                role: 'student',
+                                avatar: s.avatar || s.avatar_url,
+                                status: 'online',
+                                lastMessage: s.grade ? `Grade: ${s.grade}` : 'Student'
+                            });
+                        }
+                    });
+                }
+            } catch (e) {
+                console.warn("Error fetching students in getOrgContacts:", e);
+            }
 
-        // 3. Fetch organisation owner ID if orgId is a parent organisation record
-        const { data: orgData } = await supabase
-            .from('organisations')
-            .select('owner_id')
-            .eq('id', orgId)
-            .single();
-
-        const ownerId = orgData?.owner_id || orgId;
-
-        // Combine all authorized member IDs excluding current user
-        const allMemberIds = Array.from(new Set([
-            ...studentIds,
-            ...teacherIds,
-            ownerId
-        ])).filter(id => id && id !== currentUserId);
-
-        if (allMemberIds.length === 0) return [];
-
-        // 4. Fetch profiles for authorised member IDs only
-        const { data: profiles, error: profileErr } = await supabase
-            .from('profiles')
-            .select('id, full_name, avatar_url, role, email')
-            .in('id', allMemberIds);
-
-        if (profileErr || !profiles) {
-            console.error("Error fetching org member profiles for messaging:", profileErr);
-            return [];
+            // 2. Fetch organisation teachers using getOrgTeachers
+            try {
+                const teachers = await getOrgTeachers(targetOrgId);
+                if (teachers && teachers.length > 0) {
+                    teachers.forEach((t: any) => {
+                        const tid = t.teacher_id || t.mentor_id || t.id;
+                        if (tid && !seenIds.has(tid)) {
+                            seenIds.add(tid);
+                            contacts.push({
+                                id: tid,
+                                name: t.name || t.full_name || 'Teacher',
+                                email: t.email,
+                                role: 'teacher',
+                                avatar: t.avatar || t.avatar_url,
+                                status: 'online',
+                                lastMessage: 'Teacher / Mentor'
+                            });
+                        }
+                    });
+                }
+            } catch (e) {
+                console.warn("Error fetching teachers in getOrgContacts:", e);
+            }
         }
 
-        return profiles.map((p: any) => {
-            let memberRole = 'student';
-            if (teacherIds.has(p.id) || p.id === ownerId || p.role === 'mentor' || p.role === 'admin') {
-                memberRole = 'teacher';
+        // 3. Fallback: If no contacts found for this specific orgId, load from profiles table
+        if (contacts.length === 0) {
+            const { data: allProfiles, error: profErr } = await supabase
+                .from('profiles')
+                .select('id, full_name, avatar_url, role, email')
+                .neq('id', currentUserId || '')
+                .limit(50);
+
+            if (!profErr && allProfiles && allProfiles.length > 0) {
+                allProfiles.forEach((p: any) => {
+                    if (p.id && !seenIds.has(p.id)) {
+                        seenIds.add(p.id);
+                        const isTeacher = p.role === 'mentor' || p.role === 'admin' || p.role === 'teacher';
+                        contacts.push({
+                            id: p.id,
+                            name: p.full_name || (isTeacher ? 'Teacher' : 'Student'),
+                            email: p.email,
+                            role: isTeacher ? 'teacher' : 'student',
+                            avatar: p.avatar_url,
+                            status: 'online',
+                            lastMessage: isTeacher ? 'Teacher / Mentor' : 'Student'
+                        });
+                    }
+                });
             }
-            return {
-                id: p.id,
-                name: p.full_name || 'Member',
-                email: p.email,
-                role: memberRole,
-                avatar: p.avatar_url,
-                status: 'online',
-                lastMessage: memberRole === 'teacher' ? 'Teacher / Mentor' : 'Student'
-            };
-        });
+        }
+
+        return contacts;
     } catch (e) {
         console.error("Error fetching org contacts:", e);
         return [];

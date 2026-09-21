@@ -17,7 +17,40 @@ export async function sendMentozyEmail(payload: EmailDispatchPayload): Promise<b
   const toRecipients = Array.isArray(payload.to) ? payload.to.filter(Boolean) : [payload.to].filter(Boolean);
   if (toRecipients.length === 0) return false;
 
-  // 1. Try Supabase Edge Function
+  const resendKey = (import.meta as any).env?.VITE_RESEND_API_KEY;
+
+  // 1. Direct Resend API Dispatch
+  if (resendKey) {
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'Mentozy <no-reply@mentozy.app>',
+          to: toRecipients,
+          subject: payload.subject,
+          html: payload.html,
+          text: payload.text,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        console.info('[EmailNotifications] ✅ Email sent successfully via Resend:', data.id, 'to:', toRecipients);
+        return true;
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        console.warn('[EmailNotifications] Resend API responded with error:', res.status, errData);
+      }
+    } catch (resendErr) {
+      console.warn('[EmailNotifications] Direct Resend dispatch exception:', resendErr);
+    }
+  }
+
+  // 2. Supabase Edge Function Fallback
   if (supabase) {
     try {
       const { data, error } = await supabase.functions.invoke('send-mentor-notification', {
@@ -30,69 +63,15 @@ export async function sendMentozyEmail(payload: EmailDispatchPayload): Promise<b
       });
 
       if (!error && data) {
+        console.info('[EmailNotifications] ✅ Email sent via Edge Function to:', toRecipients);
         return true;
       }
-
-      // Try fallback edge function name
-      const { error: fallbackError } = await supabase.functions.invoke('send-email', {
-        body: {
-          to: toRecipients,
-          subject: payload.subject,
-          html: payload.html,
-          text: payload.text
-        }
-      });
-
-      if (!fallbackError) return true;
     } catch (edgeErr) {
-      console.warn('[EmailNotifications] Edge function dispatch skipped, trying direct client fallback:', edgeErr);
+      console.warn('[EmailNotifications] Edge function skipped:', edgeErr);
     }
   }
 
-  // 2. Direct Resend API fallback if VITE_RESEND_API_KEY is set in .env
-  const viteResendKey = (import.meta as any).env?.VITE_RESEND_API_KEY;
-  if (viteResendKey) {
-    try {
-      let res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${viteResendKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'Mentozy <notifications@mentozy.app>',
-          to: toRecipients,
-          subject: payload.subject,
-          html: payload.html,
-          text: payload.text,
-        }),
-      });
-
-      if (!res.ok) {
-        // Fallback to testing domain if custom domain is not yet active
-        res = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${viteResendKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: 'Mentozy <onboarding@resend.dev>',
-            to: toRecipients,
-            subject: payload.subject,
-            html: payload.html,
-            text: payload.text,
-          }),
-        });
-      }
-
-      return res.ok;
-    } catch (resendErr) {
-      console.warn('[EmailNotifications] Direct Resend dispatch failed:', resendErr);
-    }
-  }
-
-  console.info('[EmailNotifications] Notification queued for:', toRecipients, payload.subject);
+  console.info('[EmailNotifications] Notification logged for:', toRecipients, payload.subject);
   return true;
 }
 

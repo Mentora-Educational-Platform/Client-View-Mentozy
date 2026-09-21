@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import {
     Search, Send, Paperclip,
     AtSign, Smile,
@@ -43,7 +43,7 @@ export function MessagesPage() {
 
     const location = useLocation();
     const isMentorView = location.pathname.includes('mentor');
-    const isOrgMode = mode === 'organization' && Boolean(activeOrganization?.id);
+    const isOrgMode = mode === 'organization' || Boolean(activeOrganization?.id) || Boolean(user?.user_metadata?.is_org);
 
     // 1. Initial Contact Load & Unread Counts
     const loadContactsAndUnread = async () => {
@@ -51,8 +51,9 @@ export function MessagesPage() {
         setLoading(true);
         let data: Contact[] = [];
         
-        if (isOrgMode && activeOrganization?.id) {
-            data = await getOrgContacts(activeOrganization.id, user.id);
+        if (isOrgMode) {
+            const targetOrg = activeOrganization?.id || user.id;
+            data = await getOrgContacts(targetOrg, user.id);
         } else {
             const role = isMentorView ? 'mentor' : 'student';
             data = await getContacts(user.id, role);
@@ -228,16 +229,33 @@ export function MessagesPage() {
             setChatMessages(prev => [...prev, sentMessage]);
 
             // Dispatch background email notification to recipient
-            if (activeContact?.email) {
-                notifyNewDirectMessage({
-                    toEmail: activeContact.email,
-                    recipientName: activeContact.name,
-                    senderName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'A Mentozy Member',
-                    senderRole: isOrgMode ? 'Organization Member' : (isMentorView ? 'Mentor' : 'Student'),
-                    messageSnippet: textToSend || (uploadedAttachment ? `Sent an attachment: ${uploadedAttachment.name}` : 'Sent a message'),
-                    conversationUrl: window.location.href,
-                }).catch(err => console.warn('[MessagesPage] Email dispatch error:', err));
-            }
+            (async () => {
+                try {
+                    let recipientEmail = activeContact?.email;
+                    if (!recipientEmail && activeContactId) {
+                        const supabase = getSupabase();
+                        if (supabase) {
+                            const { data: prof } = await supabase.from('profiles').select('email, full_name').eq('id', activeContactId).single();
+                            recipientEmail = prof?.email;
+                        }
+                    }
+
+                    if (recipientEmail) {
+                        await notifyNewDirectMessage({
+                            toEmail: recipientEmail,
+                            recipientName: activeContact?.name || 'there',
+                            senderName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'A Mentozy Member',
+                            senderRole: isOrgMode ? 'Organization Member' : (isMentorView ? 'Mentor' : 'Student'),
+                            messageSnippet: textToSend || (uploadedAttachment ? `Sent an attachment: ${uploadedAttachment.name}` : 'Sent a message'),
+                            conversationUrl: window.location.href,
+                        });
+                    } else {
+                        console.warn('[MessagesPage] Recipient profile has no email recorded in database.');
+                    }
+                } catch (err) {
+                    console.warn('[MessagesPage] Email dispatch error:', err);
+                }
+            })();
         } else {
             toast.error("Failed to send message. Recipient must belong to this organisation.");
             setMessageInput(textToSend); // Restore input on failure
@@ -340,9 +358,12 @@ export function MessagesPage() {
                                             </button>
                                         ))
                                     ) : (
-                                        <p className="px-3 py-2 text-[11px] text-gray-500 font-bold italic bg-white border border-gray-900 rounded-lg">
-                                            No students in this organisation.
-                                        </p>
+                                        <div className="px-3 py-2.5 text-[11px] text-gray-600 font-bold bg-white border-2 border-dashed border-gray-400 rounded-xl space-y-1">
+                                            <p className="text-gray-500 italic">No students in this organisation yet.</p>
+                                            <Link to="/org-students" className="text-indigo-600 hover:text-indigo-800 underline font-black inline-block">
+                                                + Add / Invite Students &rarr;
+                                            </Link>
+                                        </div>
                                     )}
                                 </div>
 
@@ -389,9 +410,12 @@ export function MessagesPage() {
                                             </button>
                                         ))
                                     ) : (
-                                        <p className="px-3 py-2 text-[11px] text-gray-500 font-bold italic bg-white border border-gray-900 rounded-lg">
-                                            No teachers in this organisation.
-                                        </p>
+                                        <div className="px-3 py-2.5 text-[11px] text-gray-600 font-bold bg-white border-2 border-dashed border-gray-400 rounded-xl space-y-1">
+                                            <p className="text-gray-500 italic">No teachers in this organisation yet.</p>
+                                            <Link to="/org-teachers" className="text-indigo-600 hover:text-indigo-800 underline font-black inline-block">
+                                                + Invite Teachers &rarr;
+                                            </Link>
+                                        </div>
                                     )}
                                 </div>
                             </>
