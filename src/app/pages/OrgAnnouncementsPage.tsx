@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { Bell, Loader2, Megaphone, RefreshCw, Send } from 'lucide-react';
+import { Bell, Loader2, Megaphone, RefreshCw, Send, Trash2, Pin, Calendar, User, Sparkles, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { useAuth } from '../../context/AuthContext';
@@ -45,13 +45,15 @@ export function OrgAnnouncementsPage() {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
 
-    const isOrgAdmin = Boolean(user?.user_metadata?.is_org) && mode !== 'organization';
+    const isTeacher = activeOrganization?.role === 'teacher';
+    const isOrgAdmin = Boolean(user?.user_metadata?.is_org) || activeOrganization?.role === 'admin' || (mode === 'organization' && activeOrganization?.role !== 'student');
+    const canCreateAnnouncement = isOrgAdmin || isTeacher;
 
     const targetOrgId = useMemo(() => {
-        if (mode === 'organization' && activeOrganization?.id) return activeOrganization.id;
-        if (isOrgAdmin && user?.id) return user.id;
+        if (activeOrganization?.id) return activeOrganization.id;
+        if (user?.id) return user.id;
         return null;
-    }, [activeOrganization?.id, isOrgAdmin, mode, user?.id]);
+    }, [activeOrganization?.id, user?.id]);
 
     const loadAnnouncements = async () => {
         if (!targetOrgId) {
@@ -118,15 +120,31 @@ export function OrgAnnouncementsPage() {
 
             if (error) throw error;
 
-            toast.success('Announcement shared successfully.');
+            toast.success('Announcement published successfully.');
             setTitle('');
             setContent('');
             await loadAnnouncements();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error sharing announcement:', error);
-            toast.error('Failed to share announcement. Please try again.');
+            toast.error(error.message || 'Failed to share announcement. Please try again.');
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleDeleteAnnouncement = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this announcement?')) return;
+        const supabase = getSupabase();
+        if (!supabase) return;
+
+        try {
+            const { error } = await supabase.from(ORG_ANNOUNCEMENTS_TABLE).delete().eq('id', id);
+            if (error) throw error;
+            toast.success('Announcement removed');
+            setAnnouncements(prev => prev.filter(a => a.id !== id));
+        } catch (err: any) {
+            console.error('Error deleting announcement:', err);
+            toast.error('Failed to delete announcement');
         }
     };
 
@@ -136,11 +154,16 @@ export function OrgAnnouncementsPage() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-[#eff3ff] border-4 border-gray-900 p-6 rounded-none shadow-[4px_4px_0px_rgba(0,0,0,1)]">
                     <div>
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-black uppercase tracking-wider bg-white border-2 border-gray-900 px-2.5 py-0.5 shadow-[1px_1px_0px_rgba(0,0,0,1)]">
+                                {canCreateAnnouncement ? 'ORGANIZATION BROADCAST' : 'STUDENT NOTICE BOARD'}
+                            </span>
+                        </div>
                         <h1 className="text-3xl font-black tracking-tight text-gray-900">ANNOUNCEMENTS</h1>
                         <p className="text-sm font-bold mt-2 text-gray-700">
-                            {isOrgAdmin
-                                ? 'Create and publish updates for your students.'
-                                : 'Latest updates from your organization.'}
+                            {canCreateAnnouncement
+                                ? 'Broadcast alerts, exam schedules, and updates to all organization students.'
+                                : 'Stay up to date with the latest news, notices, and updates from your institute.'}
                         </p>
                     </div>
                     <button
@@ -153,34 +176,34 @@ export function OrgAnnouncementsPage() {
                     </button>
                 </div>
 
-                {/* Create Form */}
-                {isOrgAdmin && (
+                {/* Create Form for Org Admins & Teachers */}
+                {canCreateAnnouncement && (
                     <form onSubmit={handleSubmitAnnouncement} className="bg-white border-4 border-gray-900 p-6 shadow-[4px_4px_0px_rgba(0,0,0,1)] space-y-6">
                         <div className="flex items-center gap-3 text-lg font-black text-gray-900 border-b-4 border-gray-900 pb-4">
                             <div className="w-10 h-10 bg-[#eff3ff] border-2 border-gray-900 flex items-center justify-center shadow-[2px_2px_0px_rgba(0,0,0,1)]">
                                 <Megaphone className="w-5 h-5 text-gray-900" />
                             </div>
-                            SHARE NEW ANNOUNCEMENT
+                            WRITE & PUBLISH ANNOUNCEMENT
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-sm font-black text-gray-900 uppercase">Title</label>
+                            <label className="block text-sm font-black text-gray-900 uppercase">Announcement Title</label>
                             <input
                                 type="text"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
-                                placeholder="e.g. Mock test schedule for this week"
+                                placeholder="e.g. Next Week Live Workshop & Exam Schedule"
                                 className="w-full px-4 py-3 border-2 border-gray-900 focus:outline-none focus:bg-[#eff3ff] font-bold text-gray-900 bg-[#FAF9F6] shadow-[2px_2px_0px_rgba(0,0,0,1)]"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-sm font-black text-gray-900 uppercase">Message</label>
+                            <label className="block text-sm font-black text-gray-900 uppercase">Announcement Message / Details</label>
                             <textarea
                                 value={content}
                                 onChange={(e) => setContent(e.target.value)}
                                 rows={4}
-                                placeholder="Write the announcement for your students..."
+                                placeholder="Write your full message for the student cohort..."
                                 className="w-full px-4 py-3 border-2 border-gray-900 focus:outline-none focus:bg-[#eff3ff] font-bold text-gray-900 bg-[#FAF9F6] shadow-[2px_2px_0px_rgba(0,0,0,1)] resize-y"
                             />
                         </div>
@@ -188,21 +211,23 @@ export function OrgAnnouncementsPage() {
                         <button
                             type="submit"
                             disabled={isSaving}
-                            className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#eff3ff] text-gray-900 font-black border-2 border-gray-900 hover:bg-[#eff3ff]/85 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-60"
+                            className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#eff3ff] text-gray-900 font-black border-2 border-gray-900 hover:bg-[#eff3ff]/85 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-60 cursor-pointer"
                         >
                             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                            PUBLISH ANNOUNCEMENT
+                            PUBLISH TO STUDENTS
                         </button>
                     </form>
                 )}
 
                 {/* Announcements List */}
                 <section className="bg-white border-4 border-gray-900 shadow-[4px_4px_0px_rgba(0,0,0,1)] overflow-hidden">
-                    <div className="px-6 py-4 border-b-4 border-gray-900 bg-[#eff3ff] flex items-center gap-3">
-                        <div className="w-8 h-8 bg-white border-2 border-gray-900 flex items-center justify-center shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
-                            <Bell className="w-4 h-4 text-gray-900" />
+                    <div className="px-6 py-4 border-b-4 border-gray-900 bg-[#eff3ff] flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-white border-2 border-gray-900 flex items-center justify-center shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+                                <Bell className="w-4 h-4 text-gray-900" />
+                            </div>
+                            <h2 className="font-black text-gray-900 uppercase">Published Announcements ({announcements.length})</h2>
                         </div>
-                        <h2 className="font-black text-gray-900 uppercase">Recent Announcements</h2>
                     </div>
 
                     {isAnnouncementsBackendUnavailable && (
@@ -216,16 +241,41 @@ export function OrgAnnouncementsPage() {
                             <Loader2 className="w-10 h-10 animate-spin text-gray-900" />
                         </div>
                     ) : announcements.length === 0 ? (
-                        <div className="py-16 text-center text-gray-500 font-bold uppercase">No announcements yet.</div>
+                        <div className="py-16 text-center text-gray-500 font-bold uppercase space-y-1">
+                            <p className="text-gray-900 text-base">No announcements yet.</p>
+                            <p className="text-xs text-gray-500">
+                                {canCreateAnnouncement
+                                    ? 'Use the form above to share your first announcement with students.'
+                                    : 'When teachers publish notices, they will appear here.'}
+                            </p>
+                        </div>
                     ) : (
                         <div className="divide-y-4 divide-gray-900">
                             {announcements.map((announcement) => (
                                 <article key={announcement.id} className="p-6 hover:bg-[#eff3ff]/10 transition-colors">
                                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
-                                        <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">{announcement.title}</h3>
-                                        <span className="text-xs font-black text-gray-500 border-2 border-gray-900 bg-[#FAF9F6] px-2 py-1 shadow-[1px_1px_0px_rgba(0,0,0,1)] self-start sm:self-auto">
-                                            {new Date(announcement.created_at).toLocaleString()}
-                                        </span>
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1.5">
+                                                <span className="text-[10px] font-black uppercase tracking-wider bg-[#eff3ff] border border-gray-900 px-2 py-0.5 shadow-[1px_1px_0px_rgba(0,0,0,1)]">
+                                                    Notice
+                                                </span>
+                                            </div>
+                                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">{announcement.title}</h3>
+                                        </div>
+                                        <div className="flex items-center gap-2 self-start sm:self-auto">
+                                            <span className="text-xs font-black text-gray-500 border-2 border-gray-900 bg-[#FAF9F6] px-2 py-1 shadow-[1px_1px_0px_rgba(0,0,0,1)]">
+                                                {new Date(announcement.created_at).toLocaleString()}
+                                            </span>
+                                            {canCreateAnnouncement && (
+                                                <button
+                                                    onClick={() => handleDeleteAnnouncement(announcement.id)}
+                                                    className="p-1.5 text-gray-500 hover:text-rose-600 bg-white border-2 border-gray-900 hover:bg-rose-50 shadow-[1px_1px_0px_rgba(0,0,0,1)] transition-colors cursor-pointer"
+                                                    title="Delete Announcement"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                     <p className="text-sm font-bold text-gray-800 whitespace-pre-wrap leading-relaxed">{announcement.content}</p>
                                 </article>
@@ -239,4 +289,3 @@ export function OrgAnnouncementsPage() {
 }
 
 export default OrgAnnouncementsPage;
-

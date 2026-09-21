@@ -22,7 +22,7 @@ export function CommunityForumsPage() {
     const { user } = useAuth();
     const { mode, activeOrganization } = useOrganizationMode();
     const isOrgMode = mode === 'organization' && Boolean(activeOrganization?.id);
-    const orgId = activeOrganization?.id || '';
+    const orgId = activeOrganization?.id || (user?.user_metadata?.is_org ? user?.id : '') || 'global-mentozy-community';
 
     // State
     const [categories, setCategories] = useState<CommunityCategory[]>([]);
