@@ -8,6 +8,7 @@ import { getSupabase } from '../../lib/supabase';
 import { getOrgStudents, getOrgTeachers } from '../../lib/api';
 import { LinkifiedText } from '../components/common/LinkifiedText';
 import { notifyNewAnnouncement } from '../../lib/emailNotifications';
+import { dispatchBulkNotifications } from '../../lib/notificationService';
 
 interface Announcement {
     id: string;
@@ -49,7 +50,7 @@ export function OrgAnnouncementsPage() {
     const [content, setContent] = useState('');
 
     const isTeacher = activeOrganization?.role === 'teacher';
-    const isOrgAdmin = Boolean(user?.user_metadata?.is_org) || activeOrganization?.role === 'admin' || (mode === 'organization' && activeOrganization?.role !== 'student');
+    const isOrgAdmin = Boolean(user?.user_metadata?.is_org) || (mode === 'organization' && activeOrganization?.role !== 'student');
     const canCreateAnnouncement = isOrgAdmin || isTeacher;
 
     const targetOrgId = useMemo(() => {
@@ -130,30 +131,48 @@ export function OrgAnnouncementsPage() {
             setContent('');
             await loadAnnouncements();
 
-            // Background broadcast email to organization members
+            // Background broadcast notifications & emails to organization members
             (async () => {
                 try {
                     const [students, teachers] = await Promise.all([
                         getOrgStudents(targetOrgId),
                         getOrgTeachers(targetOrgId)
                     ]);
+
+                    const recipientIds = Array.from(new Set([
+                        ...(students || []).map((s: any) => s.id || s.student_id),
+                        ...(teachers || []).map((t: any) => t.id || t.teacher_id)
+                    ])).filter(Boolean) as string[];
+
                     const memberEmails = Array.from(new Set([
                         ...(students || []).map((s: any) => s.email),
                         ...(teachers || []).map((t: any) => t.email)
                     ])).filter(Boolean) as string[];
 
-                    if (memberEmails.length > 0) {
-                        await notifyNewAnnouncement({
-                            toEmails: memberEmails,
-                            orgName: activeOrganization?.name || 'Your Organization',
-                            title: savedTitle,
-                            content: savedContent,
-                            authorName: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Organization Admin',
-                            announcementUrl: window.location.href,
+                    if (recipientIds.length > 0) {
+                        await dispatchBulkNotifications({
+                            recipientIds,
+                            actorId: user?.id,
+                            orgId: targetOrgId,
+                            type: 'announcement',
+                            title: `📢 ${savedTitle}`,
+                            body: savedContent,
+                            link: '/org-announcements',
+                            emailAction: async () => {
+                                if (memberEmails.length === 0) return true;
+                                return notifyNewAnnouncement({
+                                    toEmails: memberEmails,
+                                    orgName: activeOrganization?.name || 'Your Organization',
+                                    title: savedTitle,
+                                    content: savedContent,
+                                    authorName: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Organization Admin',
+                                    announcementUrl: window.location.origin + '/org-announcements',
+                                });
+                            }
                         });
                     }
                 } catch (notifErr) {
-                    console.warn('[OrgAnnouncements] Broadcast email skipped:', notifErr);
+                    console.warn('[OrgAnnouncements] Broadcast notification error:', notifErr);
                 }
             })();
         } catch (error: any) {

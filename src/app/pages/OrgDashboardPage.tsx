@@ -32,6 +32,8 @@ import { getUserProfile, getOrgTeachers, getOrgStudents, searchStudentsForOrg, P
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import { LinkifiedText } from '../components/common/LinkifiedText';
+import { notifyNewAnnouncement, notifyNewTaskAssigned } from '../../lib/emailNotifications';
+import { dispatchBulkNotifications } from '../../lib/notificationService';
 
 export function OrgDashboardPage() {
     const { user } = useAuth();
@@ -79,6 +81,10 @@ export function OrgDashboardPage() {
         }
 
         setIsSavingTask(true);
+        const savedTaskTitle = taskName;
+        const savedDeadline = taskDeadline;
+        const savedInstructions = taskHtml;
+
         try {
             const { error } = await client.from('org_tasks').insert({
                 org_id: targetOrgId,
@@ -95,6 +101,40 @@ export function OrgDashboardPage() {
             if (editorRef.current) {
                 editorRef.current.innerHTML = '';
             }
+
+            // Dispatch in-app notification & emails to org students
+            (async () => {
+                try {
+                    if (!targetOrgId) return;
+                    const students = await getOrgStudents(targetOrgId);
+                    const studentIds = (students || []).map((s: any) => s.id || s.student_id).filter(Boolean);
+                    const studentEmails = (students || []).map((s: any) => s.email).filter(Boolean);
+
+                    if (studentIds.length > 0) {
+                        await dispatchBulkNotifications({
+                            recipientIds: studentIds,
+                            actorId: user?.id,
+                            orgId: targetOrgId,
+                            type: 'task',
+                            title: `📋 New Task: ${savedTaskTitle}`,
+                            body: savedDeadline ? `Due: ${new Date(savedDeadline).toLocaleDateString()}` : 'New assignment published.',
+                            link: '/student-dashboard',
+                            emailAction: async () => {
+                                if (studentEmails.length === 0) return true;
+                                return notifyNewTaskAssigned({
+                                  toEmail: studentEmails,
+                                  taskTitle: savedTaskTitle,
+                                  dueDate: savedDeadline || undefined,
+                                  instructions: savedInstructions ? savedInstructions.replace(/<[^>]*>?/gm, '').slice(0, 200) : undefined,
+                                  taskUrl: window.location.origin + '/student-dashboard',
+                                });
+                            }
+                        });
+                    }
+                } catch (taskNotifErr) {
+                    console.warn('[OrgDashboardPage] Task notification broadcast error:', taskNotifErr);
+                }
+            })();
         } catch (err: any) {
             console.error('Error assigning task:', err);
             toast.error(err.message || 'Failed to assign task. Make sure database table exists.');
@@ -115,12 +155,15 @@ export function OrgDashboardPage() {
             return;
         }
 
+        const savedTitle = announcementTitle.trim();
+        const savedContent = announcementContent.trim();
+
         setIsSavingAnnouncement(true);
         try {
             const { error } = await client.from('org_announcements').insert({
                 org_id: targetOrgId,
-                title: announcementTitle.trim(),
-                content: announcementContent.trim(),
+                title: savedTitle,
+                content: savedContent,
             });
 
             if (error) throw error;
@@ -138,6 +181,51 @@ export function OrgDashboardPage() {
                 .order('created_at', { ascending: false })
                 .limit(4);
             if (annData) setRecentAnnouncements(annData);
+
+            // Broadcast persistent notifications & emails
+            (async () => {
+                try {
+                    const [students, teachers] = await Promise.all([
+                        getOrgStudents(targetOrgId),
+                        getOrgTeachers(targetOrgId)
+                    ]);
+
+                    const recipientIds = Array.from(new Set([
+                        ...(students || []).map((s: any) => s.id || s.student_id),
+                        ...(teachers || []).map((t: any) => t.id || t.teacher_id)
+                    ])).filter(Boolean) as string[];
+
+                    const memberEmails = Array.from(new Set([
+                        ...(students || []).map((s: any) => s.email),
+                        ...(teachers || []).map((t: any) => t.email)
+                    ])).filter(Boolean) as string[];
+
+                    if (recipientIds.length > 0) {
+                        await dispatchBulkNotifications({
+                            recipientIds,
+                            actorId: user?.id,
+                            orgId: targetOrgId,
+                            type: 'announcement',
+                            title: `📢 ${savedTitle}`,
+                            body: savedContent,
+                            link: '/org-announcements',
+                            emailAction: async () => {
+                                if (memberEmails.length === 0) return true;
+                                return notifyNewAnnouncement({
+                                    toEmails: memberEmails,
+                                    orgName: activeOrganization?.name || 'Your Organization',
+                                    title: savedTitle,
+                                    content: savedContent,
+                                    authorName: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Organization Admin',
+                                    announcementUrl: window.location.origin + '/org-announcements',
+                                });
+                            }
+                        });
+                    }
+                } catch (annNotifErr) {
+                    console.warn('[OrgDashboardPage] Announcement broadcast error:', annNotifErr);
+                }
+            })();
         } catch (err: any) {
             console.error('Error publishing announcement:', err);
             toast.error(err.message || 'Failed to publish announcement.');
@@ -200,7 +288,7 @@ export function OrgDashboardPage() {
 
             // Strict redirect logic: allow Org Admin and active Org Teachers
             const profile = await getUserProfile(user.id);
-            const isOrgAdmin = Boolean(user.user_metadata?.is_org) || profile?.role === 'org' || profile?.role === 'admin';
+            const isOrgAdmin = Boolean(user.user_metadata?.is_org) || (profile?.role as any) === 'org' || profile?.role === 'admin';
             const isOrgTeacher = activeOrganization?.role === 'teacher';
             
             if (!isOrgAdmin && !isOrgTeacher) {

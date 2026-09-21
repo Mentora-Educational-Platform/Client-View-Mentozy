@@ -16,6 +16,7 @@ import { Enrollment, Profile, Booking, getStudentEnrollments, getUserProfile, ge
 import { Link, useNavigate } from 'react-router-dom';
 import { Calendar } from '../../components/ui/calendar';
 import { StudentBookingDetailsModal } from '../components/booking/StudentBookingDetailsModal';
+import { NotificationBell } from '../components/notifications/NotificationBell';
 import { toast } from 'sonner';
 
 const getUniqueCode = (userId?: string) => {
@@ -567,7 +568,7 @@ export function StudentDashboardPage() {
 
                              <div className="flex items-center justify-between w-full max-w-[240px]">
                                  <button onClick={() => setSessionTime(0)} title="Reset Timer" className="text-gray-400 hover:text-gray-900 transition-colors"><RotateCcw className="w-5 h-5"/></button>
-                                 <button onClick={() => toast.success("Notifications enabled for this session")} className="text-gray-400 hover:text-gray-900 transition-colors"><Bell className="w-5 h-5"/></button>
+                                 <NotificationBell className="scale-90" />
                                  <button onClick={() => setIsTimerRunning(!isTimerRunning)} className="w-16 h-16 bg-[#f76332] rounded-2xl flex items-center justify-center hover:scale-[1.05] transition-transform shadow-[2px_2px_0px_rgba(0,0,0,1)] border-2 border-gray-900 flex-shrink-0">
                                      {isTimerRunning ? (
                                          <Pause className="w-7 h-7 text-white fill-current"/>

@@ -20,6 +20,7 @@ import { useOrganizationMode } from '../../context/OrganizationModeContext';
 import { getSupabase } from '../../lib/supabase';
 import { LinkifiedText } from '../components/common/LinkifiedText';
 import { notifyNewDirectMessage } from '../../lib/emailNotifications';
+import { dispatchNotification } from '../../lib/notificationService';
 
 export function MessagesPage() {
     const { user } = useAuth();
@@ -228,34 +229,43 @@ export function MessagesPage() {
         if (sentMessage) {
             setChatMessages(prev => [...prev, sentMessage]);
 
-            // Dispatch background email notification to recipient
-            (async () => {
-                try {
+            // Dispatch persistent notification & server-side email to recipient
+            const senderName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'A Mentozy Member';
+            const messagePreview = textToSend || (uploadedAttachment ? `Sent an attachment: ${uploadedAttachment.name}` : 'Sent a message');
+
+            dispatchNotification({
+                recipientId: activeContactId,
+                actorId: user.id,
+                orgId: isOrgMode ? activeOrganization?.id : undefined,
+                type: 'message',
+                title: `New message from ${senderName}`,
+                body: messagePreview,
+                link: '/messages',
+                sourceType: 'messages',
+                sourceId: sentMessage.id,
+                emailAction: async () => {
                     let recipientEmail = activeContact?.email;
                     if (!recipientEmail && activeContactId) {
-                        const supabase = getSupabase();
-                        if (supabase) {
-                            const { data: prof } = await supabase.from('profiles').select('email, full_name').eq('id', activeContactId).single();
+                        const supabaseClient = getSupabase();
+                        if (supabaseClient) {
+                            const { data: prof } = await supabaseClient.from('profiles').select('email').eq('id', activeContactId).single();
                             recipientEmail = prof?.email;
                         }
                     }
 
                     if (recipientEmail) {
-                        await notifyNewDirectMessage({
+                        return notifyNewDirectMessage({
                             toEmail: recipientEmail,
                             recipientName: activeContact?.name || 'there',
-                            senderName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'A Mentozy Member',
+                            senderName,
                             senderRole: isOrgMode ? 'Organization Member' : (isMentorView ? 'Mentor' : 'Student'),
-                            messageSnippet: textToSend || (uploadedAttachment ? `Sent an attachment: ${uploadedAttachment.name}` : 'Sent a message'),
-                            conversationUrl: window.location.href,
+                            messageSnippet: messagePreview,
+                            conversationUrl: window.location.origin + '/messages',
                         });
-                    } else {
-                        console.warn('[MessagesPage] Recipient profile has no email recorded in database.');
                     }
-                } catch (err) {
-                    console.warn('[MessagesPage] Email dispatch error:', err);
+                    return false;
                 }
-            })();
+            });
         } else {
             toast.error("Failed to send message. Recipient must belong to this organisation.");
             setMessageInput(textToSend); // Restore input on failure

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
+import { useAuth } from '../../context/AuthContext';
 import { useOrganizationMode } from '../../context/OrganizationModeContext';
 import { 
     Clock, Calendar, User, CheckCircle2, AlertCircle, 
@@ -11,6 +12,7 @@ import {
 import { toast } from 'sonner';
 import { LinkifiedText } from '../components/common/LinkifiedText';
 import { notifyTaskGraded } from '../../lib/emailNotifications';
+import { dispatchNotification } from '../../lib/notificationService';
 
 interface Submission {
     id: string;
@@ -35,6 +37,7 @@ interface Submission {
 }
 
 export function OrgSubmissionsPage() {
+    const { user } = useAuth();
     const { activeOrganization } = useOrganizationMode();
     const isStudent = activeOrganization?.role === 'student';
 
@@ -264,16 +267,38 @@ export function OrgSubmissionsPage() {
             setSelectedSubmission(null);
             toast.success(`Submission evaluated successfully as "${gradeValue}"!`);
 
-            // Background email notification to student
-            if (studentEmail && studentEmail !== 'student@org.dev') {
-                notifyTaskGraded({
-                    toEmail: studentEmail,
-                    studentName: studentName,
-                    taskTitle: taskTitle,
-                    status: nextStatus as 'passed' | 'redo',
-                    feedbackNote: trimmedFeedback || undefined,
-                    taskUrl: window.location.origin + '/student-dashboard',
-                }).catch(err => console.warn('[OrgSubmissions] Grade notification email skipped:', err));
+            // Dispatch persistent notification & email to student
+            if (selectedSubmission.studentId) {
+                const isPassed = nextStatus === 'passed';
+                const notifTitle = isPassed ? `🎉 Task Passed: ${taskTitle}` : `⚠️ Revision Requested: ${taskTitle}`;
+                const notifBody = trimmedFeedback 
+                    ? `Status: ${isPassed ? 'Passed' : 'Revision Required'} (${gradeValue}). Feedback: "${trimmedFeedback}"`
+                    : `Your submission for "${taskTitle}" was evaluated as ${gradeValue}.`;
+
+                dispatchNotification({
+                    recipientId: selectedSubmission.studentId,
+                    actorId: user?.id,
+                    orgId: activeOrganization?.id,
+                    type: 'grade',
+                    title: notifTitle,
+                    body: notifBody,
+                    link: '/student-dashboard',
+                    sourceType: 'org_task_submissions',
+                    sourceId: selectedSubmission.id,
+                    emailAction: async () => {
+                        if (studentEmail && studentEmail !== 'student@org.dev') {
+                            return notifyTaskGraded({
+                                toEmail: studentEmail,
+                                studentName: studentName,
+                                taskTitle: taskTitle,
+                                status: nextStatus as 'passed' | 'redo',
+                                feedbackNote: trimmedFeedback || undefined,
+                                taskUrl: window.location.origin + '/student-dashboard',
+                            });
+                        }
+                        return false;
+                    }
+                });
             }
         } catch (err: any) {
             console.error('Failed to submit evaluation to database:', err);

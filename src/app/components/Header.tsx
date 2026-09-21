@@ -2,10 +2,13 @@ import { Search, Menu, X, Sun, Moon } from 'lucide-react';
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
+import { NotificationBell } from './notifications/NotificationBell';
 import { motion, AnimatePresence } from 'motion/react';
 
 export function Header() {
   const { theme, setTheme, isDarkMode } = useTheme();
+  const { user } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -108,27 +111,42 @@ export function Header() {
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
 
-            {/* Apply Us Button */}
-            <Link
-              to="/krishnaite/apply"
-              className="hidden md:flex items-center px-4 py-2 border-2 sm:border-4 border-gray-900 bg-[#eff3ff] hover:bg-[#dbeafe] text-gray-900 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all min-h-[40px] cursor-pointer"
-            >
-              Apply Us
-            </Link>
+            {/* Auth Buttons / User Area */}
+            {user ? (
+              <div className="flex items-center gap-2.5">
+                <NotificationBell />
+                <Link
+                  to="/student-dashboard"
+                  className="hidden sm:flex items-center px-4 py-2 border-2 sm:border-4 border-gray-900 bg-[#f39c12] hover:bg-[#e08e0b] text-gray-900 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all min-h-[40px] cursor-pointer"
+                >
+                  Dashboard
+                </Link>
+              </div>
+            ) : (
+              <>
+                {/* Apply Us Button */}
+                <Link
+                  to="/krishnaite/apply"
+                  className="hidden md:flex items-center px-4 py-2 border-2 sm:border-4 border-gray-900 bg-[#eff3ff] hover:bg-[#dbeafe] text-gray-900 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all min-h-[40px] cursor-pointer"
+                >
+                  Apply Us
+                </Link>
 
-            <Link
-              to="/login"
-              className="hidden md:flex items-center px-4 py-2 border-2 border-gray-900 bg-white text-gray-900 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] transition-all min-h-[40px]"
-            >
-              Log In
-            </Link>
+                <Link
+                  to="/login"
+                  className="hidden md:flex items-center px-4 py-2 border-2 border-gray-900 bg-white text-gray-900 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#eff3ff] transition-all min-h-[40px]"
+                >
+                  Log In
+                </Link>
 
-            <Link
-              to="/signup"
-              className="hidden md:flex items-center px-5 py-2 border-4 border-gray-900 bg-[#f39c12] text-gray-900 text-xs font-black uppercase tracking-wider shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all min-h-[40px]"
-            >
-              Join Mentozy
-            </Link>
+                <Link
+                  to="/signup"
+                  className="hidden md:flex items-center px-5 py-2 border-4 border-gray-900 bg-[#f39c12] text-gray-900 text-xs font-black uppercase tracking-wider shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all min-h-[40px]"
+                >
+                  Join Mentozy
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

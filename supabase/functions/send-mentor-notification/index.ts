@@ -50,12 +50,11 @@ serve(async (req: Request) => {
         );
       } else {
         const resendErr = await resendResponse.text();
-        console.warn('Resend API returned error:', resendErr);
+        console.error('Resend API returned error:', resendErr);
         
-        // Return structured non-breaking error info
         return new Response(
-          JSON.stringify({ warning: "Resend dispatch error", details: resendErr }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+          JSON.stringify({ error: "Resend dispatch failed", details: resendErr }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 502 }
         );
       }
     }

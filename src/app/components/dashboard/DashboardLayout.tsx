@@ -7,6 +7,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useOrganizationMode } from '../../../context/OrganizationModeContext';
 import { Navigate } from 'react-router-dom';
 import { getSupabase } from '../../../lib/supabase';
+import { NotificationBell } from '../notifications/NotificationBell';
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
@@ -75,6 +76,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                             <div className="w-1.5 h-1.5 bg-amber-500 rounded-sm flex-shrink-0"></div>
                         </div>
                         <div className="flex items-center gap-2">
+                            <NotificationBell />
                             {hasOrganizations && !isOrgMode && <ModeToggle />}
                             <button
                                 onClick={() => setIsSidebarOpen(true)}
@@ -86,16 +88,26 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     </div>
                 </header>
 
-                {/* Desktop Header — only show in personal mode if user is not a dedicated org admin */}
-                {!isOrgMode && !user?.user_metadata?.is_org && hasOrganizations && (
-                    <header className="hidden md:flex bg-white border-b border-gray-200 px-6 py-3 items-center justify-between sticky top-0 z-30">
-                        <div className="flex items-center gap-2 text-sm text-gray-500 font-semibold">
-                            <User className="w-4 h-4" />
-                            <span>Personal Mode</span>
-                        </div>
-                        <ModeToggle />
-                    </header>
-                )}
+                {/* Desktop Header */}
+                <header className="hidden md:flex bg-white border-b border-gray-200 px-6 py-2.5 items-center justify-between sticky top-0 z-30">
+                    <div className="flex items-center gap-2 text-sm text-gray-500 font-semibold">
+                        {isOrgMode ? (
+                            <>
+                                <Building2 className="w-4 h-4 text-amber-600" />
+                                <span className="text-gray-800">{activeOrganization.name}</span>
+                            </>
+                        ) : (
+                            <>
+                                <User className="w-4 h-4 text-gray-600" />
+                                <span>{orgName}</span>
+                            </>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <NotificationBell />
+                        {hasOrganizations && !isOrgMode && <ModeToggle />}
+                    </div>
+                </header>
 
 
 

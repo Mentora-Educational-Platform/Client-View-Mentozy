@@ -10,47 +10,13 @@ export interface EmailDispatchPayload {
 
 /**
  * Universal email dispatcher for Mentozy.
- * Priority 1: Supabase Edge Function (`send-mentor-notification` or `send-email`) with backend RESEND_API_KEY
- * Priority 2: Direct Resend API call if VITE_RESEND_API_KEY is configured in frontend environment
+ * Uses Supabase Edge Function (`send-mentor-notification`) with backend RESEND_API_KEY.
+ * Never exposes the Resend Secret Key to the client browser.
  */
 export async function sendMentozyEmail(payload: EmailDispatchPayload): Promise<boolean> {
   const toRecipients = Array.isArray(payload.to) ? payload.to.filter(Boolean) : [payload.to].filter(Boolean);
   if (toRecipients.length === 0) return false;
 
-  const resendKey = (import.meta as any).env?.VITE_RESEND_API_KEY;
-
-  // 1. Direct Resend API Dispatch
-  if (resendKey) {
-    try {
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${resendKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'Mentozy <no-reply@mentozy.app>',
-          to: toRecipients,
-          subject: payload.subject,
-          html: payload.html,
-          text: payload.text,
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        console.info('[EmailNotifications] ✅ Email sent successfully via Resend:', data.id, 'to:', toRecipients);
-        return true;
-      } else {
-        const errData = await res.json().catch(() => ({}));
-        console.warn('[EmailNotifications] Resend API responded with error:', res.status, errData);
-      }
-    } catch (resendErr) {
-      console.warn('[EmailNotifications] Direct Resend dispatch exception:', resendErr);
-    }
-  }
-
-  // 2. Supabase Edge Function Fallback
   if (supabase) {
     try {
       const { data, error } = await supabase.functions.invoke('send-mentor-notification', {
@@ -62,17 +28,21 @@ export async function sendMentozyEmail(payload: EmailDispatchPayload): Promise<b
         }
       });
 
-      if (!error && data) {
-        console.info('[EmailNotifications] ✅ Email sent via Edge Function to:', toRecipients);
+      if (!error && data && !data.error) {
+        console.info('[EmailNotifications] ✅ Email sent via Edge Function to:', toRecipients, 'ID:', data.id);
         return true;
+      } else {
+        console.warn('[EmailNotifications] ❌ Edge function email dispatch failed:', error || data?.error || data);
+        return false;
       }
     } catch (edgeErr) {
-      console.warn('[EmailNotifications] Edge function skipped:', edgeErr);
+      console.error('[EmailNotifications] ❌ Edge function exception:', edgeErr);
+      return false;
     }
   }
 
-  console.info('[EmailNotifications] Notification logged for:', toRecipients, payload.subject);
-  return true;
+  console.warn('[EmailNotifications] Supabase client unavailable for email dispatch');
+  return false;
 }
 
 /**

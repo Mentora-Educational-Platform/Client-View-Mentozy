@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { getSupabase } from '../../lib/supabase';
 import { LinkifiedText } from '../components/common/LinkifiedText';
 import { notifyNewForumReply } from '../../lib/emailNotifications';
+import { dispatchNotification } from '../../lib/notificationService';
 
 export function CommunityForumsPage() {
     const { user } = useAuth();
@@ -99,6 +100,7 @@ export function CommunityForumsPage() {
         }
 
         async function loadPostDetails() {
+            if (!selectedPostId) return;
             setDetailsLoading(true);
             const { post, replies: postReplies } = await getCommunityPostDetails(selectedPostId, user?.id);
             setActivePost(post);
@@ -208,33 +210,42 @@ export function CommunityForumsPage() {
             if (activePost) {
                 setActivePost({ ...activePost, reply_count: activePost.reply_count + 1 });
 
-                // Dispatch background notification to post author if replier is someone else
+                // Dispatch persistent in-app notification & email to post author if replier is someone else
                 if (activePost.author_id && activePost.author_id !== user.id) {
-                    (async () => {
-                        try {
-                            const supabase = getSupabase();
-                            if (supabase) {
-                                const { data: authorProfile } = await supabase
+                    const replierName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'A community member';
+                    dispatchNotification({
+                        recipientId: activePost.author_id,
+                        actorId: user.id,
+                        orgId: isOrgMode ? activeOrganization?.id : undefined,
+                        type: 'forum_reply',
+                        title: `💬 ${replierName} replied to your post`,
+                        body: `"${replyText.slice(0, 120)}${replyText.length > 120 ? '...' : ''}" on "${activePost.title}"`,
+                        link: '/community',
+                        sourceType: 'community_replies',
+                        sourceId: newReply.id,
+                        emailAction: async () => {
+                            const supabaseClient = getSupabase();
+                            if (supabaseClient) {
+                                const { data: authorProfile } = await supabaseClient
                                     .from('profiles')
                                     .select('email, full_name')
                                     .eq('id', activePost.author_id)
                                     .single();
 
                                 if (authorProfile?.email) {
-                                    await notifyNewForumReply({
+                                    return notifyNewForumReply({
                                         toEmail: authorProfile.email,
                                         recipientName: authorProfile.full_name || activePost.author_name,
-                                        authorName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'A community member',
+                                        authorName: replierName,
                                         postTitle: activePost.title,
                                         replySnippet: replyText,
-                                        threadUrl: window.location.href,
+                                        threadUrl: window.location.origin + '/community',
                                     });
                                 }
                             }
-                        } catch (emailErr) {
-                            console.warn('[CommunityForums] Forum reply email notification skipped:', emailErr);
+                            return false;
                         }
-                    })();
+                    });
                 }
             }
         } else {
@@ -341,7 +352,7 @@ export function CommunityForumsPage() {
                     <div className="space-y-2">
                         <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border-2 border-gray-900 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-[1px_1px_0px_rgba(0,0,0,1)] text-gray-900">
                             <Sparkles className="w-3.5 h-3.5 text-[#818CF8]" />
-                            <span>{isOrgMode ? activeOrganization.name : 'Mentozy'} Community Space</span>
+                            <span>{isOrgMode && activeOrganization ? activeOrganization.name : 'Mentozy'} Community Space</span>
                         </div>
                         <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-gray-900 flex items-center gap-3">
                             <MessageSquare className="w-8 h-8 text-[#818CF8] flex-shrink-0" />
@@ -558,7 +569,7 @@ export function CommunityForumsPage() {
                                     </div>
                                     <div>
                                         <h2 className="text-xl font-black uppercase text-gray-900">Start Discussion Thread</h2>
-                                        <p className="text-[10px] font-bold uppercase text-gray-500">Post to {isOrgMode ? activeOrganization.name : 'Organisation'} Cohort</p>
+                                        <p className="text-[10px] font-bold uppercase text-gray-500">Post to {isOrgMode && activeOrganization ? activeOrganization.name : 'Organisation'} Cohort</p>
                                     </div>
                                 </div>
                                 <button
