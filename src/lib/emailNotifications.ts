@@ -14,14 +14,44 @@ export interface EmailDispatchPayload {
  * Never exposes the Resend Secret Key to the client browser.
  */
 export async function sendMentozyEmail(payload: EmailDispatchPayload): Promise<boolean> {
-  const toRecipients = Array.isArray(payload.to) ? payload.to.filter(Boolean) : [payload.to].filter(Boolean);
-  if (toRecipients.length === 0) return false;
+  const rawList = Array.isArray(payload.to) ? payload.to : [payload.to];
+  const toRecipients = Array.from(new Set(
+    rawList
+      .map(email => String(email || '').trim())
+      .filter(email => email.length >= 5 && email.includes('@') && !email.includes(' ') && email.toLowerCase() !== 'no email')
+  ));
 
-  if (supabase) {
+  if (toRecipients.length === 0) {
+    console.warn('[EmailNotifications] No valid recipient email addresses found in payload:', payload.to);
+    return false;
+  }
+
+  const client = supabase;
+  if (client) {
     try {
-      const { data, error } = await supabase.functions.invoke('send-mentor-notification', {
+      // For bulk emails, send to each recipient individually in parallel
+      if (toRecipients.length > 1) {
+        const results = await Promise.allSettled(
+          toRecipients.map(recipientEmail =>
+            client.functions.invoke('send-mentor-notification', {
+              body: {
+                to: recipientEmail,
+                subject: payload.subject,
+                html: payload.html,
+                text: payload.text
+              }
+            })
+          )
+        );
+        const successCount = results.filter(r => r.status === 'fulfilled' && !r.value.error).length;
+        console.info(`[EmailNotifications] ✅ Dispatched ${successCount}/${toRecipients.length} emails in parallel to:`, toRecipients);
+        return successCount > 0;
+      }
+
+      // Single recipient dispatch
+      const { data, error } = await client.functions.invoke('send-mentor-notification', {
         body: {
-          to: toRecipients,
+          to: toRecipients[0],
           subject: payload.subject,
           html: payload.html,
           text: payload.text
@@ -29,7 +59,7 @@ export async function sendMentozyEmail(payload: EmailDispatchPayload): Promise<b
       });
 
       if (!error && data && !data.error) {
-        console.info('[EmailNotifications] ✅ Email sent via Edge Function to:', toRecipients, 'ID:', data.id);
+        console.info('[EmailNotifications] ✅ Email dispatched successfully to:', toRecipients[0], 'ID:', data.id);
         return true;
       } else {
         console.warn('[EmailNotifications] ❌ Edge function email dispatch failed:', error || data?.error || data);
@@ -338,7 +368,7 @@ export async function notifyNewAnnouncement(params: {
 
 // 4. Community Forum Reply Notification
 export async function notifyNewForumReply(params: {
-  toEmail: string;
+  toEmail: string | string[];
   recipientName?: string;
   authorName: string;
   postTitle: string;
@@ -367,6 +397,41 @@ export async function notifyNewForumReply(params: {
     subject: `💬 ${params.authorName} replied to "${params.postTitle}"`,
     html,
     text: `${params.authorName} replied: "${params.replySnippet}". View: ${url}`
+  });
+}
+
+// 4b. New Community Forum Thread/Post Notification
+export async function notifyNewForumPost(params: {
+  toEmails: string | string[];
+  authorName: string;
+  postTitle: string;
+  postSnippet: string;
+  categoryName?: string;
+  threadUrl?: string;
+}) {
+  const url = params.threadUrl || 'https://mentozy.app/community';
+  const html = renderEmailWrapper(
+    `New Discussion: ${params.postTitle}`,
+    params.categoryName ? `COMMUNITY: ${params.categoryName.toUpperCase()}` : 'NEW THREAD',
+    `
+      <p style="margin-top: 0;">Hello,</p>
+      <p><strong>${params.authorName}</strong> started a new discussion in the Mentozy community:</p>
+
+      <div style="background-color: #FBF9F6; border-left: 4px solid #3B2B20; border: 1px solid #ECE5DC; border-left-width: 4px; padding: 14px 18px; border-radius: 4px; margin: 18px 0; color: #3B2B20; font-size: 14px;">
+        <div style="font-weight: bold; margin-bottom: 6px; font-size: 15px;">${params.postTitle}</div>
+        <div style="font-style: italic; color: #5A4738;">"${params.postSnippet}"</div>
+      </div>
+
+      <p style="color: #6B6058; font-size: 13px;">Read the full discussion and share your thoughts with your peers.</p>
+    `,
+    { text: 'Join Discussion & Reply', url }
+  );
+
+  return sendMentozyEmail({
+    to: params.toEmails,
+    subject: `💬 New Discussion: "${params.postTitle}" by ${params.authorName}`,
+    html,
+    text: `${params.authorName} posted: "${params.postTitle}" - ${params.postSnippet}. Join discussion: ${url}`
   });
 }
 

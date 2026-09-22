@@ -4,6 +4,8 @@ export type NotificationType =
   | 'message'
   | 'announcement'
   | 'forum_reply'
+  | 'forum_post'
+  | 'community'
   | 'task'
   | 'task_submission'
   | 'grade'

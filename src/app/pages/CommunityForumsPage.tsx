@@ -7,6 +7,7 @@ import {
     createCommunityPost, createCommunityReply, toggleCommunityReaction,
     togglePinCommunityPost, toggleLockCommunityPost, toggleAcceptedCommunityReply,
     deleteCommunityPost, deleteCommunityReply, uploadMessageAttachment,
+    getOrgStudents, getOrgTeachers,
     CommunityCategory, CommunityPost, CommunityReply, MessageAttachment,
     ALLOWED_ATTACHMENT_EXTENSIONS, BLOCKED_ATTACHMENT_EXTENSIONS, MAX_ATTACHMENT_SIZE_BYTES
 } from '../../lib/api';
@@ -19,8 +20,8 @@ import {
 import { toast } from 'sonner';
 import { getSupabase } from '../../lib/supabase';
 import { LinkifiedText } from '../components/common/LinkifiedText';
-import { notifyNewForumReply } from '../../lib/emailNotifications';
-import { dispatchNotification } from '../../lib/notificationService';
+import { notifyNewForumReply, notifyNewForumPost } from '../../lib/emailNotifications';
+import { dispatchNotification, dispatchBulkNotifications } from '../../lib/notificationService';
 
 export function CommunityForumsPage() {
     const { user } = useAuth();
@@ -163,11 +164,62 @@ export function CommunityForumsPage() {
 
         if (newPost) {
             toast.success("Thread published to community!");
+            const savedTitle = postTitle.trim();
+            const savedContent = postContent.trim();
             setPosts(prev => [newPost, ...prev]);
             setPostTitle('');
             setPostContent('');
             setComposerFile(null);
             setIsComposerOpen(false);
+
+            // Broadcast persistent in-app notifications and emails to members
+            (async () => {
+                try {
+                    const targetOrgId = orgId || activeOrganization?.id;
+                    if (targetOrgId && targetOrgId !== 'global-mentozy-community') {
+                        const [students, teachers] = await Promise.all([
+                            getOrgStudents(targetOrgId),
+                            getOrgTeachers(targetOrgId)
+                        ]);
+
+                        const recipientIds = Array.from(new Set([
+                            ...(students || []).map((s: any) => s.student_id || s.id),
+                            ...(teachers || []).map((t: any) => t.teacher_id || t.id)
+                        ])).filter(id => id && id !== user.id) as string[];
+
+                        const memberEmails = Array.from(new Set([
+                            ...(students || []).map((s: any) => s.email),
+                            ...(teachers || []).map((t: any) => t.email)
+                        ])).filter((email: any) => typeof email === 'string' && email.includes('@') && email.toLowerCase() !== 'no email' && email !== user.email) as string[];
+
+                        if (recipientIds.length > 0) {
+                            const authorName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'A Community Member';
+                            await dispatchBulkNotifications({
+                                recipientIds,
+                                actorId: user.id,
+                                orgId: targetOrgId,
+                                type: 'community',
+                                title: `💬 New Discussion: ${savedTitle}`,
+                                body: `${authorName} posted: "${savedContent.slice(0, 100)}${savedContent.length > 100 ? '...' : ''}"`,
+                                link: '/community',
+                                emailAction: async () => {
+                                    if (memberEmails.length === 0) return true;
+                                    return notifyNewForumPost({
+                                        toEmails: memberEmails,
+                                        authorName,
+                                        postTitle: savedTitle,
+                                        postSnippet: savedContent.slice(0, 200),
+                                        categoryName: categories.find(c => c.id === selectedCategory)?.name || 'General',
+                                        threadUrl: window.location.origin + '/community'
+                                    });
+                                }
+                            });
+                        }
+                    }
+                } catch (broadcastErr) {
+                    console.warn('[CommunityForumsPage] Broadcast thread notification error:', broadcastErr);
+                }
+            })();
         } else {
             toast.error("Failed to create post. Please try again.");
         }

@@ -107,8 +107,8 @@ export function OrgDashboardPage() {
                 try {
                     if (!targetOrgId) return;
                     const students = await getOrgStudents(targetOrgId);
-                    const studentIds = (students || []).map((s: any) => s.id || s.student_id).filter(Boolean);
-                    const studentEmails = (students || []).map((s: any) => s.email).filter(Boolean);
+                    const studentIds = (students || []).map((s: any) => s.student_id || s.id).filter(Boolean);
+                    const studentEmails = (students || []).map((s: any) => s.email).filter((email: any) => typeof email === 'string' && email.includes('@') && email.toLowerCase() !== 'no email');
 
                     if (studentIds.length > 0) {
                         await dispatchBulkNotifications({
@@ -191,14 +191,14 @@ export function OrgDashboardPage() {
                     ]);
 
                     const recipientIds = Array.from(new Set([
-                        ...(students || []).map((s: any) => s.id || s.student_id),
-                        ...(teachers || []).map((t: any) => t.id || t.teacher_id)
+                        ...(students || []).map((s: any) => s.student_id || s.id),
+                        ...(teachers || []).map((t: any) => t.teacher_id || t.id)
                     ])).filter(Boolean) as string[];
 
                     const memberEmails = Array.from(new Set([
                         ...(students || []).map((s: any) => s.email),
                         ...(teachers || []).map((t: any) => t.email)
-                    ])).filter(Boolean) as string[];
+                    ])).filter((email: any) => typeof email === 'string' && email.includes('@') && email.toLowerCase() !== 'no email') as string[];
 
                     if (recipientIds.length > 0) {
                         await dispatchBulkNotifications({

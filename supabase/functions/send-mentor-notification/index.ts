@@ -27,45 +27,68 @@ serve(async (req: Request) => {
     if (resendApiKey) {
       const sender = 'Mentozy <no-reply@mentozy.app>';
       
-      const resendResponse = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${resendApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: sender,
-          to: Array.isArray(to) ? to : [to],
-          subject: subject,
-          html: html,
-          text: text || undefined,
-        }),
-      });
+      const rawRecipients = Array.isArray(to) ? to : [to];
+      const validRecipients = Array.from(new Set(
+        rawRecipients
+          .map((e: any) => String(e || '').trim())
+          .filter((e: string) => e.length >= 5 && e.includes('@') && !e.includes(' ') && e.toLowerCase() !== 'no email')
+      ));
 
-      if (resendResponse.ok) {
-        const data = await resendResponse.json();
+      if (validRecipients.length === 0) {
         return new Response(
-          JSON.stringify({ message: "Email sent via Resend", id: data.id }),
+          JSON.stringify({ error: "No valid recipient email addresses provided", raw: to }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
+
+      // Dispatch to each recipient (concurrently via Promise.allSettled)
+      const results = await Promise.allSettled(
+        validRecipients.map(async (recipientEmail: string) => {
+          const res = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${resendApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: sender,
+              to: [recipientEmail],
+              subject: subject,
+              html: html,
+              text: text || undefined,
+            }),
+          });
+
+          if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(`Resend failed for ${recipientEmail}: ${errText}`);
+          }
+          return await res.json();
+        })
+      );
+
+      const successful = results.filter(r => r.status === 'fulfilled');
+      const failed = results.filter(r => r.status === 'rejected');
+
+      if (successful.length > 0) {
+        return new Response(
+          JSON.stringify({ 
+            message: `Dispatched ${successful.length}/${validRecipients.length} emails via Resend`,
+            sentCount: successful.length,
+            recipients: validRecipients,
+            failures: failed.map(f => (f as PromiseRejectedResult).reason?.message)
+          }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
       } else {
-        const resendErr = await resendResponse.text();
-        console.error('Resend API returned error:', resendErr);
-        
+        const errors = failed.map(f => (f as PromiseRejectedResult).reason?.message).join('; ');
+        console.error('All Resend dispatches failed:', errors);
         return new Response(
-          JSON.stringify({ error: "Resend dispatch failed", details: resendErr }),
+          JSON.stringify({ error: "Resend dispatch failed for all recipients", details: errors }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 502 }
         );
       }
     }
-
-    return new Response(
-      JSON.stringify({ 
-        message: "Notification logged successfully.",
-        recipient: to
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-    );
 
   } catch (error) {
     console.error("Error in send-mentor-notification function:", error);
