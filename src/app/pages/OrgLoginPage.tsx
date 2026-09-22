@@ -17,7 +17,7 @@ export const OrgLoginPage: React.FC = () => {
   // If already logged in as org or admin, automatically route to dashboard
   useEffect(() => {
     if (user && !authLoading) {
-      const isOrg = profile?.role === 'org' || profile?.role === 'admin' || user?.user_metadata?.is_org;
+      const isOrg = (profile?.role as string) === 'org' || profile?.role === 'admin' || Boolean(user?.user_metadata?.is_org);
       if (isOrg) {
         navigate('/org-dashboard', { replace: true });
       }

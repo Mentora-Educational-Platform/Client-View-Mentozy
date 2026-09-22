@@ -70,9 +70,22 @@ export async function dispatchNotification(params: DispatchNotificationParams): 
   let createdRecord: NotificationRecord | null = null;
 
   try {
-    const { data, error } = await client
-      .from('notifications')
-      .insert({
+    // 1. Try secure Postgres RPC function
+    const { data: rpcData, error: rpcErr } = await client.rpc('create_notification', {
+      p_recipient_id: params.recipientId,
+      p_type: params.type,
+      p_title: params.title,
+      p_body: params.body,
+      p_link: params.link || null,
+      p_actor_id: params.actorId || null,
+      p_org_id: params.orgId || null,
+      p_source_type: params.sourceType || null,
+      p_source_id: params.sourceId || null,
+    });
+
+    if (rpcErr) {
+      // 2. Direct INSERT fallback (without .select to avoid sender SELECT RLS violation)
+      const { error: insertErr } = await client.from('notifications').insert({
         recipient_id: params.recipientId,
         actor_id: params.actorId || null,
         org_id: params.orgId || null,
@@ -83,14 +96,26 @@ export async function dispatchNotification(params: DispatchNotificationParams): 
         source_type: params.sourceType || null,
         source_id: params.sourceId || null,
         is_read: false,
-      })
-      .select('*')
-      .single();
+      });
 
-    if (error) {
-      console.warn('[NotificationService] Error inserting notification:', error);
-    } else {
-      createdRecord = data as NotificationRecord;
+      if (insertErr) {
+        console.warn('[NotificationService] Insert error:', insertErr);
+      }
+    } else if (rpcData) {
+      createdRecord = {
+        id: rpcData,
+        recipient_id: params.recipientId,
+        actor_id: params.actorId,
+        org_id: params.orgId,
+        type: params.type,
+        title: params.title,
+        body: params.body,
+        link: params.link,
+        source_type: params.sourceType,
+        source_id: params.sourceId,
+        is_read: false,
+        created_at: new Date().toISOString(),
+      };
     }
   } catch (err) {
     console.error('[NotificationService] Database insert exception:', err);
@@ -125,23 +150,39 @@ export async function dispatchBulkNotifications(params: BulkDispatchNotification
 
   if (uniqueRecipients.length === 0) return 0;
 
-  const rows = uniqueRecipients.map(recipientId => ({
-    recipient_id: recipientId,
-    actor_id: params.actorId || null,
-    org_id: params.orgId || null,
-    type: params.type,
-    title: params.title,
-    body: params.body,
-    link: params.link || null,
-    source_type: params.sourceType || null,
-    source_id: params.sourceId || null,
-    is_read: false,
-  }));
-
   try {
-    const { error } = await client.from('notifications').insert(rows);
-    if (error) {
-      console.warn('[NotificationService] Error inserting bulk notifications:', error);
+    // 1. Try secure bulk RPC function
+    const { data: rpcCount, error: rpcErr } = await client.rpc('create_bulk_notifications', {
+      p_recipient_ids: uniqueRecipients,
+      p_type: params.type,
+      p_title: params.title,
+      p_body: params.body,
+      p_link: params.link || null,
+      p_actor_id: params.actorId || null,
+      p_org_id: params.orgId || null,
+      p_source_type: params.sourceType || null,
+      p_source_id: params.sourceId || null,
+    });
+
+    if (rpcErr) {
+      // 2. Direct INSERT fallback
+      const rows = uniqueRecipients.map(recipientId => ({
+        recipient_id: recipientId,
+        actor_id: params.actorId || null,
+        org_id: params.orgId || null,
+        type: params.type,
+        title: params.title,
+        body: params.body,
+        link: params.link || null,
+        source_type: params.sourceType || null,
+        source_id: params.sourceId || null,
+        is_read: false,
+      }));
+
+      const { error } = await client.from('notifications').insert(rows);
+      if (error) {
+        console.warn('[NotificationService] Bulk insert error:', error);
+      }
     }
   } catch (err) {
     console.error('[NotificationService] Bulk insert exception:', err);

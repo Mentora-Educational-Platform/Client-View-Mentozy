@@ -263,7 +263,7 @@ greet("Developer");`
     { type: 'output', text: 'NexLab IDE Terminal v2.1.0 - Integrated Sandbox Shell' },
     { type: 'output', text: 'Type "help" to see available commands.' },
     { type: 'output', text: 'System synced with Mentozy Dev Engine.' }
-  ]
+  ] as TerminalLine[]
 };
 
 const MOCK_TASKS: TaskInfo[] = [
@@ -1170,7 +1170,7 @@ export function NexLabTerminal() {
     const trimmed = cmd.trim();
     if (!trimmed) return;
 
-    const nextHistory = [...history, { type: 'input', text: trimmed }];
+    const nextHistory: TerminalLine[] = [...history, { type: 'input', text: trimmed }];
 
     const args = trimmed.split(/\s+/);
     const command = args[0].toLowerCase();

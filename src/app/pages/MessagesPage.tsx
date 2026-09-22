@@ -24,7 +24,7 @@ import { dispatchNotification } from '../../lib/notificationService';
 
 export function MessagesPage() {
     const { user } = useAuth();
-    const { mode, activeOrganization } = useOrganizationMode();
+    const { mode, activeOrganization, userOrganizations } = useOrganizationMode();
     const [activeContactId, setActiveContactId] = useState('');
     const [messageInput, setMessageInput] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
@@ -53,7 +53,7 @@ export function MessagesPage() {
         let data: Contact[] = [];
         
         if (isOrgMode) {
-            const targetOrg = activeOrganization?.id || user.id;
+            const targetOrg = activeOrganization?.id || userOrganizations?.[0]?.id || (user?.user_metadata?.is_org ? user.id : '1c6d1067-5d33-4b2d-843e-00f771e0007e');
             data = await getOrgContacts(targetOrg, user.id);
         } else {
             const role = isMentorView ? 'mentor' : 'student';

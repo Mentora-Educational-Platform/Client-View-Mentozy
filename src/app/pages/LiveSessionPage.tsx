@@ -575,8 +575,8 @@ export function LiveSessionPage() {
           
           if (activePeer) {
             const pc = getOrCreatePeerConnection(channel);
-            // Deterministic offer initiation: host initiates, or if metadata is pending, lexicographical comparison
-            const shouldInitiate = user?.id === sessionOwnerId || (user?.id > activePeer.id);
+            const currentUserId = user?.id || '';
+            const shouldInitiate = currentUserId === sessionOwnerId || (currentUserId > (activePeer.id || ''));
             if (shouldInitiate) {
               console.log("[WebRTC] Initiating SDP offer to peer:", activePeer.id);
               makingOfferRef.current = true;
@@ -615,7 +615,7 @@ export function LiveSessionPage() {
 
         try {
           const pc = getOrCreatePeerConnection(channel);
-          const isPolite = user?.id > payload.sender;
+          const isPolite = (user?.id || '') > (payload.sender || '');
 
           if (payload.join) {
             console.log("[WebRTC] Received join signaling handshake");

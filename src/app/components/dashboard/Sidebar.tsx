@@ -97,35 +97,41 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
             const supabase = getSupabase();
             if (supabase) {
                 const targetOrgId = activeOrganization.id;
-                supabase.from('org_tasks').select('id').eq('org_id', targetOrgId).then(async (tasksRes) => {
-                    const tasks = tasksRes.data || [];
-                    setOrgTaskCount(tasks.length);
+                const fetchSidebarStats = async () => {
+                    try {
+                        const { data: tasksData } = await supabase.from('org_tasks').select('id').eq('org_id', targetOrgId);
+                        const tasks = tasksData || [];
+                        setOrgTaskCount(tasks.length);
 
-                    if (activeOrganization.role === 'student') {
-                        const { data: subs } = await supabase
-                            .from('org_task_submissions')
-                            .select('task_id, status')
-                            .eq('student_id', user.id);
-                        const userSubs = subs || [];
-                        const completed = userSubs.filter(s => s.status === 'passed').length;
-                        setOrgProgress(tasks.length > 0 ? Math.round((completed / tasks.length) * 100) : 0);
-                        const needsRedo = userSubs.filter(s => s.status === 'redo').length;
-                        setPendingSubmissionsCount(needsRedo);
-                    } else {
-                        // Org Admin or Teacher: count pending submissions waiting for review
-                        if (tasks.length > 0) {
-                            const taskIds = tasks.map(t => t.id);
-                            const { count } = await supabase
+                        if (activeOrganization.role === 'student') {
+                            const { data: subs } = await supabase
                                 .from('org_task_submissions')
-                                .select('id', { count: 'exact', head: true })
-                                .in('task_id', taskIds)
-                                .eq('status', 'pending');
-                            setPendingSubmissionsCount(count || 0);
+                                .select('task_id, status')
+                                .eq('student_id', user.id);
+                            const userSubs = subs || [];
+                            const completed = userSubs.filter(s => s.status === 'passed').length;
+                            setOrgProgress(tasks.length > 0 ? Math.round((completed / tasks.length) * 100) : 0);
+                            const needsRedo = userSubs.filter(s => s.status === 'redo').length;
+                            setPendingSubmissionsCount(needsRedo);
                         } else {
-                            setPendingSubmissionsCount(0);
+                            // Org Admin or Teacher: count pending submissions waiting for review
+                            if (tasks.length > 0) {
+                                const taskIds = tasks.map(t => t.id);
+                                const { count } = await supabase
+                                    .from('org_task_submissions')
+                                    .select('id', { count: 'exact', head: true })
+                                    .in('task_id', taskIds)
+                                    .eq('status', 'pending');
+                                setPendingSubmissionsCount(count || 0);
+                            } else {
+                                setPendingSubmissionsCount(0);
+                            }
                         }
+                    } catch (err) {
+                        console.warn('Could not query stats for sidebar', err);
                     }
-                }).catch(err => console.warn('Could not query stats for sidebar', err));
+                };
+                fetchSidebarStats();
             }
         }
     }, [mode, activeOrganization?.id, activeOrganization?.role, user?.id, location.pathname]);

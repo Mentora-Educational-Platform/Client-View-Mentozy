@@ -8,6 +8,7 @@ import {
 import { toast } from 'sonner';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { useAuth } from '../../context/AuthContext';
+import { useOrganizationMode } from '../../context/OrganizationModeContext';
 import { LinkifiedText } from '../components/common/LinkifiedText';
 
 interface Note {

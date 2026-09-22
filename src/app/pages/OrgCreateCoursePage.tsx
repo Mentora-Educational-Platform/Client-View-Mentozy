@@ -96,8 +96,7 @@ export function OrgCreateCoursePage() {
       dbCourseData as any,
       modules,
       user?.id,
-      status,
-      activeOrganization?.id || undefined
+      status
     );
 
     // Save to Zustand store as local storage copy
