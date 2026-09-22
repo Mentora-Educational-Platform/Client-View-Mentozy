@@ -6,7 +6,7 @@ import {
     TrendingUp, Award, HelpCircle, Dna, FlaskConical, 
     Calculator, Atom, Briefcase, Plus, CheckSquare, 
     CalendarRange, FileText, Check, Dumbbell, Sparkles, Pin, ExternalLink,
-    Video, ArrowRight
+    Video, ArrowRight, X, Megaphone
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useOrganizationMode } from '../../../context/OrganizationModeContext';
@@ -38,6 +38,8 @@ export function OrgStudentDashboard() {
     const orgEmail = (activeOrganization as any)?.email || 'academy.support@krishnaite.dev';
 
     const [announcements, setAnnouncements] = useState<any[]>([]);
+    const [selectedAnnouncement, setSelectedAnnouncement] = useState<any | null>(null);
+    const [isAnnouncementModalOpen, setIsAnnouncementModalOpen] = useState(false);
     const [orgCourses, setOrgCourses] = useState<any[]>([]);
 
     useEffect(() => {
@@ -571,17 +573,25 @@ export function OrgStudentDashboard() {
                                         announcements.map((ann) => (
                                             <div 
                                                 key={ann.id}
-                                                className="p-3 border border-gray-150 dark:border-gray-850 rounded-2xl bg-white dark:bg-gray-900 space-y-1.5"
+                                                onClick={() => {
+                                                    setSelectedAnnouncement(ann);
+                                                    setIsAnnouncementModalOpen(true);
+                                                }}
+                                                className="p-3.5 border-2 border-gray-900 rounded-2xl bg-white dark:bg-gray-900 space-y-2 hover:bg-[#eff3ff]/40 shadow-[2px_2px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer group"
                                             >
-                                                <div className="flex items-center justify-between">
-                                                    <h4 className="text-xs font-black text-gray-950 dark:text-white truncate max-w-[200px]">{ann.title}</h4>
-                                                    <span className="text-[9px] text-gray-400 font-bold">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <h4 className="text-xs font-black text-gray-950 dark:text-white truncate group-hover:text-indigo-600 transition-colors">{ann.title}</h4>
+                                                    <span className="text-[9px] text-gray-500 font-black bg-[#FAF9F6] border border-gray-900 px-1.5 py-0.5 rounded shadow-[1px_1px_0px_rgba(0,0,0,1)] flex-shrink-0">
                                                         {new Date(ann.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                                     </span>
                                                 </div>
-                                                <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
+                                                <p className="text-[11px] text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed font-bold">
                                                     <LinkifiedText text={ann.content} />
                                                 </p>
+                                                <div className="flex items-center gap-1 text-[10px] font-black text-indigo-600 dark:text-indigo-400 group-hover:underline pt-0.5">
+                                                    <span>Open full notice</span>
+                                                    <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                                                </div>
                                             </div>
                                         ))
                                     ) : (
@@ -598,6 +608,83 @@ export function OrgStudentDashboard() {
                     </div>
 
                 </div>
+
+            {/* Full Announcement Detail Modal */}
+            {isAnnouncementModalOpen && selectedAnnouncement && (
+                <div 
+                    className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            setIsAnnouncementModalOpen(false);
+                            setSelectedAnnouncement(null);
+                        }
+                    }}
+                >
+                    <div className="bg-white border-4 border-gray-900 rounded-2xl max-w-xl w-full p-6 sm:p-8 shadow-[8px_8px_0px_rgba(0,0,0,1)] max-h-[85vh] flex flex-col space-y-5 animate-in fade-in zoom-in-95 duration-150">
+                        
+                        {/* Modal Header */}
+                        <div className="flex items-start justify-between gap-4 border-b-2 border-gray-900 pb-4">
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[10px] font-black uppercase tracking-wider bg-[#FFD166] border border-gray-900 px-2 py-0.5 rounded shadow-[1px_1px_0px_rgba(0,0,0,1)]">
+                                        INSTITUTE BULLETIN
+                                    </span>
+                                    <span className="text-xs font-bold text-gray-500">
+                                        {new Date(selectedAnnouncement.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                                    </span>
+                                </div>
+                                <h3 className="text-xl sm:text-2xl font-black text-gray-900 leading-tight">
+                                    {selectedAnnouncement.title}
+                                </h3>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setIsAnnouncementModalOpen(false);
+                                    setSelectedAnnouncement(null);
+                                }}
+                                className="p-2 bg-[#FF6B6B] text-white border-2 border-gray-900 rounded-xl shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-[#ff5252] active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer flex-shrink-0"
+                                title="Close"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body: Full Content */}
+                        <div className="flex-1 overflow-y-auto pr-1 space-y-4 font-mono text-sm leading-relaxed text-gray-800 bg-[#FAF9F6] border-2 border-gray-900 rounded-xl p-4 sm:p-5 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                            <div className="whitespace-pre-wrap font-bold">
+                                <LinkifiedText 
+                                    text={selectedAnnouncement.content} 
+                                    showIcon
+                                    linkClassName="text-indigo-600 hover:text-indigo-800 underline font-black"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="flex items-center justify-between gap-3 pt-2">
+                            <Link
+                                to="/org-announcements"
+                                onClick={() => setIsAnnouncementModalOpen(false)}
+                                className="text-xs font-black text-indigo-600 hover:underline flex items-center gap-1"
+                            >
+                                <span>Go to Announcements Board</span>
+                                <ArrowRight className="w-3.5 h-3.5" />
+                            </Link>
+
+                            <button
+                                onClick={() => {
+                                    setIsAnnouncementModalOpen(false);
+                                    setSelectedAnnouncement(null);
+                                }}
+                                className="px-5 py-2.5 bg-gray-900 text-white border-2 border-gray-900 rounded-xl text-xs font-black shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:bg-gray-800 active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer"
+                            >
+                                GOT IT
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            )}
 
         </div>
     );
