@@ -84,6 +84,8 @@ const NotesPage = lazy(() => import('./pages/NotesPage').then(module => ({ defau
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then(module => ({ default: module.SettingsPage })));
 const CommunityProjectsPage = lazy(() => import('./pages/CommunityProjectsPage').then(module => ({ default: module.CommunityProjectsPage })));
 const KeywordLandingPage = lazy(() => import('./pages/KeywordLandingPage').then(module => ({ default: module.KeywordLandingPage })));
+const LearnWithUsPage = lazy(() => import('./pages/LearnWithUsPage').then(module => ({ default: module.LearnWithUsPage })));
+const AdminLearningVideosPage = lazy(() => import('./pages/admin/AdminLearningVideosPage').then(module => ({ default: module.AdminLearningVideosPage })));
 
 export type Page = 'home' | 'careers' | 'mentors' | 'tracks' | 'about' | 'library' | 'contact' | 'login' | 'signup' | 'student-auth' | 'student-onboarding' | 'student-dashboard';
 
@@ -216,6 +218,11 @@ function App() {
         <Route path="/student-dashboard" element={
           <Suspense fallback={<PageLoader />}>
             <StudentDashboardPage />
+          </Suspense>
+        } />
+        <Route path="/learn-with-us" element={
+          <Suspense fallback={<PageLoader />}>
+            <LearnWithUsPage />
           </Suspense>
         } />
         <Route path="/notes" element={
@@ -445,6 +452,11 @@ function App() {
         <Route path="/admin/organizations/:id" element={
           <Suspense fallback={<PageLoader />}>
             <AdminOrganizationDetailPage />
+          </Suspense>
+        } />
+        <Route path="/admin/learning-videos" element={
+          <Suspense fallback={<PageLoader />}>
+            <AdminLearningVideosPage />
           </Suspense>
         } />
         <Route path="/profile" element={

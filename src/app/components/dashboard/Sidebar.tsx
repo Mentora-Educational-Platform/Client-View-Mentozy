@@ -5,7 +5,7 @@ import {
     LogOut, X, User, Users, PlusCircle, Settings, GraduationCap, 
     CalendarDays, BookMarked, Building2, Bell, PanelLeftClose, 
     ChevronDown, Check, CheckCircle2, Plus, CalendarRange, 
-    CheckSquare, FileText, Clock, HelpCircle, StickyNote, Terminal 
+    CheckSquare, FileText, Clock, HelpCircle, StickyNote, Terminal, Video 
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useOrganizationMode } from '../../../context/OrganizationModeContext';
@@ -143,6 +143,7 @@ export function Sidebar({ isOpen, onClose, isDesktopCollapsed, onToggleDesktop }
     const studentItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/student-dashboard' },
         { icon: BookOpen, label: 'Courses', path: '/courses' },
+        { icon: Video, label: '📚 Learn with us', path: '/learn-with-us' },
         { icon: Users, label: 'Mentors', path: '/dashboard-mentors' },
         { icon: Calendar, label: 'Calendar', path: '/calendar' },
         { icon: MessageSquare, label: 'Messages', path: '/messages' },

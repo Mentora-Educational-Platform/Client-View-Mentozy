@@ -4198,3 +4198,329 @@ export async function updateOrganizationStatus(
 
   return null;
 }
+
+// ==========================================
+// LEARN WITH US — EDUCATIONAL VIDEO LIBRARY
+// ==========================================
+
+export interface LearningVideo {
+  id: string;
+  grade: string;
+  subject: string;
+  chapter?: string | null;
+  title: string;
+  description?: string | null;
+  youtube_url: string;
+  youtube_video_id: string;
+  thumbnail_url?: string | null;
+  published: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+const LOCAL_STORAGE_LEARNING_VIDEOS_KEY = 'mentozy_learning_videos_v2';
+
+const DEFAULT_LEARNING_VIDEOS: LearningVideo[] = [
+  {
+    id: 'lv-real-001',
+    grade: 'Grade 10',
+    subject: 'CBSE 10th Boards',
+    chapter: 'Syllabus & Strategy',
+    title: 'Class 10 Boards 2027: Complete Syllabus, Important Chapters & Study Plan | CBSE',
+    description: 'Complete breakdown of CBSE Class 10 Board syllabus, high-weightage chapters, timeline, and master strategy for scoring top marks.',
+    youtube_url: 'https://youtu.be/y7I1Xzv0qIA',
+    youtube_video_id: 'y7I1Xzv0qIA',
+    thumbnail_url: 'https://img.youtube.com/vi/y7I1Xzv0qIA/hqdefault.jpg',
+    published: true,
+    display_order: 1,
+    created_at: '2026-09-28T09:00:00.000Z',
+    updated_at: '2026-09-28T09:00:00.000Z',
+  },
+  {
+    id: 'lv-real-002',
+    grade: 'Grade 10',
+    subject: 'Mathematics',
+    chapter: 'Real Numbers',
+    title: 'REAL NUMBERS 🔢 | Class 10 Maths Chapter 1 | Complete NCERT Explanation | CBSE 2026-27',
+    description: 'Complete NCERT concept explanation, Fundamental Theorem of Arithmetic, Euclid division, and proofs of irrationality for Class 10.',
+    youtube_url: 'https://youtu.be/RAGungtYDhc',
+    youtube_video_id: 'RAGungtYDhc',
+    thumbnail_url: 'https://img.youtube.com/vi/RAGungtYDhc/hqdefault.jpg',
+    published: true,
+    display_order: 2,
+    created_at: '2026-09-28T08:00:00.000Z',
+    updated_at: '2026-09-28T08:00:00.000Z',
+  },
+  {
+    id: 'lv-real-003',
+    grade: 'Grade 10',
+    subject: 'Mathematics',
+    chapter: 'Real Numbers',
+    title: 'Real Numbers | Most Important Board Questions | AP SSC 2027 | 1 • 2 • 4 • 8 Marks',
+    description: 'High-weightage board exam questions analyzed step-by-step for AP SSC 2027 covering 1, 2, 4, and 8 marks problem patterns.',
+    youtube_url: 'https://youtu.be/wyv8W0iGEGs',
+    youtube_video_id: 'wyv8W0iGEGs',
+    thumbnail_url: 'https://img.youtube.com/vi/wyv8W0iGEGs/hqdefault.jpg',
+    published: true,
+    display_order: 3,
+    created_at: '2026-09-28T07:00:00.000Z',
+    updated_at: '2026-09-28T07:00:00.000Z',
+  },
+  {
+    id: 'lv-real-004',
+    grade: 'Grade 10',
+    subject: 'Mathematics',
+    chapter: 'Real Numbers',
+    title: 'Real Numbers Class 10 | Most Important Board Questions | CBSE 2026-27 | NCERT + Sample Paper',
+    description: 'Most important CBSE Class 10 board questions from NCERT, Exemplar, and official sample papers with exam-oriented solving techniques.',
+    youtube_url: 'https://youtu.be/C_gaPwwVWOw',
+    youtube_video_id: 'C_gaPwwVWOw',
+    thumbnail_url: 'https://img.youtube.com/vi/C_gaPwwVWOw/hqdefault.jpg',
+    published: true,
+    display_order: 4,
+    created_at: '2026-09-28T06:00:00.000Z',
+    updated_at: '2026-09-28T06:00:00.000Z',
+  }
+];
+
+function getStoredLearningVideos(): LearningVideo[] {
+  try {
+    // Clear out old v1 demo storage if present
+    localStorage.removeItem('mentozy_learning_videos_v1');
+
+    const raw = localStorage.getItem(LOCAL_STORAGE_LEARNING_VIDEOS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Filter out any leftover demo videos from earlier tests
+        const realList = parsed.filter((v: LearningVideo) => !['WPvGqO19P_k', 'mHZZM2aQpL4', '840gqI0i71M', '7u_X9i9Lp9Y'].includes(v.youtube_video_id));
+        if (realList.length > 0) {
+          return realList;
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[Learning Videos] Error reading from localStorage:', e);
+  }
+  return DEFAULT_LEARNING_VIDEOS;
+}
+
+function saveStoredLearningVideos(videos: LearningVideo[]): void {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_LEARNING_VIDEOS_KEY, JSON.stringify(videos));
+  } catch (e) {
+    console.warn('[Learning Videos] Error writing to localStorage:', e);
+  }
+}
+
+/**
+ * Fetch published learning videos for individual students
+ */
+export async function getLearningVideos(): Promise<LearningVideo[]> {
+  const supabase = getSupabase();
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('learning_videos')
+        .select('*')
+        .eq('published', true)
+        .order('display_order', { ascending: true })
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        return data as LearningVideo[];
+      }
+      if (error) {
+        console.warn('[Learning Videos] Supabase fetch notice (falling back to cached/default):', error.message);
+      }
+    } catch (err) {
+      console.warn('[Learning Videos] Supabase query error:', err);
+    }
+  }
+
+  // Fallback to local store or defaults
+  const localList = getStoredLearningVideos();
+  return localList
+    .filter(v => v.published)
+    .sort((a, b) => (a.display_order - b.display_order) || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+}
+
+/**
+ * Fetch all learning videos (including drafts) for admin content management
+ */
+export async function getAllLearningVideosAdmin(): Promise<LearningVideo[]> {
+  const supabase = getSupabase();
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('learning_videos')
+        .select('*')
+        .order('display_order', { ascending: true })
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        return data as LearningVideo[];
+      }
+      if (error) {
+        console.warn('[Learning Videos Admin] Supabase fetch notice:', error.message);
+      }
+    } catch (err) {
+      console.warn('[Learning Videos Admin] Supabase query error:', err);
+    }
+  }
+
+  // Fallback to local store
+  return getStoredLearningVideos()
+    .sort((a, b) => (a.display_order - b.display_order) || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+}
+
+/**
+ * Create a new learning video record
+ */
+export async function createLearningVideo(
+  videoData: Omit<LearningVideo, 'id' | 'created_at' | 'updated_at'>
+): Promise<LearningVideo> {
+  const supabase = getSupabase();
+  const now = new Date().toISOString();
+  const tempId = `lv-${Date.now()}`;
+
+  const newVideo: LearningVideo = {
+    ...videoData,
+    id: tempId,
+    created_at: now,
+    updated_at: now,
+  };
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('learning_videos')
+        .insert({
+          grade: videoData.grade,
+          subject: videoData.subject,
+          chapter: videoData.chapter || null,
+          title: videoData.title,
+          description: videoData.description || null,
+          youtube_url: videoData.youtube_url,
+          youtube_video_id: videoData.youtube_video_id,
+          thumbnail_url: videoData.thumbnail_url || null,
+          published: videoData.published,
+          display_order: videoData.display_order ?? 0,
+        })
+        .select()
+        .single();
+
+      if (!error && data) {
+        // Also sync local cache
+        const local = getStoredLearningVideos();
+        saveStoredLearningVideos([data as LearningVideo, ...local.filter(v => v.id !== tempId)]);
+        return data as LearningVideo;
+      }
+      if (error) {
+        console.warn('[Learning Videos] Insert DB notice (saving locally):', error.message);
+      }
+    } catch (err) {
+      console.warn('[Learning Videos] Error inserting to Supabase:', err);
+    }
+  }
+
+  // Local fallback
+  const localList = getStoredLearningVideos();
+  const updatedList = [newVideo, ...localList];
+  saveStoredLearningVideos(updatedList);
+  return newVideo;
+}
+
+/**
+ * Update an existing learning video record
+ */
+export async function updateLearningVideo(
+  id: string,
+  updates: Partial<LearningVideo>
+): Promise<LearningVideo | null> {
+  const supabase = getSupabase();
+  const now = new Date().toISOString();
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('learning_videos')
+        .update({
+          ...updates,
+          updated_at: now,
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (!error && data) {
+        const local = getStoredLearningVideos();
+        saveStoredLearningVideos(local.map(v => v.id === id ? (data as LearningVideo) : v));
+        return data as LearningVideo;
+      }
+    } catch (err) {
+      console.warn('[Learning Videos] Error updating Supabase:', err);
+    }
+  }
+
+  // Local fallback
+  const localList = getStoredLearningVideos();
+  const idx = localList.findIndex(v => v.id === id);
+  if (idx !== -1) {
+    const updated = {
+      ...localList[idx],
+      ...updates,
+      updated_at: now,
+    };
+    localList[idx] = updated;
+    saveStoredLearningVideos([...localList]);
+    return updated;
+  }
+
+  return null;
+}
+
+/**
+ * Toggle published state of a video
+ */
+export async function togglePublishLearningVideo(
+  id: string,
+  published: boolean
+): Promise<boolean> {
+  const res = await updateLearningVideo(id, { published });
+  return res !== null;
+}
+
+/**
+ * Delete a learning video record
+ */
+export async function deleteLearningVideo(id: string): Promise<boolean> {
+  const supabase = getSupabase();
+
+  if (supabase) {
+    try {
+      const { error } = await supabase
+        .from('learning_videos')
+        .delete()
+        .eq('id', id);
+
+      if (!error) {
+        const local = getStoredLearningVideos();
+        saveStoredLearningVideos(local.filter(v => v.id !== id));
+        return true;
+      }
+    } catch (err) {
+      console.warn('[Learning Videos] Error deleting from Supabase:', err);
+    }
+  }
+
+  // Local fallback
+  const localList = getStoredLearningVideos();
+  const filtered = localList.filter(v => v.id !== id);
+  saveStoredLearningVideos(filtered);
+  return true;
+}
+

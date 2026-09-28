@@ -16,7 +16,8 @@ import {
   AlertOctagon,
   Clock,
   Sparkles,
-  Building2
+  Building2,
+  Video
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../../../lib/supabase';
@@ -24,7 +25,7 @@ import { useAuth } from '../../../context/AuthContext';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
-  activeTab?: 'dashboard' | 'applications' | 'krishnaite' | 'organizations' | 'mentors' | 'settings';
+  activeTab?: 'dashboard' | 'applications' | 'krishnaite' | 'organizations' | 'mentors' | 'videos' | 'settings';
   pendingCount?: number;
 }
 
@@ -176,6 +177,12 @@ export function AdminLayout({ children, activeTab = 'dashboard', pendingCount: e
       label: 'Organizations', 
       path: '/admin/organizations', 
       icon: Building2 
+    },
+    { 
+      id: 'videos', 
+      label: 'Learn with us Videos', 
+      path: '/admin/learning-videos', 
+      icon: Video 
     },
     { 
       id: 'mentors', 

@@ -14,7 +14,8 @@ import {
   ExternalLink,
   Shield,
   Search,
-  Filter
+  Filter,
+  Video
 } from 'lucide-react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { supabase } from '../../../lib/supabase';
@@ -102,12 +103,20 @@ export function AdminDashboardPage() {
             </h1>
           </div>
 
-          <Link
-            to="/admin/mentor-applications"
-            className="px-5 py-2.5 bg-[#f39c12] hover:bg-[#e08e0b] text-gray-900 font-black text-xs uppercase border-2 border-gray-900 shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all inline-flex items-center gap-2 self-start sm:self-auto cursor-pointer"
-          >
-            Manage All Applications <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <Link
+              to="/admin/learning-videos"
+              className="px-4 py-2.5 bg-white hover:bg-amber-50 text-gray-900 font-black text-xs uppercase border-2 border-gray-900 shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all inline-flex items-center gap-2 self-start sm:self-auto cursor-pointer"
+            >
+              <Video className="w-3.5 h-3.5 text-amber-600" /> Learn with us Videos
+            </Link>
+            <Link
+              to="/admin/mentor-applications"
+              className="px-4 py-2.5 bg-[#f39c12] hover:bg-[#e08e0b] text-gray-900 font-black text-xs uppercase border-2 border-gray-900 shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all inline-flex items-center gap-2 self-start sm:self-auto cursor-pointer"
+            >
+              Manage Applications <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
 
         {/* 2. Statistical Metric Tiles */}
